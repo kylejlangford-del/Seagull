@@ -57,3 +57,9 @@ The cant fixes were reapplied directly to that new model:
 - Both sides rotate as rigid assemblies around their top cant pivots.
 - No extra/mirrored foil geometry has been added.
 - All other geometry from the revised model is left as supplied.
+
+
+## v4.7 — wave playback speed
+- Default playback speed is now **0.1×**.
+- Available speeds are **0.1×, 0.2×, 0.3×, 0.4×, 0.5×, 0.6×, 0.7×, 0.8×, 0.9×, 1.0×**.
+- Playback speeds above 1.0× have been removed.

@@ -114,7 +114,7 @@ const state = {
   autoWaveSpeed: true,
   manualWaveSpeed: 4,
   boatSpeedKn: 35,
-  playbackSpeed: 1,
+  playbackSpeed: 0.1,
   playing: true,
   simTime: 0,
   minClearance: Infinity

@@ -587,3 +587,15 @@ code { color: var(--accent); }
   font-size: .57rem;
   line-height: 1.45;
 }
+
+/* v4.7: compact 0.1×–1.0× playback controls */
+.speed-group {
+  flex-wrap: wrap;
+  max-width: 430px;
+}
+
+.speed-group button {
+  min-width: 42px;
+  padding-left: 7px;
+  padding-right: 7px;
+}
