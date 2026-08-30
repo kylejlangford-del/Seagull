@@ -32,3 +32,15 @@ This build includes its own copy of the Seagull Lab logo at:
 `ac40-geometry/assets/seagull-lab-logo.png`
 
 The geometry page therefore no longer depends on the homepage `/assets/` folder.
+
+
+## v4.2 foil assembly fix
+The supplied GLTF contains duplicate object names. Three.js renames these at runtime
+to `ARM`, `ARM_1`, `WINGIB`, `WINGIB_1`, and `WINGIB_2`.
+
+The earlier build only matched the first `ARM` and first `WINGIB`, which caused:
+- the inner half of the port T-foil to stay behind;
+- the starboard foil assembly not to cant.
+
+v4.2 matches all duplicate foil objects, groups them by port/starboard side, and
+uses the actual cant pivot coordinates from the supplied GLTF reference geometry.

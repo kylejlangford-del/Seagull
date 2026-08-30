@@ -303,16 +303,18 @@ function setupCantAssemblies() {
   const portParts = [];
   const stbdParts = [];
 
-  // The supplied GLTF has:
-  // Port: ARM + two WINGIB meshes (inner and outer halves of the horizontal T foil)
-  // Starboard: ARM + one WINGIB mesh containing the complete horizontal T foil.
-  // We group every ARM/WINGIB by actual world-space side so the arm and all T-foil
-  // geometry rotate as one rigid assembly.
+  // The supplied GLTF has two ARM meshes and three WINGIB meshes.
+  // Three.js GLTFLoader uniquifies duplicate names, so at runtime they become
+  // ARM / ARM_1 and WINGIB / WINGIB_1 / WINGIB_2.
+  // Match every duplicate, then group by actual world-space side so the arm and
+  // every horizontal T-foil section move as one rigid cant assembly.
   const candidates = [];
   modelScene.traverse((obj) => {
     if (!obj.isMesh) return;
     const name = (obj.name || '').toUpperCase();
-    if (name === 'ARM' || name === 'WINGIB') candidates.push(obj);
+    const isArm = /^ARM(?:_\\d+)?$/.test(name);
+    const isWing = /^WINGIB(?:_\\d+)?$/.test(name);
+    if (isArm || isWing) candidates.push(obj);
   });
 
   for (const obj of candidates) {
@@ -322,8 +324,15 @@ function setupCantAssemblies() {
     else if (tempCenter.z > 0) stbdParts.push(obj);
   }
 
-  const portPivot = new THREE.Vector3(6.61, 0.35, -1.385);
-  const stbdPivot = new THREE.Vector3(6.61, 0.35, 1.385);
+  if (portParts.length !== 3 || stbdParts.length !== 2) {
+    console.warn(
+      'Unexpected foil assembly count.',
+      { port: portParts.map(o => o.name), starboard: stbdParts.map(o => o.name) }
+    );
+  }
+
+  const portPivot = new THREE.Vector3(6.912, 0.351, -1.386);
+  const stbdPivot = new THREE.Vector3(6.912, 0.351, 1.383);
 
   portCantGroup = new THREE.Group();
   portCantGroup.name = 'PORT_FOIL_ASSEMBLY';
