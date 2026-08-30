@@ -300,72 +300,39 @@ function tuneMaterials(root) {
 function setupCantAssemblies() {
   modelScene.updateMatrixWorld(true);
 
-  const portParts = [];
-  const stbdParts = [];
+  // v4.3: the GLTF itself now contains rigid port/starboard cant roots.
+  // No runtime re-parenting or duplicate-name matching is needed.
+  portCantGroup = modelScene.getObjectByName('PORT_FOIL_CANT_ROOT');
+  stbdCantGroup = modelScene.getObjectByName('STBD_FOIL_CANT_ROOT');
 
-  // The supplied GLTF has two ARM meshes and three WINGIB meshes.
-  // Three.js GLTFLoader uniquifies duplicate names, so at runtime they become
-  // ARM / ARM_1 and WINGIB / WINGIB_1 / WINGIB_2.
-  // Match every duplicate, then group by actual world-space side so the arm and
-  // every horizontal T-foil section move as one rigid cant assembly.
-  const candidates = [];
-  modelScene.traverse((obj) => {
-    if (!obj.isMesh) return;
-    const name = (obj.name || '').toUpperCase();
-    const isArm = /^ARM(?:_\\d+)?$/.test(name);
-    const isWing = /^WINGIB(?:_\\d+)?$/.test(name);
-    if (isArm || isWing) candidates.push(obj);
-  });
-
-  for (const obj of candidates) {
-    const box = new THREE.Box3().setFromObject(obj);
-    box.getCenter(tempCenter);
-    if (tempCenter.z < 0) portParts.push(obj);
-    else if (tempCenter.z > 0) stbdParts.push(obj);
+  if (!portCantGroup || !stbdCantGroup) {
+    throw new Error('Foil cant roots are missing from ac40-model.gltf');
   }
-
-  if (portParts.length !== 3 || stbdParts.length !== 2) {
-    console.warn(
-      'Unexpected foil assembly count.',
-      { port: portParts.map(o => o.name), starboard: stbdParts.map(o => o.name) }
-    );
-  }
-
-  const portPivot = new THREE.Vector3(6.912, 0.351, -1.386);
-  const stbdPivot = new THREE.Vector3(6.912, 0.351, 1.383);
-
-  portCantGroup = new THREE.Group();
-  portCantGroup.name = 'PORT_FOIL_ASSEMBLY';
-  portCantGroup.position.copy(portPivot);
-
-  stbdCantGroup = new THREE.Group();
-  stbdCantGroup.name = 'STBD_FOIL_ASSEMBLY';
-  stbdCantGroup.position.copy(stbdPivot);
-
-  modelScene.add(portCantGroup, stbdCantGroup);
-  modelScene.updateMatrixWorld(true);
-
-  // attach() preserves every mesh's world transform while changing parent.
-  // This is important for the inner port T-foil half and makes the complete
-  // horizontal foil stay connected to the arm.
-  for (const obj of portParts) portCantGroup.attach(obj);
-  for (const obj of stbdParts) stbdCantGroup.attach(obj);
 
   portFoilMarker = new THREE.Object3D();
-  portFoilMarker.position.copy(
-    portCantGroup.worldToLocal(new THREE.Vector3(6.66, -2.265, -3.060))
+  portFoilMarker.name = 'PORT_T_FOIL_CENTRE';
+  portFoilMarker.position.set(
+    6.449 - 6.911853,
+    -2.266 - 0.35055,
+    -3.06043 - (-1.38623)
   );
   portCantGroup.add(portFoilMarker);
 
   stbdFoilMarker = new THREE.Object3D();
-  stbdFoilMarker.position.copy(
-    stbdCantGroup.worldToLocal(new THREE.Vector3(6.66, -2.268, 3.030))
+  stbdFoilMarker.name = 'STBD_T_FOIL_CENTRE';
+  stbdFoilMarker.position.set(
+    6.449 - 6.911853,
+    -2.271 - 0.35055,
+    3.06043 - 1.38292
   );
   stbdCantGroup.add(stbdFoilMarker);
 
-  console.log('Port foil assembly:', portParts.map((o) => o.name));
-  console.log('Starboard foil assembly:', stbdParts.map((o) => o.name));
+  console.log('Rigid foil roots loaded:', {
+    port: portCantGroup.children.map(o => o.name),
+    starboard: stbdCantGroup.children.map(o => o.name)
+  });
 }
+
 
 function buildHullSamples() {
   hullSamplePoints = [];

@@ -1,46 +1,31 @@
-# AC40 Geometry v4
+# AC40 Geometry v4.3
 
-Upload the contents of this folder into your existing GitHub repo folder:
+This version fixes the foil geometry at the MODEL level rather than trying to
+re-parent mesh pieces after Three.js loads the file.
 
-`/ac40-geometry/`
+## Foil fix
 
-Replace the existing files with:
-- `index.html`
-- `styles.css`
-- `app.js`
-- `ac40-model.gltf`
+The supplied GLTF contains:
+- port ARM
+- port outer T-foil half
+- port inner T-foil half
+- starboard ARM
+- starboard outer T-foil half
 
-## Foil sink logic
-- Port sink is active only while port cant is **90° or less**.
-- Starboard sink is active only while starboard cant is **90° or less**.
-- Above 90°, that foil's sink control is disabled and shown as `OFF (>90°)`.
-- If one foil is above 90°, the vertical solution uses **heel + the active foil sink**, or the user can select **heel + hull clearance**.
-- If both foils are above 90°, the app automatically switches to **heel + hull clearance**.
-- The two-foil sink solver is only available when both foils are 90° or less.
+The source model does **not** contain a starboard inner T-foil half.
 
-Other current features:
-- Cant range 50–126°.
-- Sink range −0.50 to −1.50 m.
-- Full foil assemblies move rigidly with cant.
-- Left scenario table.
-- Scenario screenshot export.
-- Independently scrollable right-side controls.
+v4.3 therefore:
+1. Creates a rigid `PORT_FOIL_CANT_ROOT` inside the GLTF containing the arm and
+   both port horizontal T-foil pieces.
+2. Creates a rigid `STBD_FOIL_CANT_ROOT` containing the starboard arm and outer
+   horizontal foil.
+3. Mirrors the port inner horizontal foil across the boat centreline to create
+   the missing starboard inner horizontal foil.
+4. Cants each complete assembly from its actual top pivot.
 
+This removes the runtime grouping problem that caused the port foil to separate
+and the starboard cant control to appear not to move.
 
-## Logo fix
-This build includes its own copy of the Seagull Lab logo at:
-`ac40-geometry/assets/seagull-lab-logo.png`
-
-The geometry page therefore no longer depends on the homepage `/assets/` folder.
-
-
-## v4.2 foil assembly fix
-The supplied GLTF contains duplicate object names. Three.js renames these at runtime
-to `ARM`, `ARM_1`, `WINGIB`, `WINGIB_1`, and `WINGIB_2`.
-
-The earlier build only matched the first `ARM` and first `WINGIB`, which caused:
-- the inner half of the port T-foil to stay behind;
-- the starboard foil assembly not to cant.
-
-v4.2 matches all duplicate foil objects, groups them by port/starboard side, and
-uses the actual cant pivot coordinates from the supplied GLTF reference geometry.
+Current ranges:
+- Cant: 50–126°
+- Sink: −0.50 to −1.50 m
