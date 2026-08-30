@@ -19,7 +19,7 @@
   <div id="app">
     <header class="topbar">
       <a class="brand" href="../" aria-label="Back to Seagull Lab">
-        <img src="../assets/seagull-lab-logo.png" alt="Seagull Lab" />
+        <img src="./assets/seagull-lab-logo.png" alt="Seagull Lab" />
       </a>
 
       <div class="title-block">
@@ -34,15 +34,59 @@
     </header>
 
     <main class="workspace">
+      <aside class="scenario-panel">
+        <div class="scenario-panel__header">
+          <div>
+            <span class="panel-eyebrow">Scenario</span>
+            <h2>Current setup</h2>
+          </div>
+          <span class="mode-pill">
+            <span class="mode-dot"></span>
+            <span id="waterModeLabel">Flat water</span>
+          </span>
+        </div>
+
+        <table class="scenario-table">
+          <tbody>
+            <tr><th>Cant port</th><td id="tableCantPort">50.0°</td></tr>
+            <tr><th>Cant starboard</th><td id="tableCantStbd">50.0°</td></tr>
+            <tr><th>Heel</th><td id="tableHeel">0.0°</td></tr>
+            <tr><th>Trim</th><td id="tableTrim">0.0°</td></tr>
+            <tr><th>Drivers</th><td id="tableDrivers">Heel + port sink</td></tr>
+            <tr><th>Port sink</th><td id="tablePortSink">−1.00 m</td></tr>
+            <tr><th>Starboard sink</th><td id="tableStbdSink">−1.00 m</td></tr>
+            <tr><th>Water</th><td id="tableWater">Flat</td></tr>
+            <tr><th>Wave height</th><td id="tableWaveHeight">—</td></tr>
+            <tr><th>Wavelength</th><td id="tableWaveLength">—</td></tr>
+            <tr><th>Wave speed</th><td id="tableWaveSpeed">—</td></tr>
+            <tr><th>Wave direction</th><td id="tableWaveDirection">—</td></tr>
+            <tr><th>Boat speed</th><td id="tableBoatSpeed">35.0 kn</td></tr>
+            <tr><th>Playback</th><td id="tablePlayback">1×</td></tr>
+          </tbody>
+        </table>
+
+        <div class="scenario-results">
+          <div>
+            <span>Hull clearance</span>
+            <strong id="tableClearance">—</strong>
+          </div>
+          <div>
+            <span>Minimum</span>
+            <strong id="tableMinClearance">—</strong>
+          </div>
+        </div>
+
+        <button id="screenshotBtn" class="screenshot-button" type="button">
+          <span class="screenshot-icon">⌖</span>
+          Take scenario screenshot
+        </button>
+        <p class="scenario-note">Saves the 3D view together with the current setup values.</p>
+      </aside>
+
       <section class="viewer-panel">
         <div id="scene"></div>
 
         <div class="viewer-top">
-          <div class="mode-pill">
-            <span class="mode-dot"></span>
-            <span id="waterModeLabel">Flat water</span>
-          </div>
-
           <div class="view-buttons" aria-label="Camera views">
             <button data-view="perspective" class="view-button active">3D</button>
             <button data-view="side" class="view-button">Side</button>
@@ -89,32 +133,29 @@
         <div id="loadingOverlay" class="loading-overlay">
           <div class="loader"></div>
           <strong>Loading AC40 model</strong>
-          <span>41.5° reference geometry</span>
+          <span>Geometry reference model</span>
         </div>
       </section>
 
       <aside class="controls-panel">
         <div class="controls-scroll">
           <section class="control-section">
-            <div class="section-heading">
-              <span>Geometry</span>
-              <small>41.5° model baseline</small>
-            </div>
+            <div class="section-heading"><span>Geometry</span></div>
 
             <div class="control-row">
               <div class="control-label">
                 <label for="cantPort">Cant port</label>
-                <output id="cantPortValue">41.5°</output>
+                <output id="cantPortValue">50.0°</output>
               </div>
-              <input id="cantPort" type="range" min="15" max="55" value="41.5" step="0.1" />
+              <input id="cantPort" type="range" min="50" max="126" value="50" step="0.5" />
             </div>
 
             <div class="control-row">
               <div class="control-label">
                 <label for="cantStbd">Cant starboard</label>
-                <output id="cantStbdValue">41.5°</output>
+                <output id="cantStbdValue">50.0°</output>
               </div>
-              <input id="cantStbd" type="range" min="15" max="55" value="41.5" step="0.1" />
+              <input id="cantStbd" type="range" min="50" max="126" value="50" step="0.5" />
             </div>
 
             <div class="control-row">
@@ -130,11 +171,13 @@
           <section class="control-section">
             <div class="section-heading">
               <span>Vertical solution</span>
+              <small id="verticalStatus">Both foil sinks available</small>
             </div>
 
-            <div class="segmented" id="solveMode">
-              <button data-mode="attitude" class="active" type="button">Heel + mean sink</button>
+            <div class="segmented segmented--three" id="solveMode">
+              <button data-mode="attitude" class="active" type="button">Heel + sink</button>
               <button data-mode="sinks" type="button">Foil sinks</button>
+              <button data-mode="clearance" type="button">Heel + clearance</button>
             </div>
 
             <div id="attitudeInputs">
@@ -147,30 +190,43 @@
                 <div class="range-hints"><span>port down</span><span>starboard down</span></div>
               </div>
 
-              <div class="control-row">
+              <div class="control-row" id="portAttitudeSinkRow">
                 <div class="control-label">
-                  <label for="meanSink">Mean foil sink</label>
-                  <output id="meanSinkValue">1.65 m</output>
+                  <label for="sinkPortAttitude">Port sink</label>
+                  <output id="sinkPortAttitudeValue">−1.00 m</output>
                 </div>
-                <input id="meanSink" type="range" min="0.8" max="2.5" value="1.65" step="0.01" />
+                <input id="sinkPortAttitude" type="range" min="-1.5" max="-0.50" value="-1.0" step="0.01" />
+              </div>
+
+              <div class="control-row" id="stbdAttitudeSinkRow" hidden>
+                <div class="control-label">
+                  <label for="sinkStbdAttitude">Starboard sink</label>
+                  <output id="sinkStbdAttitudeValue">−1.00 m</output>
+                </div>
+                <input id="sinkStbdAttitude" type="range" min="-1.5" max="-0.50" value="-1.0" step="0.01" />
+              </div>
+
+              <div class="solved-value">
+                <span id="attitudeSolvedLabel">Starboard sink</span>
+                <strong id="attitudeSolvedValue">—</strong>
               </div>
             </div>
 
             <div id="sinkInputs" hidden>
-              <div class="control-row">
+              <div class="control-row" id="portSinkRow">
                 <div class="control-label">
                   <label for="sinkPort">Sink port</label>
-                  <output id="sinkPortValue">1.65 m</output>
+                  <output id="sinkPortValue">−1.00 m</output>
                 </div>
-                <input id="sinkPort" type="range" min="0.8" max="2.5" value="1.65" step="0.01" />
+                <input id="sinkPort" type="range" min="-1.5" max="-0.50" value="-1.0" step="0.01" />
               </div>
 
-              <div class="control-row">
+              <div class="control-row" id="stbdSinkRow">
                 <div class="control-label">
                   <label for="sinkStbd">Sink starboard</label>
-                  <output id="sinkStbdValue">1.65 m</output>
+                  <output id="sinkStbdValue">−1.00 m</output>
                 </div>
-                <input id="sinkStbd" type="range" min="0.8" max="2.5" value="1.65" step="0.01" />
+                <input id="sinkStbd" type="range" min="-1.5" max="-0.50" value="-1.0" step="0.01" />
               </div>
 
               <div class="solved-value">
@@ -178,12 +234,29 @@
                 <strong id="solvedHeel">0.0°</strong>
               </div>
             </div>
+
+            <div id="clearanceInputs" hidden>
+              <div class="control-row">
+                <div class="control-label">
+                  <label for="heelClearance">Heel</label>
+                  <output id="heelClearanceValue">0.0°</output>
+                </div>
+                <input id="heelClearance" type="range" min="-8" max="8" value="0" step="0.1" />
+                <div class="range-hints"><span>port down</span><span>starboard down</span></div>
+              </div>
+
+              <div class="control-row">
+                <div class="control-label">
+                  <label for="clearanceTarget">Hull clearance target</label>
+                  <output id="clearanceTargetValue">0.30 m</output>
+                </div>
+                <input id="clearanceTarget" type="range" min="-0.20" max="1.50" value="0.30" step="0.01" />
+              </div>
+            </div>
           </section>
 
           <section class="control-section">
-            <div class="section-heading">
-              <span>Sea state</span>
-            </div>
+            <div class="section-heading"><span>Sea state</span></div>
 
             <div class="segmented" id="waterMode">
               <button data-water="flat" class="active" type="button">Flat</button>
@@ -238,9 +311,7 @@
           </section>
 
           <section class="control-section">
-            <div class="section-heading">
-              <span>Motion</span>
-            </div>
+            <div class="section-heading"><span>Motion</span></div>
 
             <div class="control-row">
               <div class="control-label">
@@ -258,20 +329,12 @@
             </div>
 
             <div class="metric-list">
-              <div>
-                <span>Current</span>
-                <strong id="currentClearance">—</strong>
-              </div>
-              <div>
-                <span>Minimum this run</span>
-                <strong id="minClearance">—</strong>
-              </div>
-              <div>
-                <span>Mean sink</span>
-                <strong id="meanSinkOut">—</strong>
-              </div>
+              <div><span>Current</span><strong id="currentClearance">—</strong></div>
+              <div><span>Minimum this run</span><strong id="minClearance">—</strong></div>
             </div>
           </section>
+
+          <div class="controls-bottom-spacer"></div>
         </div>
       </aside>
     </main>

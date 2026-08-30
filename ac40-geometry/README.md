@@ -1,47 +1,34 @@
-# AC40 Geometry page
+# AC40 Geometry v4
 
-This folder is ready to upload into your existing GitHub Pages repo at:
+Upload the contents of this folder into your existing GitHub repo folder:
 
 `/ac40-geometry/`
 
-## Files
+Replace the existing files with:
 - `index.html`
 - `styles.css`
 - `app.js`
 - `ac40-model.gltf`
 
-The model file is self-contained: its binary buffers and texture are embedded inside the GLTF.
+## Foil sink logic
+- Port sink is active only while port cant is **90° or less**.
+- Starboard sink is active only while starboard cant is **90° or less**.
+- Above 90°, that foil's sink control is disabled and shown as `OFF (>90°)`.
+- If one foil is above 90°, the vertical solution uses **heel + the active foil sink**, or the user can select **heel + hull clearance**.
+- If both foils are above 90°, the app automatically switches to **heel + hull clearance**.
+- The two-foil sink solver is only available when both foils are 90° or less.
 
-## GitHub
-Open the `ac40-geometry` folder in your Seagull repository and upload the four files above.
-The page will then be available at:
+Other current features:
+- Cant range 50–126°.
+- Sink range −0.50 to −1.50 m.
+- Full foil assemblies move rigidly with cant.
+- Left scenario table.
+- Scenario screenshot export.
+- Independently scrollable right-side controls.
 
-`https://kylejlangford-del.github.io/Seagull/ac40-geometry/`
 
-## Included in this first interactive build
-- 3D AC40 model
-- Port and starboard cant controls based on the supplied 41.5° model
-- Heel and trim
-- Mean foil sink mode
-- Port/starboard sink-target mode that solves heel
-- Hull-clearance calculation against the water surface
-- Flat water / waves
-- Wave height
-- Wavelength
-- Deep-water automatic wave speed or manual override
-- Wave direction
-- Boat speed
-- Encounter-period calculation
-- Playback speed 0.25× to 4×
-- Minimum clearance tracking
-- 3D / side / front / top camera views
+## Logo fix
+This build includes its own copy of the Seagull Lab logo at:
+`ac40-geometry/assets/seagull-lab-logo.png`
 
-## Coordinate assumptions
-The supplied model is treated as:
-- +X = forward
-- +Y = up
-- +Z = starboard
-- port foil = negative Z
-- starboard foil = positive Z
-
-Hull clearance is evaluated from the supplied hull mesh vertices to the local water surface.
+The geometry page therefore no longer depends on the homepage `/assets/` folder.
