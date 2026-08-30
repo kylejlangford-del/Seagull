@@ -657,3 +657,13 @@ code { color: var(--accent); }
     padding-right: 12px;
   }
 }
+
+
+.rudder-safety-trip.is-active {
+  border-color: rgba(255,102,119,.95);
+  background: rgba(138, 20, 36, .96);
+}
+
+.rudder-safety-trip.is-active strong {
+  color: #fff;
+}

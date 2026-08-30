@@ -17,6 +17,7 @@ const ui = {
   resetMinBtn: $('resetMinBtn'),
   screenshotBtn: $('screenshotBtn'),
   rudderSafetyTrip: $('rudderSafetyTrip'),
+  rudderSafetyTitle: $('rudderSafetyTitle'),
   rudderSafetyDetail: $('rudderSafetyDetail'),
   sinkTracking: $('sinkTracking'),
   sinkTrackingValue: $('sinkTrackingValue'),
@@ -428,23 +429,25 @@ function updateRudderSafetyTrip() {
     return;
   }
 
-  const trip = immersion <= 0.50;
+  const mm = Math.round(immersion * 1000);
+  const trip = immersion < 0.50;
+
+  ui.tableRudderImmersion.textContent = `${mm} mm`;
   rudderSafetyActive = trip;
 
-  ui.tableRudderImmersion.textContent =
-    `${Math.round(immersion * 1000)} mm`;
-
+  // No message at all while safe.
   ui.rudderSafetyTrip.hidden = !trip;
   ui.rudderSafetyTrip.classList.toggle('is-active', trip);
+  ui.rudderSafetyTrip.classList.remove('is-safe');
 
   if (trip) {
-    const mm = Math.round(immersion * 1000);
+    ui.rudderSafetyTitle.textContent = 'Rudder safety trip';
     ui.rudderSafetyDetail.textContent =
-      `Rudder elevator immersion ${mm} mm · minimum required 500 mm`;
+      `${mm} mm immersion · minimum required 500 mm`;
   }
 
-  // In moving-wave/dynamic operation this is deliberately not latched:
-  // the trip clears automatically as soon as immersion becomes > 500 mm.
+  // In moving-wave/dynamic operation the warning clears automatically
+  // as soon as immersion returns to 500 mm or more.
 }
 
 function isDescendantOf(obj, parent) {

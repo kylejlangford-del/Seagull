@@ -71,3 +71,19 @@ The cant fixes were reapplied directly to that new model:
   **Rudder safety trip**
 - The current minimum rudder-elevator immersion is shown in the scenario table and included in scenario screenshots.
 - In moving-wave/dynamic operation the alarm is not latched: it clears automatically as soon as rudder-elevator immersion is **more than 500 mm** again.
+
+
+## v4.9 — visible rudder safety status
+The rudder safety box is now always visible at the top centre so the calculation
+can be checked:
+- Green `Rudder safety` when immersion is above 500 mm.
+- Red `Rudder safety trip` when immersion is 500 mm or less.
+- Shows the live rudder-elevator immersion in mm.
+- Automatically returns to green once immersion is above 500 mm again.
+
+
+## v4.10 — rudder warning only
+- Nothing is displayed while rudder-elevator immersion is safe.
+- `Rudder safety trip` appears only when immersion is **less than 500 mm**.
+- At **500 mm or more**, the warning is hidden.
+- In dynamic/wave mode it clears automatically when immersion recovers to 500 mm or more.
