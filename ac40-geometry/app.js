@@ -95,6 +95,7 @@ const ui = {
   tableBoatSpeed: $('tableBoatSpeed'),
   tablePlayback: $('tablePlayback'),
   tableRudderImmersion: $('tableRudderImmersion'),
+  rudderImmersionValue: $('rudderImmersionValue'),
   tableClearance: $('tableClearance'),
   tableMinClearance: $('tableMinClearance')
 };
@@ -376,25 +377,71 @@ function buildHullSamples() {
 function buildRudderElevatorSamples() {
   rudderElevatorSamplePoints = [];
   modelScene.updateMatrixWorld(true);
+  boatRoot.updateMatrixWorld(true);
 
-  const elevator = modelScene.getObjectByName('ElevatorPort');
+  const elevatorMeshes = [];
 
-  if (!elevator || !elevator.isMesh) {
-    console.warn('Rudder elevator mesh "ElevatorPort" was not found.');
+  // Do not rely on one exact object name. Collect every mesh whose name
+  // contains ELEVATOR so revised Rhino/GLTF exports still work.
+  modelScene.traverse((obj) => {
+    if (!obj.isMesh) return;
+    const name = (obj.name || '').toUpperCase();
+    if (name.includes('ELEVATOR')) {
+      elevatorMeshes.push(obj);
+    }
+  });
+
+  // Fallback for the current supplied model if a future exporter strips names:
+  // find the very thin horizontal stern foil mesh around Y ≈ -2.1 m.
+  if (elevatorMeshes.length === 0) {
+    modelScene.traverse((obj) => {
+      if (!obj.isMesh) return;
+      const pos = obj.geometry?.attributes?.position;
+      if (!pos) return;
+
+      obj.geometry.computeBoundingBox();
+      const box = obj.geometry.boundingBox;
+      const xSpan = box.max.x - box.min.x;
+      const ySpan = box.max.y - box.min.y;
+      const zSpan = box.max.z - box.min.z;
+
+      if (
+        box.max.y < -1.8 &&
+        ySpan < 0.12 &&
+        zSpan > 0.8 &&
+        xSpan < 0.8
+      ) {
+        elevatorMeshes.push(obj);
+      }
+    });
+  }
+
+  if (elevatorMeshes.length === 0) {
+    console.warn('Rudder elevator geometry could not be identified.');
     return;
   }
 
-  const pos = elevator.geometry?.attributes?.position;
-  if (!pos) return;
+  // Store each sample in BOAT-LOCAL coordinates. This avoids double-applying
+  // transforms and makes the calculation correct through heel, trim, heave
+  // and dynamic sink tracking.
+  for (const elevator of elevatorMeshes) {
+    const pos = elevator.geometry?.attributes?.position;
+    if (!pos) continue;
 
-  // Store elevator vertices in the boat's baseline coordinate system.
-  // The complete boatRoot transform is applied later, so heel/trim/heave and
-  // dynamic sink tracking are all included in the safety calculation.
-  for (let i = 0; i < pos.count; i++) {
-    const p = new THREE.Vector3().fromBufferAttribute(pos, i);
-    p.applyMatrix4(elevator.matrixWorld);
-    rudderElevatorSamplePoints.push(p);
+    elevator.updateMatrixWorld(true);
+
+    for (let i = 0; i < pos.count; i++) {
+      const p = new THREE.Vector3().fromBufferAttribute(pos, i);
+      elevator.localToWorld(p);
+      boatRoot.worldToLocal(p);
+      rudderElevatorSamplePoints.push(p.clone());
+    }
   }
+
+  console.log(
+    `Rudder safety: ${rudderElevatorSamplePoints.length} elevator sample points loaded`,
+    elevatorMeshes.map(obj => obj.name)
+  );
 }
 
 function getRudderElevatorImmersion() {
@@ -404,10 +451,13 @@ function getRudderElevatorImmersion() {
 
   let minimumImmersion = Infinity;
 
-  // Safety is based on the point of the horizontal rudder elevator closest to
-  // the instantaneous local water surface.
-  for (const modelPoint of rudderElevatorSamplePoints) {
-    tempV.copy(modelPoint).applyMatrix4(boatRoot.matrixWorld);
+  // Immersion is local water-surface height minus elevator point height.
+  // The minimum value is the part of the horizontal elevator closest to
+  // breaking the surface.
+  for (const boatLocalPoint of rudderElevatorSamplePoints) {
+    tempV.copy(boatLocalPoint);
+    boatRoot.localToWorld(tempV);
+
     const waterY = waterHeightAt(tempV.x, tempV.z);
     const immersion = waterY - tempV.y;
 
@@ -424,18 +474,23 @@ function updateRudderSafetyTrip() {
 
   if (!Number.isFinite(immersion)) {
     ui.rudderSafetyTrip.hidden = true;
-    ui.tableRudderImmersion.textContent = '—';
+    ui.tableRudderImmersion.textContent = 'Not detected';
+    ui.rudderImmersionValue.textContent = 'Not detected';
+    ui.rudderImmersionValue.classList.remove('trip');
     rudderSafetyActive = false;
     return;
   }
 
   const mm = Math.round(immersion * 1000);
   const trip = immersion < 0.50;
+  const valueText = `${mm} mm`;
 
-  ui.tableRudderImmersion.textContent = `${mm} mm`;
+  ui.tableRudderImmersion.textContent = valueText;
+  ui.rudderImmersionValue.textContent = valueText;
+  ui.rudderImmersionValue.classList.toggle('trip', trip);
   rudderSafetyActive = trip;
 
-  // No message at all while safe.
+  // Nothing is displayed in the 3D view while safe.
   ui.rudderSafetyTrip.hidden = !trip;
   ui.rudderSafetyTrip.classList.toggle('is-active', trip);
   ui.rudderSafetyTrip.classList.remove('is-safe');
@@ -446,8 +501,8 @@ function updateRudderSafetyTrip() {
       `${mm} mm immersion · minimum required 500 mm`;
   }
 
-  // In moving-wave/dynamic operation the warning clears automatically
-  // as soon as immersion returns to 500 mm or more.
+  // In waves/dynamic operation the warning automatically disappears as soon
+  // as the minimum elevator immersion returns to 500 mm or more.
 }
 
 function isDescendantOf(obj, parent) {

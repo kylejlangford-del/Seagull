@@ -87,3 +87,11 @@ can be checked:
 - `Rudder safety trip` appears only when immersion is **less than 500 mm**.
 - At **500 mm or more**, the warning is hidden.
 - In dynamic/wave mode it clears automatically when immersion recovers to 500 mm or more.
+
+
+## v4.11 — rudder immersion measurement fix
+- Rudder elevator detection no longer relies on one exact GLTF object lookup.
+- All elevator sample points are now stored in boat-local coordinates, avoiding transform errors.
+- Live rudder immersion is displayed prominently on the left as well as in the scenario table.
+- The red `Rudder safety trip` still appears only when immersion is **less than 500 mm**.
+- If the model geometry cannot be detected, the UI explicitly says `Not detected` instead of showing a dash.

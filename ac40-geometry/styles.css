@@ -667,3 +667,16 @@ code { color: var(--accent); }
 .rudder-safety-trip.is-active strong {
   color: #fff;
 }
+
+
+.scenario-results--three {
+  grid-template-columns: 1fr 1fr;
+}
+
+.scenario-results--three > div:last-child {
+  grid-column: 1 / -1;
+}
+
+#rudderImmersionValue.trip {
+  color: var(--danger);
+}
