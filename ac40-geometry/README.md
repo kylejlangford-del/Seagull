@@ -63,3 +63,11 @@ The cant fixes were reapplied directly to that new model:
 - Default playback speed is now **0.1×**.
 - Available speeds are **0.1×, 0.2×, 0.3×, 0.4×, 0.5×, 0.6×, 0.7×, 0.8×, 0.9×, 1.0×**.
 - Playback speeds above 1.0× have been removed.
+
+
+## v4.8 — Rudder safety trip
+- The horizontal rudder elevator is checked against the **instantaneous local water surface**.
+- If any point of the rudder elevator is **500 mm or less** below the water surface, a red top-centre alert appears:
+  **Rudder safety trip**
+- The current minimum rudder-elevator immersion is shown in the scenario table and included in scenario screenshots.
+- In moving-wave/dynamic operation the alarm is not latched: it clears automatically as soon as rudder-elevator immersion is **more than 500 mm** again.

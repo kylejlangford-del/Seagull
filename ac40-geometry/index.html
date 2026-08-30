@@ -63,6 +63,7 @@
             <tr><th>Wave direction</th><td id="tableWaveDirection">—</td></tr>
             <tr><th>Boat speed</th><td id="tableBoatSpeed">35.0 kn</td></tr>
             <tr><th>Playback</th><td id="tablePlayback">0.1×</td></tr>
+            <tr><th>Rudder elevator immersion</th><td id="tableRudderImmersion">—</td></tr>
           </tbody>
         </table>
 
@@ -101,6 +102,11 @@
 
       <section class="viewer-panel">
         <div id="scene"></div>
+
+        <div id="rudderSafetyTrip" class="rudder-safety-trip" role="alert" aria-live="assertive" hidden>
+          <strong>Rudder safety trip</strong>
+          <span id="rudderSafetyDetail">Rudder elevator immersion ≤ 500 mm</span>
+        </div>
 
         <div class="viewer-top">
           <div class="view-buttons" aria-label="Camera views">

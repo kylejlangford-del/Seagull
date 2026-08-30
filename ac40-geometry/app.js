@@ -16,6 +16,8 @@ const ui = {
   resetWaveBtn: $('resetWaveBtn'),
   resetMinBtn: $('resetMinBtn'),
   screenshotBtn: $('screenshotBtn'),
+  rudderSafetyTrip: $('rudderSafetyTrip'),
+  rudderSafetyDetail: $('rudderSafetyDetail'),
   sinkTracking: $('sinkTracking'),
   sinkTrackingValue: $('sinkTrackingValue'),
   sinkTrackingHelp: $('sinkTrackingHelp'),
@@ -91,6 +93,7 @@ const ui = {
   tableWaveDirection: $('tableWaveDirection'),
   tableBoatSpeed: $('tableBoatSpeed'),
   tablePlayback: $('tablePlayback'),
+  tableRudderImmersion: $('tableRudderImmersion'),
   tableClearance: $('tableClearance'),
   tableMinClearance: $('tableMinClearance')
 };
@@ -125,6 +128,8 @@ let boatRoot, modelScene, portCantGroup, stbdCantGroup;
 let portFoilMarker, stbdFoilMarker;
 let waveMesh, waterMaterial;
 let hullSamplePoints = [];
+let rudderElevatorSamplePoints = [];
+let rudderSafetyActive = false;
 let clearanceMarker, clearanceLine;
 let modelReady = false;
 
@@ -269,6 +274,7 @@ function loadModel() {
       tuneMaterials(modelScene);
       setupCantAssemblies();
       buildHullSamples();
+      buildRudderElevatorSamples();
       setCameraView('perspective');
 
       modelReady = true;
@@ -363,6 +369,82 @@ function buildHullSamples() {
       hullSamplePoints.push(p);
     }
   });
+}
+
+
+function buildRudderElevatorSamples() {
+  rudderElevatorSamplePoints = [];
+  modelScene.updateMatrixWorld(true);
+
+  const elevator = modelScene.getObjectByName('ElevatorPort');
+
+  if (!elevator || !elevator.isMesh) {
+    console.warn('Rudder elevator mesh "ElevatorPort" was not found.');
+    return;
+  }
+
+  const pos = elevator.geometry?.attributes?.position;
+  if (!pos) return;
+
+  // Store elevator vertices in the boat's baseline coordinate system.
+  // The complete boatRoot transform is applied later, so heel/trim/heave and
+  // dynamic sink tracking are all included in the safety calculation.
+  for (let i = 0; i < pos.count; i++) {
+    const p = new THREE.Vector3().fromBufferAttribute(pos, i);
+    p.applyMatrix4(elevator.matrixWorld);
+    rudderElevatorSamplePoints.push(p);
+  }
+}
+
+function getRudderElevatorImmersion() {
+  if (!modelReady || rudderElevatorSamplePoints.length === 0) return NaN;
+
+  boatRoot.updateMatrixWorld(true);
+
+  let minimumImmersion = Infinity;
+
+  // Safety is based on the point of the horizontal rudder elevator closest to
+  // the instantaneous local water surface.
+  for (const modelPoint of rudderElevatorSamplePoints) {
+    tempV.copy(modelPoint).applyMatrix4(boatRoot.matrixWorld);
+    const waterY = waterHeightAt(tempV.x, tempV.z);
+    const immersion = waterY - tempV.y;
+
+    if (immersion < minimumImmersion) {
+      minimumImmersion = immersion;
+    }
+  }
+
+  return minimumImmersion;
+}
+
+function updateRudderSafetyTrip() {
+  const immersion = getRudderElevatorImmersion();
+
+  if (!Number.isFinite(immersion)) {
+    ui.rudderSafetyTrip.hidden = true;
+    ui.tableRudderImmersion.textContent = '—';
+    rudderSafetyActive = false;
+    return;
+  }
+
+  const trip = immersion <= 0.50;
+  rudderSafetyActive = trip;
+
+  ui.tableRudderImmersion.textContent =
+    `${Math.round(immersion * 1000)} mm`;
+
+  ui.rudderSafetyTrip.hidden = !trip;
+  ui.rudderSafetyTrip.classList.toggle('is-active', trip);
+
+  if (trip) {
+    const mm = Math.round(immersion * 1000);
+    ui.rudderSafetyDetail.textContent =
+      `Rudder elevator immersion ${mm} mm · minimum required 500 mm`;
+  }
+
+  // In moving-wave/dynamic operation this is deliberately not latched:
+  // the trip clears automatically as soon as immersion becomes > 500 mm.
 }
 
 function isDescendantOf(obj, parent) {
@@ -1012,6 +1094,7 @@ function updateOutputs() {
 
   updateWaveSpeedLabel();
   updateClearanceMarker(clearance);
+  updateRudderSafetyTrip();
   updateScenarioTable(sinks, clearance);
 }
 
@@ -1149,6 +1232,7 @@ function getScenarioRows() {
     ['Wave direction', ui.tableWaveDirection.textContent],
     ['Boat speed', ui.tableBoatSpeed.textContent],
     ['Playback', ui.tablePlayback.textContent],
+    ['Rudder elevator immersion', ui.tableRudderImmersion.textContent],
     ['Hull clearance', ui.tableClearance.textContent],
     ['Minimum clearance', ui.tableMinClearance.textContent]
   ];

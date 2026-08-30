@@ -599,3 +599,61 @@ code { color: var(--accent); }
   padding-left: 7px;
   padding-right: 7px;
 }
+
+
+.rudder-safety-trip {
+  position: absolute;
+  z-index: 12;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 260px;
+  max-width: min(440px, calc(100% - 40px));
+  padding: 11px 18px 10px;
+  border: 1px solid rgba(255,102,119,.85);
+  border-radius: 10px;
+  background: rgba(138, 20, 36, .94);
+  box-shadow: 0 12px 36px rgba(0,0,0,.38);
+  text-align: center;
+  pointer-events: none;
+}
+
+.rudder-safety-trip strong {
+  display: block;
+  color: #fff;
+  font-size: .88rem;
+  font-weight: 850;
+  letter-spacing: .025em;
+}
+
+.rudder-safety-trip span {
+  display: block;
+  margin-top: 3px;
+  color: rgba(255,255,255,.82);
+  font-size: .62rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.rudder-safety-trip.is-active {
+  animation: rudderTripPulse 1s ease-in-out infinite;
+}
+
+@keyframes rudderTripPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .78; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rudder-safety-trip.is-active {
+    animation: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .rudder-safety-trip {
+    top: 52px;
+    min-width: 220px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
