@@ -33,15 +33,15 @@ Current ranges:
 - Sink controls now move only in **0.05 m increments**.
 
 
-## v5 — Fixed sink target mode
-A new **Fix sink target** mode has been added for wave simulation.
+## v4.5 — Simple sink target tracking
 
-- OFF: the boat keeps its mean-water geometry while waves pass underneath it, so actual sink varies.
-- ON: the boat responds to the local instantaneous wave surface to hold the active sink target(s).
-- **Sink target accuracy** is adjustable from 0–100% in 5% steps.
-  - 0%: no dynamic correction; the boat stays relatively steady.
-  - Low values: weak/slow correction; sink target is not fully achieved.
-  - 100%: full correction every frame; the active sink target(s) are held as closely as the geometry solver allows.
-- In **Heel + sink**, the boat changes heave while heel remains fixed.
-- In **Foil sinks**, both heave and heel can move to maintain both sink targets.
-- Sink hold is unavailable in **Heel + clearance** mode or when no foil sink is active.
+The previous Fix Sink Target / Accuracy update has been removed.
+
+The sink controls remain exactly where they were on the right side.
+
+A single **Sink target tracking** slider is now on the LEFT side:
+- 0% = current behaviour: the boat stays relatively steady and waves pass over the foils, so actual sink varies.
+- 100% = the boat moves with the local wave surface so the active sink target is always reached.
+- Intermediate values blend between those two behaviours.
+
+This control does not replace or change the actual sink target sliders.

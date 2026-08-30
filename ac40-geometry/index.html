@@ -53,8 +53,7 @@
             <tr><th>Heel</th><td id="tableHeel">0.0°</td></tr>
             <tr><th>Trim</th><td id="tableTrim">0.0°</td></tr>
             <tr><th>Drivers</th><td id="tableDrivers">Heel + port sink</td></tr>
-            <tr><th>Fix sink target</th><td id="tableSinkHold">Off</td></tr>
-            <tr><th>Sink target accuracy</th><td id="tableSinkAccuracy">100%</td></tr>
+            <tr><th>Sink target tracking</th><td id="tableSinkTracking">0%</td></tr>
             <tr><th>Port sink</th><td id="tablePortSink">−1.00 m</td></tr>
             <tr><th>Starboard sink</th><td id="tableStbdSink">−1.00 m</td></tr>
             <tr><th>Water</th><td id="tableWater">Flat</td></tr>
@@ -76,6 +75,21 @@
             <span>Minimum</span>
             <strong id="tableMinClearance">—</strong>
           </div>
+        </div>
+
+        <div class="left-tracking-control">
+          <div class="left-tracking-heading">
+            <span>Sink target tracking</span>
+            <output id="sinkTrackingValue">0%</output>
+          </div>
+          <input id="sinkTracking" type="range" min="0" max="100" value="0" step="5" />
+          <div class="tracking-hints">
+            <span>0% · waves pass over foils</span>
+            <span>100% · always hit target</span>
+          </div>
+          <p id="sinkTrackingHelp">
+            Controls how much the boat moves with the waves to maintain the sink target.
+          </p>
         </div>
 
         <button id="screenshotBtn" class="screenshot-button" type="button">
@@ -180,31 +194,6 @@
               <button data-mode="attitude" class="active" type="button">Heel + sink</button>
               <button data-mode="sinks" type="button">Foil sinks</button>
               <button data-mode="clearance" type="button">Heel + clearance</button>
-            </div>
-
-            <div class="target-hold-card" id="sinkHoldCard">
-              <div class="target-hold-top">
-                <div>
-                  <span class="target-hold-title">Fix sink target</span>
-                  <small id="sinkHoldHelp">Boat follows the local wave surface to hold the active sink target.</small>
-                </div>
-                <label class="switch-line target-switch">
-                  <input id="fixSinkTarget" type="checkbox" />
-                  <span>On</span>
-                </label>
-              </div>
-
-              <div id="sinkAccuracyBlock" class="control-row target-accuracy is-disabled">
-                <div class="control-label">
-                  <label for="sinkAccuracy">Sink target accuracy</label>
-                  <output id="sinkAccuracyValue">100%</output>
-                </div>
-                <input id="sinkAccuracy" type="range" min="0" max="100" value="100" step="5" disabled />
-                <div class="range-hints">
-                  <span>0% = steady boat</span>
-                  <span>100% = exact target</span>
-                </div>
-              </div>
             </div>
 
             <div id="attitudeInputs">
