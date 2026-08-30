@@ -48,6 +48,12 @@ const ui = {
   portSinkRow: $('portSinkRow'),
   stbdSinkRow: $('stbdSinkRow'),
   verticalStatus: $('verticalStatus'),
+  sinkHoldCard: $('sinkHoldCard'),
+  sinkHoldHelp: $('sinkHoldHelp'),
+  fixSinkTarget: $('fixSinkTarget'),
+  sinkAccuracyBlock: $('sinkAccuracyBlock'),
+  sinkAccuracy: $('sinkAccuracy'),
+  sinkAccuracyValue: $('sinkAccuracyValue'),
 
   waterModeLabel: $('waterModeLabel'),
   waveControls: $('waveControls'),
@@ -78,6 +84,8 @@ const ui = {
   tableHeel: $('tableHeel'),
   tableTrim: $('tableTrim'),
   tableDrivers: $('tableDrivers'),
+  tableSinkHold: $('tableSinkHold'),
+  tableSinkAccuracy: $('tableSinkAccuracy'),
   tablePortSink: $('tablePortSink'),
   tableStbdSink: $('tableStbdSink'),
   tableWater: $('tableWater'),
@@ -101,6 +109,8 @@ const state = {
   portSinkAttitude: -1.0,
   stbdSinkAttitude: -1.0,
   clearanceTarget: 0.30,
+  fixSinkTarget: false,
+  sinkAccuracy: 100,
   sinkPortTarget: -1.0,
   sinkStbdTarget: -1.0,
   waveHeight: 0.6,
@@ -414,6 +424,27 @@ function bindUI() {
     return `${v.toFixed(2)} m`;
   });
 
+  ui.sinkAccuracy.addEventListener('input', () => {
+    state.sinkAccuracy = Number(ui.sinkAccuracy.value);
+    ui.sinkAccuracyValue.textContent = `${state.sinkAccuracy.toFixed(0)}%`;
+    updateScenarioTable();
+  });
+
+  ui.fixSinkTarget.addEventListener('change', () => {
+    state.fixSinkTarget = ui.fixSinkTarget.checked;
+    updateSinkHoldUI();
+
+    // Re-establish the mean-water reference pose whenever the controller is
+    // turned on/off. Dynamic wave correction is then applied from this pose.
+    if (modelReady) {
+      updateGeometryFromInputs();
+      if (state.fixSinkTarget && state.waterMode === 'waves' && state.sinkAccuracy >= 100) {
+        applyDynamicSinkHold(1 / 60);
+      }
+      updateOutputs();
+    }
+  });
+
   bindRange(ui.sinkPort, ui.sinkPortValue, (v) => {
     state.sinkPortTarget = v;
     return formatSignedMeters(v);
@@ -522,6 +553,7 @@ function bindUI() {
 
   updateWaveSpeedLabel();
   updateSinkAvailabilityUI();
+  updateSinkHoldUI();
   updateScenarioTable();
 }
 
@@ -606,6 +638,7 @@ function setSolveMode(mode, automatic = false) {
   ui.clearanceInputs.hidden = mode !== 'clearance';
 
   updateSinkAvailabilityUI();
+  updateSinkHoldUI();
 
   if (automatic) {
     ui.verticalStatus.classList.add('warning');
@@ -647,6 +680,33 @@ function updateSinkAvailabilityUI() {
   sinksButton.disabled = !(portActive && stbdActive);
   sinksButton.style.opacity = sinksButton.disabled ? '.35' : '1';
   sinksButton.style.cursor = sinksButton.disabled ? 'default' : 'pointer';
+
+  updateSinkHoldUI();
+}
+
+function sinkHoldAvailable() {
+  return state.solveMode !== 'clearance' && (foilSinkActive('port') || foilSinkActive('stbd'));
+}
+
+function updateSinkHoldUI() {
+  const available = sinkHoldAvailable();
+  ui.sinkHoldCard.classList.toggle('unavailable', !available);
+  ui.fixSinkTarget.disabled = !available;
+
+  const accuracyEnabled = available && state.fixSinkTarget;
+  ui.sinkAccuracy.disabled = !accuracyEnabled;
+  ui.sinkAccuracyBlock.classList.toggle('is-disabled', !accuracyEnabled);
+
+  if (!available) {
+    ui.sinkHoldHelp.textContent = state.solveMode === 'clearance'
+      ? 'Sink target hold is inactive while hull clearance is the vertical driver.'
+      : 'No active foil sink is available above 90° cant.';
+  } else if (state.solveMode === 'sinks') {
+    ui.sinkHoldHelp.textContent = 'Boat heave and heel respond to keep both active foil sinks on target.';
+  } else {
+    const side = activeSinkSide();
+    ui.sinkHoldHelp.textContent = `Boat heave responds to keep the ${side} foil sink on target.`;
+  }
 }
 
 function applyHeelAndActiveSink() {
@@ -743,6 +803,126 @@ function solveHeelAndHeaveFromSinks() {
 function getMarkerWorldY(marker) {
   marker.getWorldPosition(tempV);
   return tempV.y;
+}
+
+
+function sinkControllerAlpha(simDt) {
+  const accuracy = THREE.MathUtils.clamp(state.sinkAccuracy / 100, 0, 1);
+
+  if (accuracy <= 0) return 0;
+  if (accuracy >= 0.999) return 1;
+
+  // "Accuracy" represents how hard the boat works to follow the moving target.
+  // Low values deliberately have very low authority so the boat stays steadier
+  // and the actual sink can depart from target. High values track aggressively.
+  const responseRate = 20 * Math.pow(accuracy, 3);
+  return 1 - Math.exp(-responseRate * Math.max(simDt, 0));
+}
+
+function actualSinkForMarker(marker) {
+  marker.getWorldPosition(tempV);
+  return tempV.y - waterHeightAt(tempV.x, tempV.z);
+}
+
+function sinkErrorForMarker(marker, target) {
+  return actualSinkForMarker(marker) - target;
+}
+
+function applyDynamicSinkHold(simDt) {
+  if (!state.fixSinkTarget || !sinkHoldAvailable()) return;
+  if (state.waterMode !== 'waves') return;
+
+  const alpha = sinkControllerAlpha(simDt);
+  if (alpha <= 0) return;
+
+  if (state.solveMode === 'sinks') {
+    applyTwoSinkDynamicCorrection(alpha);
+  } else if (state.solveMode === 'attitude') {
+    applySingleSinkDynamicCorrection(alpha);
+  }
+
+  boatRoot.updateMatrixWorld(true);
+}
+
+function applySingleSinkDynamicCorrection(alpha) {
+  const side = activeSinkSide();
+  if (!side) return;
+
+  const marker = side === 'port' ? portFoilMarker : stbdFoilMarker;
+  const target = side === 'port' ? state.portSinkAttitude : state.stbdSinkAttitude;
+
+  // Pure heave correction. Heel and trim stay at their selected values.
+  const error = sinkErrorForMarker(marker, target);
+  boatRoot.position.y -= error * alpha;
+  boatRoot.updateMatrixWorld(true);
+}
+
+function twoSinkNewtonStep(scale = 1) {
+  const originalHeel = THREE.MathUtils.radToDeg(boatRoot.rotation.x);
+  const originalHeave = boatRoot.position.y;
+
+  boatRoot.updateMatrixWorld(true);
+  const fP = sinkErrorForMarker(portFoilMarker, state.sinkPortTarget);
+  const fS = sinkErrorForMarker(stbdFoilMarker, state.sinkStbdTarget);
+
+  const epsH = 0.02;
+  const epsY = 0.002;
+
+  boatRoot.rotation.x = THREE.MathUtils.degToRad(originalHeel + epsH);
+  boatRoot.position.y = originalHeave;
+  boatRoot.updateMatrixWorld(true);
+  const hp = sinkErrorForMarker(portFoilMarker, state.sinkPortTarget);
+  const hs = sinkErrorForMarker(stbdFoilMarker, state.sinkStbdTarget);
+
+  boatRoot.rotation.x = THREE.MathUtils.degToRad(originalHeel);
+  boatRoot.position.y = originalHeave + epsY;
+  boatRoot.updateMatrixWorld(true);
+  const yp = sinkErrorForMarker(portFoilMarker, state.sinkPortTarget);
+  const ys = sinkErrorForMarker(stbdFoilMarker, state.sinkStbdTarget);
+
+  // Restore before applying the solved increment.
+  boatRoot.rotation.x = THREE.MathUtils.degToRad(originalHeel);
+  boatRoot.position.y = originalHeave;
+  boatRoot.updateMatrixWorld(true);
+
+  const a = (hp - fP) / epsH;
+  const c = (hs - fS) / epsH;
+  const b = (yp - fP) / epsY;
+  const d = (ys - fS) / epsY;
+  const det = a * d - b * c;
+
+  if (Math.abs(det) < 1e-9) return false;
+
+  const dHeel = (-fP * d + b * fS) / det;
+  const dHeave = (-a * fS + c * fP) / det;
+
+  boatRoot.rotation.x = THREE.MathUtils.degToRad(
+    originalHeel + THREE.MathUtils.clamp(dHeel, -3, 3) * scale
+  );
+  boatRoot.position.y =
+    originalHeave + THREE.MathUtils.clamp(dHeave, -0.60, 0.60) * scale;
+  boatRoot.updateMatrixWorld(true);
+
+  return Math.max(Math.abs(fP), Math.abs(fS)) < 1e-4;
+}
+
+function applyTwoSinkDynamicCorrection(alpha) {
+  if (!(foilSinkActive('port') && foilSinkActive('stbd'))) return;
+
+  if (alpha >= 0.999) {
+    // At 100% accuracy, iterate to the instantaneous local wave surface so
+    // both foil centres reach their sink targets each rendered frame.
+    for (let i = 0; i < 7; i++) {
+      if (twoSinkNewtonStep(1)) break;
+    }
+  } else {
+    // Lower accuracy deliberately applies only part of the required correction.
+    // This produces a steadier boat and allows sink error to remain.
+    twoSinkNewtonStep(alpha);
+  }
+
+  ui.solvedHeel.textContent =
+    `${signed(THREE.MathUtils.radToDeg(boatRoot.rotation.x), 2)}°`;
 }
 
 function waveSpeed() {
@@ -881,9 +1061,14 @@ function updateOutputs() {
 function updateScenarioTable(sinks = null, clearance = null) {
   ui.tableCantPort.textContent = `${state.cantPort.toFixed(1)}°`;
   ui.tableCantStbd.textContent = `${state.cantStbd.toFixed(1)}°`;
-  ui.tableHeel.textContent = `${signed(state.heel, 1)}°`;
+  const displayedHeel = modelReady && state.solveMode === 'sinks'
+    ? THREE.MathUtils.radToDeg(boatRoot.rotation.x)
+    : state.heel;
+  ui.tableHeel.textContent = `${signed(displayedHeel, 1)}°`;
   ui.tableTrim.textContent = `${signed(state.trim, 1)}°`;
   ui.tableDrivers.textContent = currentDriverLabel();
+  ui.tableSinkHold.textContent = state.fixSinkTarget && sinkHoldAvailable() ? 'On' : 'Off';
+  ui.tableSinkAccuracy.textContent = `${state.sinkAccuracy.toFixed(0)}%`;
 
   if (sinks) {
     ui.tablePortSink.textContent = foilSinkActive('port') ? formatSignedMeters(sinks.port) : 'OFF (>90°)';
@@ -891,6 +1076,8 @@ function updateScenarioTable(sinks = null, clearance = null) {
   }
 
   ui.tableDrivers.textContent = currentDriverLabel();
+  ui.tableSinkHold.textContent = state.fixSinkTarget && sinkHoldAvailable() ? 'On' : 'Off';
+  ui.tableSinkAccuracy.textContent = `${state.sinkAccuracy.toFixed(0)}%`;
 
   ui.tableWater.textContent = state.waterMode === 'flat' ? 'Flat' : 'Waves';
   ui.tableWaveHeight.textContent = state.waterMode === 'waves' ? `${state.waveHeight.toFixed(2)} m` : '—';
@@ -1000,6 +1187,8 @@ function getScenarioRows() {
     ['Heel', ui.tableHeel.textContent],
     ['Trim', ui.tableTrim.textContent],
     ['Drivers', ui.tableDrivers.textContent],
+    ['Fix sink target', ui.tableSinkHold.textContent],
+    ['Sink target accuracy', ui.tableSinkAccuracy.textContent],
     ['Port sink', ui.tablePortSink.textContent],
     ['Starboard sink', ui.tableStbdSink.textContent],
     ['Water', ui.tableWater.textContent],
@@ -1102,10 +1291,16 @@ function animate() {
   const dt = Math.min(clock.getDelta(), 0.05);
   if (state.playing) state.simTime += dt * state.playbackSpeed;
 
+  const simDt = dt * state.playbackSpeed;
+
   if (state.waterMode === 'waves' && state.playing) {
     updateWaterGeometry();
     frameCounter++;
     if (frameCounter % 8 === 0) waveMesh.geometry.computeVertexNormals();
+
+    if (modelReady) {
+      applyDynamicSinkHold(simDt);
+    }
   }
 
   if (modelReady) updateOutputs();

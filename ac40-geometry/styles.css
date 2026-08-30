@@ -536,3 +536,61 @@ code { color: var(--accent); }
 #verticalStatus.warning {
   color: var(--warn);
 }
+
+
+.target-hold-card {
+  margin: 0 0 20px;
+  padding: 13px 12px 12px;
+  border: 1px solid rgba(71,231,219,.17);
+  border-radius: 11px;
+  background: rgba(71,231,219,.025);
+}
+
+.target-hold-card.unavailable {
+  opacity: .48;
+}
+
+.target-hold-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.target-hold-top > div {
+  min-width: 0;
+}
+
+.target-hold-title {
+  display: block;
+  color: var(--text);
+  font-size: .74rem;
+  font-weight: 750;
+}
+
+.target-hold-top small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: .60rem;
+  line-height: 1.45;
+}
+
+.target-switch {
+  flex: 0 0 auto;
+  min-height: 28px;
+}
+
+.target-accuracy {
+  margin-top: 15px !important;
+  padding-top: 13px;
+  border-top: 1px solid rgba(132,151,174,.11);
+}
+
+.target-accuracy.is-disabled {
+  opacity: .34;
+}
+
+.target-accuracy input:disabled {
+  cursor: default;
+}
