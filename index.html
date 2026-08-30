@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07111d" />
+  <title>Seagull Lab</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="bg-glow bg-glow--one"></div>
+  <div class="bg-glow bg-glow--two"></div>
+
+  <main class="site-shell">
+    <header class="topbar">
+      <a class="brand" href="./" aria-label="Seagull Lab home">
+        <img src="./assets/seagull-lab-logo.png" alt="Seagull Lab" />
+      </a>
+      <span class="topbar__meta">Performance workspace</span>
+    </header>
+
+    <section class="workspace">
+      <div class="workspace__empty" aria-hidden="true"></div>
+
+      <div class="tools-column">
+        <a class="feature-card" href="./ac40-geometry/">
+          <div class="feature-card__top">
+            <span class="feature-card__index">01</span>
+            <span class="feature-card__status">Available</span>
+          </div>
+
+          <div class="feature-card__body">
+            <h1>AC40 Geometry</h1>
+            <p>
+              Interactive geometry, hull clearance and sea-state analysis.
+            </p>
+          </div>
+
+          <div class="feature-card__bottom">
+            <span>Open tool</span>
+            <span class="feature-card__arrow">↗</span>
+          </div>
+        </a>
+
+        <button class="add-card" type="button" disabled>
+          <span class="add-card__plus">+</span>
+          <span>More tools can be added here</span>
+        </button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
