@@ -45,3 +45,15 @@ A single **Sink target tracking** slider is now on the LEFT side:
 - Intermediate values blend between those two behaviours.
 
 This control does not replace or change the actual sink target sliders.
+
+
+## v4.6 — revised AC40 model
+
+This build uses the user's newly revised GLTF.
+
+The cant fixes were reapplied directly to that new model:
+- Port ARM + the complete port horizontal T-foil are attached to `PORT_FOIL_CANT_ROOT`.
+- Starboard ARM + the complete starboard horizontal T-foil are attached to `STBD_FOIL_CANT_ROOT`.
+- Both sides rotate as rigid assemblies around their top cant pivots.
+- No extra/mirrored foil geometry has been added.
+- All other geometry from the revised model is left as supplied.
