@@ -2,10 +2,14 @@
   const SPEED_TABLE = [[7,25.8],[8,27.5],[9,29.0],[10,30.5],[11,31.8],[12,32.9],[13,34.0],[14,34.9],[15,35.7],[16,36.3],[17,36.9]];
   const KNOT_TO_MS = 0.514444;
   const NM_TO_M = 1852;
-  const STANDARD = { courseWidthM: 1203.8, lineLengthM: 370.4, portGapM: 554.6853 };
-  STANDARD.portBoundaryFromAxisFactor = (STANDARD.portGapM + STANDARD.lineLengthM / 2) / STANDARD.courseWidthM;
+  const DEFAULT_LEFT_GAP_M = 485;
+  const DEFAULT_RIGHT_GAP_M = 678;
+  const DEFAULT_LINE_LENGTH_M = 0.24 * NM_TO_M;
+  const DEFAULT_COURSE_WIDTH_M = DEFAULT_LEFT_GAP_M + DEFAULT_LINE_LENGTH_M + DEFAULT_RIGHT_GAP_M;
+  const LEFT_GAP_SHARE = DEFAULT_LEFT_GAP_M / (DEFAULT_LEFT_GAP_M + DEFAULT_RIGHT_GAP_M);
+  const RIGHT_GAP_SHARE = 1 - LEFT_GAP_SHARE;
 
-  const defaults = { tws: 13, manualSpeed: 34, courseWidthM: 1203.8, lineLengthM: 370.4, mode: '90', unit: 'm' };
+  const defaults = { tws: 13, manualSpeed: 34, courseWidthM: DEFAULT_COURSE_WIDTH_M, lineLengthM: DEFAULT_LINE_LENGTH_M, mode: '90', unit: 'm' };
   let mode = defaults.mode;
   let unit = defaults.unit;
 
@@ -36,10 +40,11 @@
   }
 
   function boundaryGeometry(courseWidthM,lineLengthM){
-    const halfLine=lineLengthM/2;
-    const stbdBoundaryFromAxis=courseWidthM/2;
-    const portBoundaryFromAxis=courseWidthM*STANDARD.portBoundaryFromAxisFactor;
-    return { stbdGapM:stbdBoundaryFromAxis-halfLine, portGapM:portBoundaryFromAxis-halfLine };
+    const availableGap = courseWidthM - lineLengthM;
+    return {
+      portGapM: availableGap * LEFT_GAP_SHARE,
+      stbdGapM: availableGap * RIGHT_GAP_SHARE
+    };
   }
 
   function captureDistancesInMetres(){
@@ -97,7 +102,7 @@
     const messages=[];
     if(mode==='90'&&(tws<7||tws>17)) messages.push('The 90° TWA reference table covers 7–17 kn TWS; outside that range the nearest endpoint speed is used.');
     if(mode==='2board'&&manualSpeed<=0) messages.push('Enter a boat speed greater than 0 kn.');
-    if(geometry.stbdGapM<0||geometry.portGapM<0) messages.push('The start line is too long for this course width using the standard AC40 boundary placement.');
+    if(geometry.stbdGapM<0||geometry.portGapM<0) messages.push('The start line is longer than the course width.');
 
     const validGeometry=geometry.stbdGapM>=0&&geometry.portGapM>=0;
     const speedKn=mode==='90'?interpolateSpeed(tws):manualSpeed;

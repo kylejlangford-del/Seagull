@@ -1,17 +1,9 @@
-# Seagull Lab — combined deploy package
+# Seagull Lab Start Geometry v6
 
-This package contains:
-
-- `/` — Seagull Lab homepage
-- `/ac40-geometry/` — latest AC40 Geometry build (v4-11)
-- `/start-geometry/` — Start Geometry calculator
-
-## Start Geometry calculation
-
-The 90° TWA speed table used is:
-
-TWS 7,8,9,10,11,12,13,14,15,16,17 kn
-BS 25.8,27.5,29.0,30.5,31.8,32.9,34.0,34.9,35.7,36.3,36.9 kn
-
-Linear interpolation is used between table rows.
-Time is calculated from distance / boat speed with 1 kn = 0.514444 m/s.
+Updates:
+- Default left boundary to left end of start: 485 m
+- Default right boundary to right end of start: 678 m
+- Default start line: 0.240 NM (444.48 m)
+- Default total width: 1607.48 m (0.868 NM)
+- Responsive iPhone layout with safe-area support, 44 px touch targets, 16 px numeric inputs, stacked results, and mobile course schematic
+- Metres / nautical miles and 90° TWA / 2 Board modes retained

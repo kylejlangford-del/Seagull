@@ -1,17 +1,11 @@
-# Seagull Lab — combined deploy package
+# Seagull Lab — Start Geometry v5
 
-This package contains:
+Updated default start-box geometry:
+- Left boundary to left end of start line: 513 m
+- Start line length: 0.240 NM = 444.48 m
+- Right end of start line to right boundary: 678 m
+- Default total course width: 1635.48 m = 0.883 NM
 
-- `/` — Seagull Lab homepage
-- `/ac40-geometry/` — latest AC40 Geometry build (v4-11)
-- `/start-geometry/` — Start Geometry calculator
+When course width or start-line length is changed, the remaining side space preserves the same left/right split ratio as this default geometry.
 
-## Start Geometry calculation
-
-The 90° TWA speed table used is:
-
-TWS 7,8,9,10,11,12,13,14,15,16,17 kn
-BS 25.8,27.5,29.0,30.5,31.8,32.9,34.0,34.9,35.7,36.3,36.9 kn
-
-Linear interpolation is used between table rows.
-Time is calculated from distance / boat speed with 1 kn = 0.514444 m/s.
+The Metres / Nautical miles toggle and the 90° TWA / 2 Board speed modes remain available.
