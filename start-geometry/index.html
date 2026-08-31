@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07111d" />
+  <title>Start Geometry · Seagull Lab</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <a class="brand" href="../" aria-label="Back to Seagull Lab">
+        <img src="../assets/seagull-lab-logo.png" alt="Seagull Lab" />
+      </a>
+      <div class="title-block"><span>AC40</span><strong>Start Geometry</strong></div>
+      <div class="header-actions"><button id="resetBtn" class="ghost-button" type="button">Reset</button><a class="ghost-button" href="../">Home</a></div>
+    </header>
+
+    <main class="workspace">
+      <section class="input-panel">
+        <div class="section-kicker">Inputs</div>
+        <h1>Start geometry</h1>
+        <p class="intro">Set the course dimensions and speed mode. Boundary distances are calculated from the standard AC40 start-box placement.</p>
+
+        <div class="mode-tabs" role="tablist" aria-label="Speed mode">
+          <button id="tab90" class="mode-tab is-active" type="button" role="tab" aria-selected="true" data-mode="90">90° TWA</button>
+          <button id="tab2board" class="mode-tab" type="button" role="tab" aria-selected="false" data-mode="2board">2 Board</button>
+        </div>
+
+        <div class="unit-row">
+          <span>Distance units</span>
+          <div class="unit-toggle" role="group" aria-label="Distance units">
+            <button id="unitM" class="unit-button is-active" type="button" data-unit="m">Metres</button>
+            <button id="unitNm" class="unit-button" type="button" data-unit="nm">Nautical miles</button>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label id="twsField" class="field">
+            <span>True wind speed</span>
+            <div class="input-unit"><input id="tws" type="number" min="7" max="17" step="0.1" value="13" inputmode="decimal" /><b>kn</b></div>
+            <small>AC40 90° TWA reference table: 7–17 kn TWS</small>
+          </label>
+
+          <label id="manualSpeedField" class="field is-hidden">
+            <span>Boat speed</span>
+            <div class="input-unit"><input id="manualSpeed" type="number" min="0.1" step="0.1" value="34" inputmode="decimal" /><b>kn</b></div>
+            <small>Manual speed used for the 2 Board calculation</small>
+          </label>
+
+          <label class="field">
+            <span>Course width</span>
+            <div class="input-unit"><input id="courseWidth" type="number" min="0.001" step="0.1" value="1203.8" inputmode="decimal" /><b id="courseWidthUnit">m</b></div>
+            <small id="courseWidthMeta">1203.8 m = 0.650 NM</small>
+          </label>
+
+          <label class="field">
+            <span>Start line length</span>
+            <div class="input-unit"><input id="lineDistance" type="number" min="0.001" step="0.1" value="370.4" inputmode="decimal" /><b id="lineDistanceUnit">m</b></div>
+            <small id="lineDistanceMeta">370.4 m = 0.200 NM</small>
+          </label>
+        </div>
+
+        <div class="standard-note">
+          <span>Standard course reference</span>
+          <strong>1203.8 m / 0.650 NM course · 370.4 m / 0.200 NM line</strong>
+          <small>Boundary placement is scaled from the supplied standard AC40 racecourse geometry.</small>
+        </div>
+
+        <div id="validation" class="validation" aria-live="polite"></div>
+      </section>
+
+      <section class="results-panel" aria-live="polite">
+        <div class="speed-card">
+          <span id="speedLabel" class="label">Reference boat speed</span>
+          <strong id="boatSpeed">34.0 kn</strong>
+          <small id="speedMeta">@ 90° TWA</small>
+        </div>
+
+        <div class="results-grid">
+          <article class="result-card result-card--primary">
+            <span>Start line</span>
+            <strong id="lineTime">21.2 s</strong>
+            <small id="lineMeta">370.4 m @ 34.0 kn</small>
+          </article>
+          <article class="result-card">
+            <span>Starboard boundary</span>
+            <strong id="stbdTime">23.8 s</strong>
+            <small id="stbdMeta">416.7 m from line end</small>
+          </article>
+          <article class="result-card">
+            <span>Port boundary</span>
+            <strong id="portTime">31.7 s</strong>
+            <small id="portMeta">554.7 m from line end</small>
+          </article>
+        </div>
+
+        <div class="distance-summary">
+          <div><span>Starboard boundary distance</span><strong id="stbdDistance">416.7 m</strong></div>
+          <div><span>Port boundary distance</span><strong id="portDistance">554.7 m</strong></div>
+        </div>
+
+        <div class="course-visual" aria-label="Schematic start line and boundaries">
+          <div class="boundary boundary--port"><span>PORT BOUNDARY</span></div>
+          <div class="boundary boundary--stbd"><span>STBD BOUNDARY</span></div>
+          <div class="course-centre">
+            <div id="courseArrow" class="course-arrow">90° TWA reference speed</div>
+            <div id="startLineVisual" class="start-line">
+              <span class="line-track" aria-hidden="true"><i></i><i></i></span>
+              <span id="visualLine" class="line-label">370.4 m start line</span>
+            </div>
+          </div>
+          <div class="distance-tag distance-tag--port"><b id="visualPort">554.7 m</b><span id="visualPortTime">31.7 s</span></div>
+          <div class="distance-tag distance-tag--stbd"><b id="visualStbd">416.7 m</b><span id="visualStbdTime">23.8 s</span></div>
+        </div>
+
+        <details id="referenceTable" class="reference-table">
+          <summary>90° TWA AC40 speed reference</summary>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>TWS</th><th>Boat speed</th></tr></thead>
+              <tbody>
+                <tr><td>7 kn</td><td>25.8 kn</td></tr><tr><td>8 kn</td><td>27.5 kn</td></tr>
+                <tr><td>9 kn</td><td>29.0 kn</td></tr><tr><td>10 kn</td><td>30.5 kn</td></tr>
+                <tr><td>11 kn</td><td>31.8 kn</td></tr><tr><td>12 kn</td><td>32.9 kn</td></tr>
+                <tr><td>13 kn</td><td>34.0 kn</td></tr><tr><td>14 kn</td><td>34.9 kn</td></tr>
+                <tr><td>15 kn</td><td>35.7 kn</td></tr><tr><td>16 kn</td><td>36.3 kn</td></tr>
+                <tr><td>17 kn</td><td>36.9 kn</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+    </main>
+  </div>
+  <script src="./app.js"></script>
+</body>
+</html>

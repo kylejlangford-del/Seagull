@@ -1,0 +1,97 @@
+# AC40 Geometry v4.3
+
+This version fixes the foil geometry at the MODEL level rather than trying to
+re-parent mesh pieces after Three.js loads the file.
+
+## Foil fix
+
+The supplied GLTF contains:
+- port ARM
+- port outer T-foil half
+- port inner T-foil half
+- starboard ARM
+- starboard outer T-foil half
+
+The source model does **not** contain a starboard inner T-foil half.
+
+v4.3 therefore:
+1. Creates a rigid `PORT_FOIL_CANT_ROOT` inside the GLTF containing the arm and
+   both port horizontal T-foil pieces.
+2. Creates a rigid `STBD_FOIL_CANT_ROOT` containing the starboard arm and outer
+   horizontal foil.
+3. Mirrors the port inner horizontal foil across the boat centreline to create
+   the missing starboard inner horizontal foil.
+4. Cants each complete assembly from its actual top pivot.
+
+This removes the runtime grouping problem that caused the port foil to separate
+and the starboard cant control to appear not to move.
+
+Current ranges:
+- Cant: 50–126°
+- Sink: −0.50 to −1.50 m
+
+- Sink controls now move only in **0.05 m increments**.
+
+
+## v4.5 — Simple sink target tracking
+
+The previous Fix Sink Target / Accuracy update has been removed.
+
+The sink controls remain exactly where they were on the right side.
+
+A single **Sink target tracking** slider is now on the LEFT side:
+- 0% = current behaviour: the boat stays relatively steady and waves pass over the foils, so actual sink varies.
+- 100% = the boat moves with the local wave surface so the active sink target is always reached.
+- Intermediate values blend between those two behaviours.
+
+This control does not replace or change the actual sink target sliders.
+
+
+## v4.6 — revised AC40 model
+
+This build uses the user's newly revised GLTF.
+
+The cant fixes were reapplied directly to that new model:
+- Port ARM + the complete port horizontal T-foil are attached to `PORT_FOIL_CANT_ROOT`.
+- Starboard ARM + the complete starboard horizontal T-foil are attached to `STBD_FOIL_CANT_ROOT`.
+- Both sides rotate as rigid assemblies around their top cant pivots.
+- No extra/mirrored foil geometry has been added.
+- All other geometry from the revised model is left as supplied.
+
+
+## v4.7 — wave playback speed
+- Default playback speed is now **0.1×**.
+- Available speeds are **0.1×, 0.2×, 0.3×, 0.4×, 0.5×, 0.6×, 0.7×, 0.8×, 0.9×, 1.0×**.
+- Playback speeds above 1.0× have been removed.
+
+
+## v4.8 — Rudder safety trip
+- The horizontal rudder elevator is checked against the **instantaneous local water surface**.
+- If any point of the rudder elevator is **500 mm or less** below the water surface, a red top-centre alert appears:
+  **Rudder safety trip**
+- The current minimum rudder-elevator immersion is shown in the scenario table and included in scenario screenshots.
+- In moving-wave/dynamic operation the alarm is not latched: it clears automatically as soon as rudder-elevator immersion is **more than 500 mm** again.
+
+
+## v4.9 — visible rudder safety status
+The rudder safety box is now always visible at the top centre so the calculation
+can be checked:
+- Green `Rudder safety` when immersion is above 500 mm.
+- Red `Rudder safety trip` when immersion is 500 mm or less.
+- Shows the live rudder-elevator immersion in mm.
+- Automatically returns to green once immersion is above 500 mm again.
+
+
+## v4.10 — rudder warning only
+- Nothing is displayed while rudder-elevator immersion is safe.
+- `Rudder safety trip` appears only when immersion is **less than 500 mm**.
+- At **500 mm or more**, the warning is hidden.
+- In dynamic/wave mode it clears automatically when immersion recovers to 500 mm or more.
+
+
+## v4.11 — rudder immersion measurement fix
+- Rudder elevator detection no longer relies on one exact GLTF object lookup.
+- All elevator sample points are now stored in boat-local coordinates, avoiding transform errors.
+- Live rudder immersion is displayed prominently on the left as well as in the scenario table.
+- The red `Rudder safety trip` still appears only when immersion is **less than 500 mm**.
+- If the model geometry cannot be detected, the UI explicitly says `Not detected` instead of showing a dash.
