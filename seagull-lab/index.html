@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- The build stamp. Bumped whenever the js or css changes; it is BOTH the
+     cache-buster on every local file below and the string the footer prints,
+     so "is the new code actually loaded" is a question you can answer by
+     looking rather than by clearing a cache and hoping. -->
+<meta name="build" content="20260901-0245">
+<title>Seagull Lab · Live Race Tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Share+Tech+Mono&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/app.css?v=20260901-0245">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🐦</text></svg>">
+</head>
+<body>
+
+<div class="app">
+
+  <header>
+    <div class="mark">
+      <svg viewBox="0 0 40 24" aria-hidden="true">
+        <path d="M2 16 C8 16 12 6 20 6 C28 6 32 16 38 16" fill="none"
+              stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+        <path d="M6 21 C11 21 14 13 20 13 C26 13 29 21 34 21" fill="none"
+              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".5"/>
+      </svg>
+      <span>SEAGULL<b>LAB</b></span>
+    </div>
+
+    <nav class="tabs" id="tabs">
+      <button data-tab="live">LIVE</button>
+      <button data-tab="replay" class="active">REPLAY</button>
+    </nav>
+
+    <div class="titles">
+      <h1>LIVE RACE TOOL</h1>
+      <div class="sub" id="subtitle">loading…</div>
+    </div>
+
+    <div class="status" id="status"><i></i>NO FEED</div>
+
+    <!-- LIVE only (hidden in REPLAY via CSS). One click grants a capture of
+         this tab and holds it open; the recording itself starts at T-4:00 and
+         stops when the fleet has finished, with no further clicks needed —
+         see js/record.js. The same button is also the manual STOP & SAVE,
+         live for as long as a recording is running. -->
+    <button id="recBtn" class="recbtn" title="record this screen from T−4:00 to the finish, saved to Downloads when it stops">ARM RECORDING</button>
+
+    <div class="clockbox">
+      <b id="clock">T−0.0</b>
+      <span id="phase">—</span>
+      <span class="lag" id="lag"></span>
+    </div>
+  </header>
+
+  <!-- Presets and the switches you reach for mid-race, on one row above the
+       map. The rail holds forty settings and climbing; this holds the four or
+       five moments you actually switch between. -->
+  <!-- The map takes every pixel the rest of the layout does not need. Its height
+       is measured, not declared, and handed to the renderer each frame. -->
+  <!-- The map is now the whole width. Everything that used to sit in a fixed
+       318 px rail beside it is an overlay on top of it: the boat data stays in
+       the top-right corner where it always was, and the forty-odd settings are
+       folded away behind a tab bar in the bottom-right until they are asked
+       for. A settings rail is read for a few seconds a race; the map is read
+       continuously, so the map gets the pixels. -->
+  <section class="map" id="map">
+    <canvas id="cTrack"></canvas>
+
+    <!-- The mode chips and the quick switches, floating over the top of the
+         map rather than occupying a row above it. -->
+    <div class="presetbar" id="presetbar"></div>
+
+    <!-- The way back. Hidden until there is somewhere to come back from: it
+         appears the moment the view is panned or zoomed off its fit, and goes
+         again when it is not. -->
+    <button class="recentre" id="recentre" hidden>RECENTRE ON BOAT</button>
+
+    <!-- The left column: things about the racecourse and the boats around you,
+         rather than about your own boat, which lives on the right. A flex
+         column so the threat list sits under the course box whatever height
+         that happens to be. -->
+    <div class="leftrail" id="leftrail">
+      <div class="coursebox card" id="coursebox" hidden>
+        <h2>COURSE</h2>
+        <div id="courseBody"></div>
+      </div>
+      <div class="threatbox card" id="threatbox" hidden>
+        <h2>POTENTIAL THREATS</h2>
+        <div id="threatBody"></div>
+      </div>
+    </div>
+
+    <div class="readouts" id="readouts">
+      <!-- No heading. The block is unmistakably the focus boat's numbers — it
+           carries the boat's own name and colour at the top of the split — and
+           a label saying so was a line of chrome across the widest part of the
+           overlay, over water. -->
+      <div class="card">
+        <div class="hud" id="hud"></div>
+      </div>
+      <div class="card">
+        <h2>FLEET · RATIO NOW <span class="at" id="ratioNowT"></span></h2>
+        <div id="ratioNow"></div>
+      </div>
+    </div>
+
+    <!-- one category at a time, opened from the tabs below it -->
+    <div class="menusheet" id="menusheet" hidden>
+      <!-- filter box + HELP + collapse-all, built in app.js so it can reach the
+           same row list the panels are made from -->
+      <div class="railtools" id="railtools"></div>
+      <div class="panels" id="panels"></div>
+    </div>
+    <nav class="menutabs" id="menutabs"></nav>
+
+    <div class="overlay" id="overlay" hidden></div>
+    <!-- left behind when the connect sheet is dismissed, so closing it is not
+         a one-way door out of the LIVE tab -->
+    <button class="reopen" id="reopen" hidden>CONNECT A FEED</button>
+  </section>
+
+  <footer class="bottom">
+    <div class="transport" id="transport">
+      <button id="rPlay" class="big on">PAUSE</button>
+      <!-- LIVE mode's own transport control: play/pause and speed mean
+           nothing on a feed with no future to run ahead of, so those hide via
+           CSS and this takes their place — a status readout (pulsing, while
+           the clock is tracking the wall clock) that is also the button back
+           to it once the scrubber below has pulled the view into the past. -->
+      <button id="rGoLive" class="big livebtn tracking" title="jump back to the live edge">LIVE</button>
+      <button id="rBack" title="back to the start of the window">⟲</button>
+      <!-- The scrubber carries the gun as a mark on the track, so the one
+           instant the whole tool is built around is visible while you drag
+           rather than only readable off the clock afterwards. In LIVE mode it
+           doubles as the look-back control: its max keeps growing as new
+           samples land, dragging it pins the clock to that instant, and the
+           LIVE button above snaps it back to the edge. -->
+      <span class="scrub">
+        <input id="rSlider" type="range" min="-150" max="90" value="-150" step="0.1">
+        <i class="gun" id="gunMark" hidden></i>
+      </span>
+      <span class="spd">
+        <button id="rSpeed05">0.5×</button>
+        <button id="rSpeed1" class="active">1×</button>
+        <button id="rSpeed2">2×</button>
+        <button id="rSpeed4">4×</button>
+      </span>
+    </div>
+
+    <div class="picker" id="picker">
+      <div class="ctl"><label for="selEvent">EVENT</label><select id="selEvent"></select></div>
+      <div class="ctl"><label for="selDay">DAY</label><select id="selDay"></select></div>
+      <div class="ctl"><label for="selStart">START</label><select id="selStart"></select></div>
+    </div>
+
+    <div class="ctl"><label for="selFocus">MY BOAT</label><select id="selFocus"></select></div>
+    <div class="meter" id="buildMs"></div>
+  </footer>
+
+</div>
+
+<!-- Every local file carries the build stamp as a query string. python3 -m
+     http.server sends no Cache-Control, so Chrome caches these heuristically
+     and a plain refresh can quietly go on running yesterday's code. A changed
+     URL is a different resource, so the stamp settles it. The Google Fonts
+     link above is left alone — it is versioned at the far end. -->
+<script src="js/vendor.js?v=20260901-0245"></script>
+<script src="js/geom.js?v=20260901-0245"></script>
+<script src="js/polar.js?v=20260901-0245"></script>
+<script src="js/metrics.js?v=20260901-0245"></script>
+<script src="js/render.js?v=20260901-0245"></script>
+<script src="js/accel.js?v=20260901-0245"></script>
+<script src="js/ratio.js?v=20260901-0245"></script>
+<script src="js/feed.js?v=20260901-0245"></script>
+<script src="js/mock-live.js?v=20260901-0245"></script>
+<script src="js/record.js?v=20260901-0245"></script>
+<script src="js/app.js?v=20260901-0245"></script>
+</body>
+</html>
