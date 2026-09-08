@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#07111d" />
+  <title>Prestart Accelerations · Seagull Lab</title>
+  <link rel="stylesheet" href="./styles.css?v=20260908" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <a class="brand" href="../" aria-label="Back to Seagull Lab">
+        <img src="../assets/seagull-lab-logo.png" alt="Seagull Lab" />
+      </a>
+      <div class="title-block"><span>AC40</span><strong>Prestart Accelerations</strong></div>
+      <div class="header-actions">
+        <button id="editBtn" class="ghost-button" type="button">Edit</button>
+        <button id="resetBtn" class="ghost-button ghost-button--danger is-hidden" type="button">Reset</button>
+        <a class="ghost-button" href="../">Home</a>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="section-kicker">Reference</div>
+      <h1>Prestart accelerations</h1>
+      <p class="intro">Timings start &mdash; "The Classic Approach". Tap <strong>Edit</strong> to update any value from the boat; changes are saved on this device. Scroll sideways to see every column &mdash; the wind-speed column stays pinned.</p>
+
+      <div id="editHint" class="edit-hint is-hidden">Edit mode is on &mdash; tap any box to change it. Tap <strong>Done</strong> when you're finished.</div>
+
+      <div class="table-shell">
+        <div class="table-caption">TIMINGS START &mdash; "THE CLASSIC APPROACH"</div>
+        <div class="table-scroll" id="tableScroll">
+          <table id="accelTable" aria-label="AC40 prestart accelerations reference table"></table>
+        </div>
+      </div>
+
+      <p class="table-note">Data saved locally on this device. Use <strong>Reset</strong> to restore the original reference values.</p>
+    </main>
+  </div>
+  <script src="./app.js?v=20260908"></script>
+</body>
+</html>
