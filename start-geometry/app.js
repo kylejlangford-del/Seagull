@@ -18,7 +18,7 @@
   // switching units (or re-rendering) can never round-trip precision away.
   const state = { courseWidthM: DEFAULT_COURSE_WIDTH_M, lineLengthM: DEFAULT_LINE_LENGTH_M };
 
-  const ids = ['tws','manualSpeed','courseWidth','courseWidthUnit','courseWidthMeta','lineDistance','lineDistanceUnit','lineDistanceMeta','validation','boatSpeed','speedLabel','speedMeta','lineTime','stbdTime','portTime','lineMeta','stbdMeta','portMeta','stbdDistance','portDistance','visualLine','visualPort','visualStbd','visualPortTime','visualStbdTime','visualLineTime','dimPort','dimLine','dimStbd','courseArrow','resetBtn','tab90','tab2board','twsField','manualSpeedField','unitM','unitNm','referenceTable'];
+  const ids = ['tws','manualSpeed','courseWidth','courseWidthUnit','courseWidthMeta','lineDistance','lineDistanceUnit','lineDistanceMeta','validation','boatSpeed','speedLabel','speedMeta','lineTime','stbdTime','portTime','midTime','lineMeta','stbdMeta','portMeta','midMeta','stbdDistance','portDistance','midDistance','visualLine','visualPort','visualStbd','visualPortTime','visualStbdTime','visualLineTime','visualMid','visualMidTime','dimPort','dimLine','dimStbd','dimMid','dimMidRest','courseArrow','resetBtn','tab90','tab2board','twsField','manualSpeedField','unitM','unitNm','referenceTable'];
   const el = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
 
   function finiteNumber(node, fallback = 0){ const v = Number(node.value); return Number.isFinite(v) ? v : fallback; }
@@ -106,6 +106,15 @@
     el.dimStbd.style.flexGrow = stbdGap > 0 ? stbdGap : 1;
   }
 
+  function updateMidVisual(midGapM,courseWidthM,validGeometry){
+    // The secondary dimension row spans the same overall width as the main
+    // row, so the "mid" segment and its trailing spacer must add up to the
+    // full course width for the two rows to stay aligned edge-to-edge.
+    const restM = courseWidthM - midGapM;
+    el.dimMid.style.flexGrow = validGeometry && midGapM > 0 ? midGapM : 1;
+    el.dimMidRest.style.flexGrow = validGeometry && restM > 0 ? restM : 1;
+  }
+
   function update(){
     const tws=finiteNumber(el.tws,defaults.tws);
     const manualSpeed=Math.max(0,finiteNumber(el.manualSpeed,defaults.manualSpeed));
@@ -124,20 +133,24 @@
     const lineS=canTime?lineLengthM/speedMs:NaN;
     const stbdS=canTime&&validGeometry?geometry.stbdGapM/speedMs:NaN;
     const portS=canTime&&validGeometry?geometry.portGapM/speedMs:NaN;
+    const midGapM=geometry.portGapM+lineLengthM/2;
+    const midS=canTime&&validGeometry?midGapM/speedMs:NaN;
 
     el.validation.textContent=messages.join(' ');
     el.courseWidthMeta.textContent=`${courseWidthM.toFixed(2)} m = ${(courseWidthM/NM_TO_M).toFixed(3)} NM`;
     el.lineDistanceMeta.textContent=`${lineLengthM.toFixed(2)} m = ${(lineLengthM/NM_TO_M).toFixed(3)} NM`;
     el.boatSpeed.textContent=`${speedKn.toFixed(1)} kn`;
-    el.lineTime.textContent=formatSeconds(lineS); el.stbdTime.textContent=formatSeconds(stbdS); el.portTime.textContent=formatSeconds(portS);
+    el.lineTime.textContent=formatSeconds(lineS); el.stbdTime.textContent=formatSeconds(stbdS); el.portTime.textContent=formatSeconds(portS); el.midTime.textContent=formatSeconds(midS);
     el.lineMeta.textContent=`${formatDistance(lineLengthM)} @ ${speedKn.toFixed(1)} kn`;
     el.stbdMeta.textContent=validGeometry?`${formatDistance(geometry.stbdGapM)} from line end`:'Invalid geometry';
     el.portMeta.textContent=validGeometry?`${formatDistance(geometry.portGapM)} from line end`:'Invalid geometry';
-    el.stbdDistance.textContent=formatDistance(geometry.stbdGapM); el.portDistance.textContent=formatDistance(geometry.portGapM);
+    el.midMeta.textContent=validGeometry?`${formatDistance(midGapM)} from start line midpoint`:'Invalid geometry';
+    el.stbdDistance.textContent=formatDistance(geometry.stbdGapM); el.portDistance.textContent=formatDistance(geometry.portGapM); el.midDistance.textContent=formatDistance(midGapM);
     el.visualLine.textContent=`${formatDistance(lineLengthM,true)} start line`;
-    el.visualPort.textContent=formatDistance(geometry.portGapM,true); el.visualStbd.textContent=formatDistance(geometry.stbdGapM,true);
-    el.visualPortTime.textContent=formatSeconds(portS); el.visualStbdTime.textContent=formatSeconds(stbdS); el.visualLineTime.textContent=formatSeconds(lineS);
+    el.visualPort.textContent=formatDistance(geometry.portGapM,true); el.visualStbd.textContent=formatDistance(geometry.stbdGapM,true); el.visualMid.textContent=formatDistance(midGapM,true);
+    el.visualPortTime.textContent=formatSeconds(portS); el.visualStbdTime.textContent=formatSeconds(stbdS); el.visualLineTime.textContent=formatSeconds(lineS); el.visualMidTime.textContent=formatSeconds(midS);
     updateVisual(geometry.portGapM,lineLengthM,geometry.stbdGapM);
+    updateMidVisual(midGapM,courseWidthM,validGeometry);
   }
 
   ['tws','manualSpeed'].forEach(id=>el[id].addEventListener('input',update));

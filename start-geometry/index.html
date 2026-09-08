@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#07111d" />
   <title>Start Geometry · Seagull Lab</title>
-  <link rel="stylesheet" href="./styles.css?v=20260908" />
+  <link rel="stylesheet" href="./styles.css?v=20260908b" />
 </head>
 <body>
   <div id="app">
@@ -94,11 +94,17 @@
             <strong id="portTime">27.7 s</strong>
             <small id="portMeta">485.0 m from line end</small>
           </article>
+          <article class="result-card result-card--wide">
+            <span>Mid-line to port boundary</span>
+            <strong id="midTime">42.7 s</strong>
+            <small id="midMeta">707.2 m from start line midpoint</small>
+          </article>
         </div>
 
         <div class="distance-summary">
           <div><span>Starboard boundary distance</span><strong id="stbdDistance">678.0 m</strong></div>
           <div><span>Port boundary distance</span><strong id="portDistance">485.0 m</strong></div>
+          <div class="is-wide"><span>Mid-line to port boundary distance</span><strong id="midDistance">707.2 m</strong></div>
         </div>
 
         <div class="course-visual" aria-label="Schematic start line and boundaries, dimensioned with distance and time">
@@ -129,6 +135,17 @@
                 </span>
               </div>
             </div>
+            <div id="dimMidRow" class="dim-row dim-row--secondary">
+              <div id="dimMid" class="dim-seg dim-seg--mid">
+                <span class="dim-track" aria-hidden="true"><i></i><i></i></span>
+                <span class="dim-label">
+                  <span class="dim-kicker">Mid-line &rarr; port</span>
+                  <b id="visualMid">707 m</b>
+                  <span class="dim-time" id="visualMidTime">42.7 s</span>
+                </span>
+              </div>
+              <div id="dimMidRest" class="dim-seg dim-seg--spacer" aria-hidden="true"></div>
+            </div>
           </div>
         </div>
 
@@ -151,6 +168,6 @@
       </section>
     </main>
   </div>
-  <script src="./app.js?v=20260908"></script>
+  <script src="./app.js?v=20260908b"></script>
 </body>
 </html>
