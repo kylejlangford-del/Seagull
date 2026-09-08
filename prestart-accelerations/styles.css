@@ -55,6 +55,7 @@ thead th.col-group{position:sticky;left:0;top:0;z-index:4;background:#0d2033;fon
 
 .col-sticky{position:sticky;left:34px;z-index:2;background:#0a1725;font-weight:800;box-shadow:2px 0 6px rgba(0,0,0,.25)}
 thead th.col-sticky{z-index:4;background:#0d2033}
+#accelTable.no-leg .col-sticky{left:0}
 
 .red{color:#ff8f7d;font-weight:700}
 .cell-empty{color:var(--muted);opacity:.5}

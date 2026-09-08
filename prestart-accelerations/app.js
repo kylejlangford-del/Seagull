@@ -48,6 +48,10 @@
   const COLS_STORAGE_KEY = 'seagull-prestart-accel-cols-v1';
   const DEFAULT_VISIBLE_KEYS = COLUMNS.filter(c => c.alwaysVisible || c.defaultVisible).map(c => c.key);
 
+  // The "Leg" (TACK/GYBE) column isn't a data column, so it isn't part of
+  // COLUMNS — it's toggled the same way via this synthetic key, hidden by default.
+  const LEG_KEY = 'leg';
+
   const tableEl = document.getElementById('accelTable');
   const editBtn = document.getElementById('editBtn');
   const resetBtn = document.getElementById('resetBtn');
@@ -120,7 +124,7 @@
   }
 
   function renderColumnToggles(){
-    const toggleable = COLUMNS.filter(c => !c.alwaysVisible);
+    const toggleable = [{ key: LEG_KEY, label: 'Leg' }, ...COLUMNS.filter(c => !c.alwaysVisible)];
 
     let html = '<div class="col-toggle-row">';
     toggleable.forEach(col => {
@@ -147,7 +151,7 @@
       });
     });
     document.getElementById('colsShowAll').addEventListener('click', () => {
-      visibleCols = new Set(COLUMNS.map(c => c.key));
+      visibleCols = new Set([...COLUMNS.map(c => c.key), LEG_KEY]);
       saveVisibleCols();
       renderColumnToggles();
       render();
@@ -169,8 +173,10 @@
     });
 
     const cols = COLUMNS.filter(isColVisible);
+    const legVisible = visibleCols.has(LEG_KEY);
 
-    let head = '<thead><tr><th class="col-group" scope="col"><span>Leg</span></th>';
+    let head = '<thead><tr>';
+    if (legVisible) head += '<th class="col-group" scope="col"><span>Leg</span></th>';
     cols.forEach(col => {
       head += `<th class="${col.sticky ? 'col-sticky' : ''}" scope="col">${col.label}</th>`;
     });
@@ -180,7 +186,7 @@
     groups.forEach(g => {
       g.rows.forEach((rowIndex, i) => {
         body += `<tr class="group-${g.name.toLowerCase()}">`;
-        if (i === 0) {
+        if (legVisible && i === 0) {
           body += `<td class="col-group" rowspan="${g.rows.length}"><span>${g.name}</span></td>`;
         }
         cols.forEach(col => {
@@ -198,6 +204,7 @@
     });
     body += '</tbody>';
 
+    tableEl.classList.toggle('no-leg', !legVisible);
     tableEl.innerHTML = head + body;
 
     if (editMode) {
