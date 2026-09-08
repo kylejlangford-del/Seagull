@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#07111d" />
   <title>Prestart Accelerations · Seagull Lab</title>
-  <link rel="stylesheet" href="./styles.css?v=20260908e" />
+  <link rel="stylesheet" href="./styles.css?v=20260908f" />
 </head>
 <body>
   <div id="app">
@@ -29,8 +29,11 @@
       <div id="editHint" class="edit-hint is-hidden">Edit mode is on &mdash; tap any box to change it. Tap <strong>Done</strong> when you're finished.</div>
 
       <div class="col-toggle-wrap">
-        <span class="col-toggle-label">Columns</span>
-        <div id="colToggleBar"></div>
+        <button type="button" id="colToggleHeader" class="col-toggle-header" aria-expanded="false" aria-controls="colToggleBar">
+          <span class="col-toggle-label">Columns</span>
+          <span class="col-toggle-caret" aria-hidden="true">&#9662;</span>
+        </button>
+        <div id="colToggleBar" class="col-toggle-body"></div>
       </div>
 
       <div class="table-shell">
@@ -43,6 +46,6 @@
       <p class="table-note">Data saved locally on this device. Use <strong>Reset</strong> to restore the original reference values.</p>
     </main>
   </div>
-  <script src="./app.js?v=20260908e"></script>
+  <script src="./app.js?v=20260908f"></script>
 </body>
 </html>

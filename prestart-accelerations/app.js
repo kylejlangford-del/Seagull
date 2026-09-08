@@ -52,14 +52,21 @@
   // COLUMNS — it's toggled the same way via this synthetic key, hidden by default.
   const LEG_KEY = 'leg';
 
+  // Whether the column-picker chip row is expanded. Collapsed by default so
+  // it doesn't sit open on every visit; remembered per device.
+  const COLBAR_STORAGE_KEY = 'seagull-prestart-accel-colbar-open-v1';
+
   const tableEl = document.getElementById('accelTable');
   const editBtn = document.getElementById('editBtn');
   const resetBtn = document.getElementById('resetBtn');
   const editHint = document.getElementById('editHint');
+  const colToggleWrap = document.querySelector('.col-toggle-wrap');
+  const colToggleHeader = document.getElementById('colToggleHeader');
   const colToggleBar = document.getElementById('colToggleBar');
 
   let editMode = false;
   let overrides = loadOverrides();
+  let colBarOpen = loadColBarOpen();
   let visibleCols = loadVisibleCols();
 
   function loadVisibleCols(){
@@ -80,6 +87,29 @@
   function isColVisible(col){
     return col.alwaysVisible || visibleCols.has(col.key);
   }
+
+  function loadColBarOpen(){
+    try {
+      const raw = localStorage.getItem(COLBAR_STORAGE_KEY);
+      if (raw !== null) return raw === '1';
+    } catch(e){ /* fall through to default */ }
+    return false;
+  }
+
+  function saveColBarOpen(){
+    try { localStorage.setItem(COLBAR_STORAGE_KEY, colBarOpen ? '1' : '0'); } catch(e){ /* storage unavailable — choice stays in-memory for this view */ }
+  }
+
+  function applyColBarState(){
+    colToggleWrap.classList.toggle('is-open', colBarOpen);
+    colToggleHeader.setAttribute('aria-expanded', String(colBarOpen));
+  }
+
+  colToggleHeader.addEventListener('click', () => {
+    colBarOpen = !colBarOpen;
+    saveColBarOpen();
+    applyColBarState();
+  });
 
   function loadOverrides(){
     try {
@@ -234,5 +264,6 @@
 
   updateResetVisibility();
   renderColumnToggles();
+  applyColBarState();
   render();
 })();
