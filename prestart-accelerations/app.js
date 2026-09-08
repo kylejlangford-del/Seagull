@@ -22,8 +22,10 @@
   // Column order + how each is rendered when NOT being edited.
   // redParen: text in "(...)" is picked out in red (e.g. "40(18 TTK)").
   // fullRed: the whole value is rendered red (e.g. the TTK-last-tack column).
+  // alwaysVisible: can't be hidden (it's the row identifier). defaultVisible:
+  // shown by default; everything else starts hidden behind the column chips.
   const COLUMNS = [
-    { key:'tws',           label:'TWS',                            sticky:true },
+    { key:'tws',           label:'TWS',                            sticky:true, alwaysVisible:true },
     { key:'entryAbove',    label:'ENTRY above pin' },
     { key:'entryBelow',    label:'ENTRY below pin' },
     { key:'distToLine',    label:'Distance to line' },
@@ -33,22 +35,46 @@
     { key:'ttkLastTack',   label:'TTK last tack',                  fullRed:true },
     { key:'timeLastTack',  label:'Time Last Tack',                 redParen:true },
     { key:'latestBoardUp', label:'Latest Board up' },
-    { key:'buildAngle',    label:'Build Angle' },
-    { key:'charge',        label:'Charge',                         redParen:true },
+    { key:'buildAngle',    label:'Build Angle',                    defaultVisible:true },
+    { key:'charge',        label:'Charge',                         redParen:true, defaultVisible:true },
     { key:'killRatio',     label:'KILL RATIO' },
     { key:'noGo1',         label:'No go zone TWA (1 board)' },
     { key:'noGo2',         label:'No go zone TWA (2 boards)' },
-    { key:'killHigh1',     label:'Killing high (1 board)' },
+    { key:'killHigh1',     label:'Min BSP (1 board)',              defaultVisible:true },
     { key:'killHigh2',     label:'Killing high (2 board)' },
   ];
+
+  const COLS_STORAGE_KEY = 'seagull-prestart-accel-cols-v1';
+  const DEFAULT_VISIBLE_KEYS = COLUMNS.filter(c => c.alwaysVisible || c.defaultVisible).map(c => c.key);
 
   const tableEl = document.getElementById('accelTable');
   const editBtn = document.getElementById('editBtn');
   const resetBtn = document.getElementById('resetBtn');
   const editHint = document.getElementById('editHint');
+  const colToggleBar = document.getElementById('colToggleBar');
 
   let editMode = false;
   let overrides = loadOverrides();
+  let visibleCols = loadVisibleCols();
+
+  function loadVisibleCols(){
+    try {
+      const raw = localStorage.getItem(COLS_STORAGE_KEY);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) return new Set(arr);
+      }
+    } catch(e){ /* fall through to defaults */ }
+    return new Set(DEFAULT_VISIBLE_KEYS);
+  }
+
+  function saveVisibleCols(){
+    try { localStorage.setItem(COLS_STORAGE_KEY, JSON.stringify(Array.from(visibleCols))); } catch(e){ /* storage unavailable — choice stays in-memory for this view */ }
+  }
+
+  function isColVisible(col){
+    return col.alwaysVisible || visibleCols.has(col.key);
+  }
 
   function loadOverrides(){
     try {
@@ -92,6 +118,47 @@
     return safe;
   }
 
+  function renderColumnToggles(){
+    const toggleable = COLUMNS.filter(c => !c.alwaysVisible);
+
+    let html = '<div class="col-toggle-row">';
+    toggleable.forEach(col => {
+      const active = visibleCols.has(col.key);
+      html += `<button type="button" class="col-chip${active ? ' is-active' : ''}" data-key="${col.key}" aria-pressed="${active}">${col.label}</button>`;
+    });
+    html += '</div>';
+    html += '<div class="col-toggle-actions">' +
+      '<button type="button" id="colsShowAll" class="text-link">Show all</button>' +
+      '<span class="dot">&middot;</span>' +
+      '<button type="button" id="colsReset" class="text-link">Reset to default</button>' +
+      '</div>';
+
+    colToggleBar.innerHTML = html;
+
+    colToggleBar.querySelectorAll('.col-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.key;
+        if (visibleCols.has(key)) visibleCols.delete(key);
+        else visibleCols.add(key);
+        saveVisibleCols();
+        renderColumnToggles();
+        render();
+      });
+    });
+    document.getElementById('colsShowAll').addEventListener('click', () => {
+      visibleCols = new Set(COLUMNS.map(c => c.key));
+      saveVisibleCols();
+      renderColumnToggles();
+      render();
+    });
+    document.getElementById('colsReset').addEventListener('click', () => {
+      visibleCols = new Set(DEFAULT_VISIBLE_KEYS);
+      saveVisibleCols();
+      renderColumnToggles();
+      render();
+    });
+  }
+
   function render(){
     const groups = [];
     DEFAULT_ROWS.forEach((row, i) => {
@@ -100,8 +167,10 @@
       else groups.push({ name: row.group, rows: [i] });
     });
 
+    const cols = COLUMNS.filter(isColVisible);
+
     let head = '<thead><tr><th class="col-group" scope="col"><span>Leg</span></th>';
-    COLUMNS.forEach(col => {
+    cols.forEach(col => {
       head += `<th class="${col.sticky ? 'col-sticky' : ''}" scope="col">${col.label}</th>`;
     });
     head += '</tr></thead>';
@@ -113,7 +182,7 @@
         if (i === 0) {
           body += `<td class="col-group" rowspan="${g.rows.length}"><span>${g.name}</span></td>`;
         }
-        COLUMNS.forEach(col => {
+        cols.forEach(col => {
           const value = valueFor(rowIndex, col.key);
           const stickyClass = col.sticky ? ' col-sticky' : '';
           const swatch = col.key === 'tws' ? `style="background:${DEFAULT_ROWS[rowIndex].color}"` : '';
@@ -156,5 +225,6 @@
   });
 
   updateResetVisibility();
+  renderColumnToggles();
   render();
 })();
