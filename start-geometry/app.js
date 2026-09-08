@@ -13,15 +13,19 @@
   let mode = defaults.mode;
   let unit = defaults.unit;
 
-  const ids = ['tws','manualSpeed','courseWidth','courseWidthUnit','courseWidthMeta','lineDistance','lineDistanceUnit','lineDistanceMeta','validation','boatSpeed','speedLabel','speedMeta','lineTime','stbdTime','portTime','lineMeta','stbdMeta','portMeta','stbdDistance','portDistance','visualLine','visualPort','visualStbd','visualPortTime','visualStbdTime','startLineVisual','courseArrow','resetBtn','tab90','tab2board','twsField','manualSpeedField','unitM','unitNm','referenceTable'];
+  // Canonical geometry state, always held in exact metres. Display fields are
+  // formatted FROM this state; they are never read back to derive it, so
+  // switching units (or re-rendering) can never round-trip precision away.
+  const state = { courseWidthM: DEFAULT_COURSE_WIDTH_M, lineLengthM: DEFAULT_LINE_LENGTH_M };
+
+  const ids = ['tws','manualSpeed','courseWidth','courseWidthUnit','courseWidthMeta','lineDistance','lineDistanceUnit','lineDistanceMeta','validation','boatSpeed','speedLabel','speedMeta','lineTime','stbdTime','portTime','lineMeta','stbdMeta','portMeta','stbdDistance','portDistance','visualLine','visualPort','visualStbd','visualPortTime','visualStbdTime','visualLineTime','dimPort','dimLine','dimStbd','courseArrow','resetBtn','tab90','tab2board','twsField','manualSpeedField','unitM','unitNm','referenceTable'];
   const el = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
 
   function finiteNumber(node, fallback = 0){ const v = Number(node.value); return Number.isFinite(v) ? v : fallback; }
   function toMetres(v){ return unit === 'nm' ? v * NM_TO_M : v; }
   function fromMetres(m){ return unit === 'nm' ? m / NM_TO_M : m; }
   function unitLabel(){ return unit === 'nm' ? 'NM' : 'm'; }
-  function displayDecimals(m){ return unit === 'nm' ? 3 : (Math.abs(m) < 100 ? 1 : 1); }
-  function formatInputValue(m){ return unit === 'nm' ? (m / NM_TO_M).toFixed(3) : m.toFixed(1); }
+  function formatInputValue(m){ return unit === 'nm' ? (m / NM_TO_M).toFixed(3) : m.toFixed(2); }
   function formatDistance(m, compact=false){
     if (!Number.isFinite(m) || m < 0) return '—';
     if (unit === 'nm') return `${(m/NM_TO_M).toFixed(compact ? 3 : 3)} NM`;
@@ -47,25 +51,34 @@
     };
   }
 
-  function captureDistancesInMetres(){
-    return {
-      courseWidthM: Math.max(0, toMetres(finiteNumber(el.courseWidth, fromMetres(defaults.courseWidthM)))),
-      lineLengthM: Math.max(0, toMetres(finiteNumber(el.lineDistance, fromMetres(defaults.lineLengthM))))
-    };
+  function refreshDistanceFields(){
+    el.courseWidth.value = formatInputValue(state.courseWidthM);
+    el.lineDistance.value = formatInputValue(state.lineLengthM);
   }
 
   function setUnit(nextUnit){
     if(nextUnit === unit) return;
-    const current = captureDistancesInMetres();
+    // Reformat the SAME canonical state into the new unit's display precision.
+    // The state itself is untouched, so toggling units back and forth never
+    // drifts away from the exact metre values.
     unit = nextUnit;
-    el.courseWidth.value = formatInputValue(current.courseWidthM);
-    el.lineDistance.value = formatInputValue(current.lineLengthM);
+    refreshDistanceFields();
     el.courseWidthUnit.textContent = unitLabel();
     el.lineDistanceUnit.textContent = unitLabel();
-    el.courseWidth.step = unit === 'nm' ? '0.001' : '0.1';
-    el.lineDistance.step = unit === 'nm' ? '0.001' : '0.1';
+    el.courseWidth.step = unit === 'nm' ? '0.001' : '0.01';
+    el.lineDistance.step = unit === 'nm' ? '0.001' : '0.01';
     el.unitM.classList.toggle('is-active',unit==='m');
     el.unitNm.classList.toggle('is-active',unit==='nm');
+    update();
+  }
+
+  function onCourseWidthInput(){
+    state.courseWidthM = Math.max(0, toMetres(finiteNumber(el.courseWidth, fromMetres(state.courseWidthM))));
+    update();
+  }
+
+  function onLineDistanceInput(){
+    state.lineLengthM = Math.max(0, toMetres(finiteNumber(el.lineDistance, fromMetres(state.lineLengthM))));
     update();
   }
 
@@ -84,20 +97,20 @@
   }
 
   function updateVisual(portGap,line,stbdGap){
-    const total=portGap+line+stbdGap;
-    if(!(total>0)||portGap<0||stbdGap<0){ el.startLineVisual.style.left='35%'; el.startLineVisual.style.width='30%'; return; }
-    const innerLeft=13, innerWidth=74;
-    const leftPct=innerLeft+innerWidth*(portGap/total);
-    const widthPct=innerWidth*(line/total);
-    el.startLineVisual.style.left=`${leftPct}%`;
-    el.startLineVisual.style.width=`${Math.max(0.5,widthPct)}%`;
+    // Each segment's flex-grow is set to its own distance, so the three
+    // dimension segments size themselves proportionally to real distance
+    // (and therefore to time, since speed is constant across the diagram) —
+    // no manual percentage math, and it never collapses on invalid geometry.
+    el.dimPort.style.flexGrow = portGap > 0 ? portGap : 1;
+    el.dimLine.style.flexGrow = line > 0 ? line : 1;
+    el.dimStbd.style.flexGrow = stbdGap > 0 ? stbdGap : 1;
   }
 
   function update(){
     const tws=finiteNumber(el.tws,defaults.tws);
     const manualSpeed=Math.max(0,finiteNumber(el.manualSpeed,defaults.manualSpeed));
-    const courseWidthM=Math.max(0,toMetres(finiteNumber(el.courseWidth,fromMetres(defaults.courseWidthM))));
-    const lineLengthM=Math.max(0,toMetres(finiteNumber(el.lineDistance,fromMetres(defaults.lineLengthM))));
+    const courseWidthM=state.courseWidthM;
+    const lineLengthM=state.lineLengthM;
     const geometry=boundaryGeometry(courseWidthM,lineLengthM);
     const messages=[];
     if(mode==='90'&&(tws<7||tws>17)) messages.push('The 90° TWA reference table covers 7–17 kn TWS; outside that range the nearest endpoint speed is used.');
@@ -113,8 +126,8 @@
     const portS=canTime&&validGeometry?geometry.portGapM/speedMs:NaN;
 
     el.validation.textContent=messages.join(' ');
-    el.courseWidthMeta.textContent=`${courseWidthM.toFixed(1)} m = ${(courseWidthM/NM_TO_M).toFixed(3)} NM`;
-    el.lineDistanceMeta.textContent=`${lineLengthM.toFixed(1)} m = ${(lineLengthM/NM_TO_M).toFixed(3)} NM`;
+    el.courseWidthMeta.textContent=`${courseWidthM.toFixed(2)} m = ${(courseWidthM/NM_TO_M).toFixed(3)} NM`;
+    el.lineDistanceMeta.textContent=`${lineLengthM.toFixed(2)} m = ${(lineLengthM/NM_TO_M).toFixed(3)} NM`;
     el.boatSpeed.textContent=`${speedKn.toFixed(1)} kn`;
     el.lineTime.textContent=formatSeconds(lineS); el.stbdTime.textContent=formatSeconds(stbdS); el.portTime.textContent=formatSeconds(portS);
     el.lineMeta.textContent=`${formatDistance(lineLengthM)} @ ${speedKn.toFixed(1)} kn`;
@@ -123,21 +136,25 @@
     el.stbdDistance.textContent=formatDistance(geometry.stbdGapM); el.portDistance.textContent=formatDistance(geometry.portGapM);
     el.visualLine.textContent=`${formatDistance(lineLengthM,true)} start line`;
     el.visualPort.textContent=formatDistance(geometry.portGapM,true); el.visualStbd.textContent=formatDistance(geometry.stbdGapM,true);
-    el.visualPortTime.textContent=formatSeconds(portS); el.visualStbdTime.textContent=formatSeconds(stbdS);
+    el.visualPortTime.textContent=formatSeconds(portS); el.visualStbdTime.textContent=formatSeconds(stbdS); el.visualLineTime.textContent=formatSeconds(lineS);
     updateVisual(geometry.portGapM,lineLengthM,geometry.stbdGapM);
   }
 
-  ['tws','manualSpeed','courseWidth','lineDistance'].forEach(id=>el[id].addEventListener('input',update));
+  ['tws','manualSpeed'].forEach(id=>el[id].addEventListener('input',update));
+  el.courseWidth.addEventListener('input',onCourseWidthInput);
+  el.lineDistance.addEventListener('input',onLineDistanceInput);
   el.tab90.addEventListener('click',()=>setMode('90')); el.tab2board.addEventListener('click',()=>setMode('2board'));
   el.unitM.addEventListener('click',()=>setUnit('m')); el.unitNm.addEventListener('click',()=>setUnit('nm'));
   el.resetBtn.addEventListener('click',()=>{
     mode=defaults.mode; unit=defaults.unit;
+    state.courseWidthM=defaults.courseWidthM; state.lineLengthM=defaults.lineLengthM;
     el.tws.value=defaults.tws; el.manualSpeed.value=defaults.manualSpeed;
-    el.courseWidth.value=defaults.courseWidthM.toFixed(1); el.lineDistance.value=defaults.lineLengthM.toFixed(1);
-    el.courseWidthUnit.textContent='m'; el.lineDistanceUnit.textContent='m'; el.courseWidth.step='0.1'; el.lineDistance.step='0.1';
+    el.courseWidthUnit.textContent='m'; el.lineDistanceUnit.textContent='m'; el.courseWidth.step='0.01'; el.lineDistance.step='0.01';
     el.unitM.classList.add('is-active'); el.unitNm.classList.remove('is-active');
+    refreshDistanceFields();
     setMode('90');
   });
 
+  refreshDistanceFields();
   setMode('90');
 })();
