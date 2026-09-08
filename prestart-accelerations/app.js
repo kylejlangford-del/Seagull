@@ -36,7 +36,7 @@
     { key:'timeLastTack',  label:'Time Last Tack',                 redParen:true },
     { key:'latestBoardUp', label:'Latest Board up' },
     { key:'buildAngle',    label:'Build Angle',                    defaultVisible:true },
-    { key:'charge',        label:'Charge',                         redParen:true, defaultVisible:true },
+    { key:'charge',        label:'Charge time (secs)',             redParen:true, defaultVisible:true },
     { key:'chargeSpeed',   label:'Charge Speed' },
     { key:'killRatio',     label:'KILL RATIO' },
     { key:'noGo1',         label:'No go zone TWA (1 board)' },
