@@ -23,9 +23,20 @@
     importView: document.getElementById('importView'),
     galleryView: document.getElementById('galleryView'),
     emptyState: document.getElementById('emptyState'),
+    editLayoutBtn: document.getElementById('editLayoutBtn'),
     dateTabs: document.getElementById('dateTabs'),
     categoryChips: document.getElementById('categoryChips'),
     shotGrid: document.getElementById('shotGrid'),
+
+    overlayEditor: document.getElementById('overlayEditor'),
+    overlayEditorClose: document.getElementById('overlayEditorClose'),
+    overlayEditorShotSelect: document.getElementById('overlayEditorShotSelect'),
+    overlayEditorImageWrap: document.getElementById('overlayEditorImageWrap'),
+    overlayEditorImg: document.getElementById('overlayEditorImg'),
+    overlayEditorBoxes: document.getElementById('overlayEditorBoxes'),
+    overlayEditorReset: document.getElementById('overlayEditorReset'),
+    overlayEditorCancel: document.getElementById('overlayEditorCancel'),
+    overlayEditorLock: document.getElementById('overlayEditorLock'),
 
     csvInput: document.getElementById('csvInput'),
     csvDropLabel: document.getElementById('csvDropLabel'),
@@ -49,7 +60,7 @@
     downloadManifest: document.getElementById('downloadManifest'),
   };
 
-  let existingManifest = { timestampColumn: '', variables: [], shots: [], dayNotes: {} };
+  let existingManifest = { timestampColumn: '', variables: [], shots: [], dayNotes: {}, overlayLayout: {} };
   let csvHeaders = [];
   let csvRows = [];
   let sortedRows = []; // [{ ts: epochMillis, row: {...} }] ascending by timestamp, rebuilt whenever timestampColumn changes
@@ -62,6 +73,12 @@
 
   let selectedDateKey = null;
   let selectedCategory = 'all';
+
+  // working copy of overlayLayout edited while the overlay editor is open —
+  // nothing here touches existingManifest (or the published site) until the
+  // user hits "Lock positions", same as every other edit in this app
+  let overlayWorkingPositions = {};
+  let overlayEditorShotId = null;
 
   // ---------- persistence (working config only — the published gallery
   // always reads manifest.json, never localStorage, so it looks the same
@@ -321,8 +338,21 @@
     if (!Array.isArray(existingManifest.shots)) existingManifest.shots = [];
     if (!Array.isArray(existingManifest.variables)) existingManifest.variables = [];
     if (!existingManifest.dayNotes || typeof existingManifest.dayNotes !== 'object') existingManifest.dayNotes = {};
+    if (!existingManifest.overlayLayout || typeof existingManifest.overlayLayout !== 'object') existingManifest.overlayLayout = {};
     renderGallery();
   }
+
+  // ---------- overlay box positioning (shared by the gallery and the editor) ----------
+  // Vars with no locked position yet stack down the top-left corner, in the
+  // same order both places, so an un-dragged box looks the same wherever it appears.
+  function defaultOverlayPosition(index) {
+    return { xPct: 3, yPct: Math.min(88, 6 + index * 10) };
+  }
+  function getOverlayPosition(varName, index, positions) {
+    const saved = positions && positions[varName];
+    return (saved && typeof saved.xPct === 'number' && typeof saved.yPct === 'number') ? saved : defaultOverlayPosition(index);
+  }
+  function round1(n) { return Math.round(n * 10) / 10; }
 
   function formatShotDate(iso) {
     const d = new Date(iso);
@@ -357,6 +387,7 @@
     const shots = existingManifest.shots || [];
     const hasShots = shots.length > 0;
     el.emptyState.classList.toggle('is-hidden', hasShots);
+    el.editLayoutBtn.classList.toggle('is-hidden', !hasShots);
     el.dateTabs.classList.toggle('is-hidden', !hasShots);
     el.categoryChips.classList.toggle('is-hidden', !hasShots);
     if (!hasShots) { el.shotGrid.innerHTML = ''; return; }
@@ -428,34 +459,126 @@
       catTag.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
       catTag.textContent = CATEGORY_LABEL[shot.category] || CATEGORY_LABEL.other;
       imgWrap.appendChild(catTag);
-      card.appendChild(imgWrap);
 
-      const body = document.createElement('div');
-      body.className = 'shot-card__body';
       const row = shot.row || {};
-      const shownVars = vars.filter(v => row[v] !== undefined && row[v] !== '');
-      if (shownVars.length === 0) {
-        const empty = document.createElement('span');
-        empty.className = 'shot-card__empty-vars';
-        empty.textContent = 'No boat data matched';
-        body.appendChild(empty);
-      } else {
-        const varsWrap = document.createElement('div');
-        varsWrap.className = 'shot-card__vars';
-        shownVars.forEach(v => {
-          const chip = document.createElement('span');
-          chip.className = 'var-chip';
-          chip.innerHTML = `<b></b><span></span>`;
-          chip.querySelector('b').textContent = row[v];
-          chip.querySelector('span').textContent = v;
-          varsWrap.appendChild(chip);
-        });
-        body.appendChild(varsWrap);
-      }
-      card.appendChild(body);
+      const overlayLayout = existingManifest.overlayLayout || {};
+      vars.forEach((v, i) => {
+        if (row[v] === undefined || row[v] === '') return;
+        const pos = getOverlayPosition(v, i, overlayLayout);
+        const box = document.createElement('div');
+        box.className = 'overlay-box';
+        box.style.left = `${pos.xPct}%`;
+        box.style.top = `${pos.yPct}%`;
+        box.innerHTML = `<b></b><span></span>`;
+        box.querySelector('b').textContent = row[v];
+        box.querySelector('span').textContent = v;
+        imgWrap.appendChild(box);
+      });
+
+      card.appendChild(imgWrap);
       el.shotGrid.appendChild(card);
     });
   }
+
+  // ---------- overlay layout editor ----------
+  function populateOverlayEditorShotSelect() {
+    const shots = [...existingManifest.shots].sort((a, b) => new Date(b.capturedAt) - new Date(a.capturedAt));
+    el.overlayEditorShotSelect.innerHTML = '';
+    shots.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = `${(s.file || '').split('/').pop()} — ${formatShotDate(s.capturedAt)}`;
+      el.overlayEditorShotSelect.appendChild(opt);
+    });
+    return shots[0] ? shots[0].id : null;
+  }
+
+  function renderOverlayEditorPreview() {
+    const shot = existingManifest.shots.find(s => s.id === overlayEditorShotId) || existingManifest.shots[0];
+    if (!shot) return;
+    el.overlayEditorImg.src = `./${shot.file}`;
+    el.overlayEditorBoxes.innerHTML = '';
+    const vars = existingManifest.variables || [];
+    const row = shot.row || {};
+    vars.forEach((v, i) => {
+      const pos = getOverlayPosition(v, i, overlayWorkingPositions);
+      const box = document.createElement('div');
+      box.className = 'overlay-box overlay-box--editable';
+      box.style.left = `${pos.xPct}%`;
+      box.style.top = `${pos.yPct}%`;
+      box.innerHTML = `<b></b><span></span>`;
+      box.querySelector('b').textContent = (row[v] !== undefined && row[v] !== '') ? row[v] : '—';
+      box.querySelector('span').textContent = v;
+      box.addEventListener('pointerdown', (e) => startOverlayDrag(e, v, box));
+      el.overlayEditorBoxes.appendChild(box);
+    });
+  }
+
+  function startOverlayDrag(e, varName, boxEl) {
+    e.preventDefault();
+    boxEl.setPointerCapture(e.pointerId);
+    const wrapRect = el.overlayEditorImageWrap.getBoundingClientRect();
+    const boxRect = boxEl.getBoundingClientRect();
+    const offsetX = e.clientX - boxRect.left;
+    const offsetY = e.clientY - boxRect.top;
+    boxEl.classList.add('is-dragging');
+
+    function move(ev) {
+      let xPct = ((ev.clientX - offsetX - wrapRect.left) / wrapRect.width) * 100;
+      let yPct = ((ev.clientY - offsetY - wrapRect.top) / wrapRect.height) * 100;
+      xPct = Math.max(0, Math.min(96, xPct));
+      yPct = Math.max(0, Math.min(94, yPct));
+      boxEl.style.left = `${xPct}%`;
+      boxEl.style.top = `${yPct}%`;
+      overlayWorkingPositions[varName] = { xPct: round1(xPct), yPct: round1(yPct) };
+    }
+    function up() {
+      boxEl.classList.remove('is-dragging');
+      boxEl.removeEventListener('pointermove', move);
+      boxEl.removeEventListener('pointerup', up);
+      boxEl.removeEventListener('pointercancel', up);
+    }
+    boxEl.addEventListener('pointermove', move);
+    boxEl.addEventListener('pointerup', up);
+    boxEl.addEventListener('pointercancel', up);
+  }
+
+  function openOverlayEditor() {
+    if (!existingManifest.shots.length) return;
+    overlayWorkingPositions = {};
+    Object.entries(existingManifest.overlayLayout || {}).forEach(([k, v]) => { overlayWorkingPositions[k] = { ...v }; });
+    overlayEditorShotId = populateOverlayEditorShotSelect();
+    renderOverlayEditorPreview();
+    el.overlayEditor.classList.remove('is-hidden');
+  }
+  function closeOverlayEditor() {
+    el.overlayEditor.classList.add('is-hidden');
+  }
+
+  el.editLayoutBtn.addEventListener('click', openOverlayEditor);
+  el.overlayEditorClose.addEventListener('click', closeOverlayEditor);
+  el.overlayEditorCancel.addEventListener('click', closeOverlayEditor);
+  el.overlayEditorShotSelect.addEventListener('change', () => {
+    overlayEditorShotId = el.overlayEditorShotSelect.value;
+    renderOverlayEditorPreview();
+  });
+  el.overlayEditorReset.addEventListener('click', () => {
+    overlayWorkingPositions = {};
+    renderOverlayEditorPreview();
+  });
+  el.overlayEditorLock.addEventListener('click', () => {
+    const manifest = {
+      timestampColumn: existingManifest.timestampColumn || '',
+      headingColumn: existingManifest.headingColumn || '',
+      twaColumn: existingManifest.twaColumn || '',
+      variables: existingManifest.variables || [],
+      shots: existingManifest.shots || [],
+      dayNotes: existingManifest.dayNotes || {},
+      overlayLayout: { ...overlayWorkingPositions },
+    };
+    downloadManifestFile(manifest);
+    closeOverlayEditor();
+  });
 
   // ---------- import: CSV step ----------
   function populateTimestampSelect() {
@@ -730,17 +853,21 @@
       variables: [...selectedVars],
       shots: [...existingManifest.shots, ...newShots],
       dayNotes,
+      overlayLayout: existingManifest.overlayLayout || {},
     };
   }
 
-  el.downloadManifest.addEventListener('click', () => {
-    const manifest = buildManifest();
+  function downloadManifestFile(manifest) {
     const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url; a.download = 'manifest.json';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  }
+
+  el.downloadManifest.addEventListener('click', () => {
+    downloadManifestFile(buildManifest());
   });
 
   // ---------- add-shots toggle ----------

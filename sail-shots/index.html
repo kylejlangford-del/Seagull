@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#07111d" />
   <title>Sail Shots · Seagull Lab</title>
-  <link rel="stylesheet" href="./styles.css?v=20260909b" />
+  <link rel="stylesheet" href="./styles.css?v=20260909c" />
 </head>
 <body>
   <div id="app">
@@ -29,6 +29,9 @@
         <div id="emptyState" class="empty-state is-hidden">
           <span>No sail shots yet</span>
           <strong>Tap &ldquo;Add Shots&rdquo; above to bring in your first batch of photos.</strong>
+        </div>
+        <div class="gallery-toolbar">
+          <button id="editLayoutBtn" class="ghost-button is-hidden" type="button">Edit Overlay Layout</button>
         </div>
         <div id="dateTabs" class="date-tabs is-hidden"></div>
         <div id="categoryChips" class="category-chips is-hidden"></div>
@@ -100,6 +103,35 @@
       </section>
     </main>
   </div>
-  <script src="./app.js?v=20260909b"></script>
+
+  <div id="overlayEditor" class="overlay-editor is-hidden">
+    <div class="overlay-editor__panel">
+      <div class="overlay-editor__head">
+        <h2>Edit overlay layout</h2>
+        <button id="overlayEditorClose" class="overlay-editor__close" type="button" aria-label="Close">&times;</button>
+      </div>
+      <p class="import-step__hint">Drag each box to where you want it on the photo. Positions are saved as a percentage of the photo, so they land in the same spot on every shot regardless of size. This has no upload backend either &mdash; locking in downloads an updated <code>manifest.json</code> for you to publish the same way as everything else.</p>
+
+      <label class="field-inline">
+        <span>Preview photo</span>
+        <select id="overlayEditorShotSelect"></select>
+      </label>
+
+      <div id="overlayEditorImageWrap" class="overlay-editor__image-wrap">
+        <img id="overlayEditorImg" alt="" />
+        <div id="overlayEditorBoxes"></div>
+      </div>
+
+      <div class="overlay-editor__actions">
+        <button id="overlayEditorReset" class="text-link" type="button">Reset to default positions</button>
+        <div class="overlay-editor__actions-right">
+          <button id="overlayEditorCancel" class="ghost-button" type="button">Cancel</button>
+          <button id="overlayEditorLock" class="ghost-button" type="button">Lock positions &amp; Download manifest.json</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./app.js?v=20260909c"></script>
 </body>
 </html>
