@@ -2,6 +2,22 @@
   const MANIFEST_PATH = './manifest.json';
   const CONFIG_KEY = 'seagull-sailshots-config-v1';
   const GAP_WARN_SECONDS = 30 * 60; // 30 minutes
+  // New shots' photo files are hosted on Cloudflare R2 (not committed to this
+  // repo — 700MB+ of photos doesn't belong in git or GitHub's web upload).
+  // Older shots still have a plain "photos/whatever.jpg" repo-relative path
+  // in their manifest entry, and photoSrc() below keeps those working too —
+  // nothing needs migrating.
+  const R2_PHOTO_BASE_URL = 'https://pub-1c550d12c25441ef85b207d40ac08cfe.r2.dev';
+  function photoSrc(file) {
+    return /^https?:\/\//i.test(file || '') ? file : `./${file}`;
+  }
+  // Pulls the plain filename back out of either a repo-relative path
+  // ("photos/DSC01118.JPG") or an R2 URL (".../DSC01118.JPG") — decoding it
+  // so it displays/matches the same way a raw filename does.
+  function filenameOf(file) {
+    const last = (file || '').split('/').pop() || '';
+    try { return decodeURIComponent(last); } catch { return last; }
+  }
 
   // ---------- categorization tuning ----------
   const CLASSIFY_WINDOW_SECONDS = 15; // how far either side of the photo to look
@@ -538,7 +554,7 @@
       const imgWrap = document.createElement('div');
       imgWrap.className = 'shot-card__image-wrap';
       const img = document.createElement('img');
-      img.src = `./${shot.file}`;
+      img.src = photoSrc(shot.file);
       img.alt = '';
       img.loading = 'lazy';
       imgWrap.appendChild(img);
@@ -636,7 +652,7 @@
       });
     };
     el.lightboxImg.onload = renderBoxes;
-    el.lightboxImg.src = `./${shot.file}`;
+    el.lightboxImg.src = photoSrc(shot.file);
     el.lightboxBoxes.innerHTML = '';
     if (el.lightboxImg.complete) renderBoxes();
 
@@ -707,7 +723,7 @@
   function deleteShot(shotId) {
     const shot = existingManifest.shots.find(s => s.id === shotId);
     if (!shot) return false;
-    const label = (shot.file || '').split('/').pop() || 'this photo';
+    const label = filenameOf(shot.file) || 'this photo';
     if (!confirm(`Delete ${label} from the gallery?\n\nThis removes it from manifest.json — you'll still need to download and publish the update below. The photo file itself stays in the repo until that's done.`)) {
       return false;
     }
@@ -742,7 +758,7 @@
     shots.forEach(s => {
       const opt = document.createElement('option');
       opt.value = s.id;
-      opt.textContent = `${(s.file || '').split('/').pop()} — ${formatShotDate(s.capturedAt)}`;
+      opt.textContent = `${filenameOf(s.file)} — ${formatShotDate(s.capturedAt)}`;
       el.overlayEditorShotSelect.appendChild(opt);
     });
     return shots[0] ? shots[0].id : null;
@@ -751,7 +767,7 @@
   function renderOverlayEditorPreview() {
     const shot = existingManifest.shots.find(s => s.id === overlayEditorShotId) || existingManifest.shots[0];
     if (!shot) return;
-    el.overlayEditorImg.src = `./${shot.file}`;
+    el.overlayEditorImg.src = photoSrc(shot.file);
     el.overlayEditorBoxes.innerHTML = '';
     const vars = existingManifest.variables || [];
     const row = shot.row || {};
@@ -960,7 +976,7 @@
 
   // ---------- import: photo step ----------
   function existingFileNames() {
-    return new Set(existingManifest.shots.map(s => (s.file || '').split('/').pop()));
+    return new Set(existingManifest.shots.map(s => filenameOf(s.file)));
   }
 
   el.photoInput.addEventListener('change', async () => {
@@ -1088,7 +1104,10 @@
       .filter(p => p.capturedAt)
       .map(p => ({
         id: `${p.capturedAt.toISOString().replace(/[:.]/g, '-')}-${slugify(p.name.replace(/\.[^.]+$/, '')) || 'shot'}`,
-        file: `photos/${p.name}`,
+        // The photo itself isn't published through this page — it's dragged
+        // into the R2 bucket separately (see the Publish step below), using
+        // this exact filename as the object name.
+        file: `${R2_PHOTO_BASE_URL}/${encodeURIComponent(p.name)}`,
         capturedAt: p.capturedAt.toISOString(),
         capturedAtSource: p.source,
         gapSeconds: p.gapSeconds,

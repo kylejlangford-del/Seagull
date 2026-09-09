@@ -102,7 +102,7 @@
 
         <div id="publishStep" class="import-step is-hidden">
           <div class="import-step__head"><span class="import-step__num">4</span><h2>Publish</h2></div>
-          <p class="import-step__hint">This page has no upload backend of its own &mdash; every change to the live site goes through a GitHub commit. Download the manifest below, then either upload it plus the photo files yourself using GitHub's <strong>Add file &rarr; Upload files</strong> page inside the <code>sail-shots/</code> folder (replacing <code>manifest.json</code> and adding the photos into a <code>photos/</code> subfolder), or send the manifest and photo files to Claude in chat and ask for them to be published.</p>
+          <p class="import-step__hint">This page has no upload backend of its own, so publishing a new batch is two separate drops: <strong>1)</strong> drag the photo files themselves straight into the <code>seagull-sail-shots</code> bucket on the <a href="https://dash.cloudflare.com/a5dbe2d89b56ddebfcc019a860fe4067/r2/default/buckets/seagull-sail-shots" target="_blank" rel="noopener">Cloudflare R2 dashboard</a> &mdash; keep their filenames exactly as they are, that's how the site finds them. <strong>2)</strong> Download the manifest below and upload just that one file using GitHub's <strong>Add file &rarr; Upload files</strong> page inside the <code>sail-shots/</code> folder (replacing <code>manifest.json</code>) &mdash; it's small, so this step stays on GitHub. Or send the manifest and photo files to Claude in chat and ask for them to be published.</p>
           <button id="downloadManifest" class="ghost-button" type="button" disabled>Download manifest.json</button>
         </div>
       </section>
@@ -150,6 +150,6 @@
     </div>
   </div>
 
-  <script src="./app.js?v=20260909l"></script>
+  <script src="./app.js?v=20260909m"></script>
 </body>
 </html>
