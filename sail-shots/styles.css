@@ -39,10 +39,14 @@ h1{margin:10px 0 14px;font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:.98;lette
    a second line instead. The label (span) is the one that can get long; the
    value (b) stays on its own line via white-space:nowrap so a number is
    never split mid-digit. */
-.overlay-box{position:absolute;z-index:1;display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:2px 4px;max-width:46%;padding:4px 8px;border-radius:7px;background:rgba(6,16,27,.72);backdrop-filter:blur(3px);font-size:.66rem;pointer-events:none;transform:translate(0,0)}
+/* Fixed (not shrink-to-fit) width so every box in a column lines up to the
+   same left/right edge instead of a ragged staircase of different-length
+   pills — label pinned left, value pinned right within that fixed width,
+   like rows in one clean instrument readout rather than scattered chips. */
+.overlay-box{position:absolute;z-index:1;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:2px 10px;width:30%;padding:5px 10px;border-radius:6px;background:rgba(6,16,27,.78);backdrop-filter:blur(3px);font-size:.72rem;pointer-events:none;transform:translate(0,0)}
 .overlay-box span{white-space:normal;overflow-wrap:anywhere}
 .overlay-box b{white-space:nowrap}
-.overlay-box b{color:var(--accent);font-weight:800}
+.overlay-box b{color:var(--accent);font-weight:800;font-variant-numeric:tabular-nums}
 .overlay-box span{color:var(--muted-2);font-weight:600}
 .overlay-box--editable{pointer-events:auto;cursor:grab;touch-action:none;border:1px solid rgba(71,231,219,.5);user-select:none}
 /* The gallery card is much narrower than the lightbox, so at the shared
@@ -50,7 +54,7 @@ h1{margin:10px 0 14px;font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:.98;lette
    second line and can crowd the row below it — shrink text on the card
    specifically so two full columns of long names still fit without
    crowding, while the lightbox (plenty of width) stays at full size. */
-.shot-card__image-wrap .overlay-box{font-size:.53rem;max-width:48%;padding:3px 5px;gap:0 3px;line-height:1.25}
+.shot-card__image-wrap .overlay-box{font-size:.53rem;width:47%;padding:3px 6px;gap:0 4px;line-height:1.25}
 .overlay-box--editable.is-dragging{cursor:grabbing;box-shadow:0 0 0 2px var(--accent)}
 
 /* Date tabs + category filter chips */

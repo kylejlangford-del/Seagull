@@ -401,6 +401,23 @@
   }
   function round1(n) { return Math.round(n * 10) / 10; }
 
+  // Boat-data values arrive at whatever precision the CSV happened to log
+  // (often 2 decimals even for a load in the thousands, e.g. "2774.81"),
+  // which reads as noisy clutter once a dozen-plus of them are stacked on a
+  // photo. Round each to a precision that matches its unit instead — loads
+  // (kgf) to whole numbers, angles/speeds (deg/kts) to one decimal, small
+  // foil measurements (m) to two — so the overlay reads like a clean
+  // instrument panel rather than a raw data dump. Falls back to the raw
+  // value untouched if it isn't a plain number.
+  function formatOverlayValue(varName, raw) {
+    if (raw === undefined || raw === '' || raw === '—') return raw;
+    const num = Number(raw);
+    if (Number.isNaN(num)) return raw;
+    if (/_kgf$/.test(varName)) return String(Math.round(num));
+    if (/_m$/.test(varName)) return num.toFixed(2);
+    return num.toFixed(1);
+  }
+
   function formatShotDate(iso) {
     const d = new Date(iso);
     if (isNaN(d.getTime())) return 'Unknown time';
@@ -538,7 +555,7 @@
         box.className = 'overlay-box';
         placeOverlayBox(box, pos);
         box.innerHTML = `<span></span><b></b>`;
-        box.querySelector('b').textContent = row[v];
+        box.querySelector('b').textContent = formatOverlayValue(v, row[v]);
         box.querySelector('span').textContent = v;
         imgWrap.appendChild(box);
       });
@@ -575,7 +592,7 @@
       box.className = 'overlay-box';
       placeOverlayBox(box, pos);
       box.innerHTML = `<span></span><b></b>`;
-      box.querySelector('b').textContent = row[v];
+      box.querySelector('b').textContent = formatOverlayValue(v, row[v]);
       box.querySelector('span').textContent = v;
       el.lightboxBoxes.appendChild(box);
     });
@@ -701,7 +718,7 @@
       box.className = 'overlay-box overlay-box--editable';
       placeOverlayBox(box, pos);
       box.innerHTML = `<span></span><b></b>`;
-      box.querySelector('b').textContent = (row[v] !== undefined && row[v] !== '') ? row[v] : '—';
+      box.querySelector('b').textContent = (row[v] !== undefined && row[v] !== '') ? formatOverlayValue(v, row[v]) : '—';
       box.querySelector('span').textContent = v;
       box.addEventListener('pointerdown', (e) => startOverlayDrag(e, v, box));
       el.overlayEditorBoxes.appendChild(box);
