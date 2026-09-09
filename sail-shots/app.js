@@ -379,7 +379,25 @@
   const OVERLAY_TOP_PCT = 32;
   const OVERLAY_BOTTOM_PCT = 78;
   const OVERLAY_EDGE_PCT = 3;
-  function defaultOverlayPosition(index, total) {
+  // A left/right split only makes sense when the photo is wide enough that
+  // "3% from the left" and "3% from the right" land nowhere near each other.
+  // The gallery card is always cropped to a fixed 4:3 box, so it's always
+  // wide enough — but the lightbox and the overlay editor show the photo at
+  // its own natural size, and a portrait-oriented shot (common for an
+  // on-the-water action photo — see DSC01118, 3376x6000 once its EXIF
+  // rotation is applied) is narrow enough that both columns collide right
+  // over the boat in the middle. singleColumn stacks every box down one
+  // edge instead, using the same top/bottom band, so it never happens.
+  const OVERLAY_LANDSCAPE_MIN_RATIO = 1.15;
+  function isLandscapeImage(imgEl) {
+    if (!imgEl || !imgEl.naturalWidth || !imgEl.naturalHeight) return true; // unknown yet — assume the normal (two-column) case
+    return imgEl.naturalWidth / imgEl.naturalHeight >= OVERLAY_LANDSCAPE_MIN_RATIO;
+  }
+  function defaultOverlayPosition(index, total, singleColumn) {
+    if (singleColumn) {
+      const yPct = total <= 1 ? OVERLAY_TOP_PCT : OVERLAY_TOP_PCT + (index * (OVERLAY_BOTTOM_PCT - OVERLAY_TOP_PCT)) / (total - 1);
+      return { xPct: OVERLAY_EDGE_PCT, yPct };
+    }
     const leftCount = Math.ceil(total / 2);
     const inLeft = index < leftCount;
     const col = inLeft ? index : index - leftCount;
@@ -387,9 +405,9 @@
     const yPct = colSize <= 1 ? OVERLAY_TOP_PCT : OVERLAY_TOP_PCT + (col * (OVERLAY_BOTTOM_PCT - OVERLAY_TOP_PCT)) / (colSize - 1);
     return inLeft ? { xPct: OVERLAY_EDGE_PCT, yPct } : { rightPct: OVERLAY_EDGE_PCT, yPct };
   }
-  function getOverlayPosition(varName, index, positions, total) {
+  function getOverlayPosition(varName, index, positions, total, singleColumn) {
     const saved = positions && positions[varName];
-    return (saved && typeof saved.xPct === 'number' && typeof saved.yPct === 'number') ? saved : defaultOverlayPosition(index, total);
+    return (saved && typeof saved.xPct === 'number' && typeof saved.yPct === 'number') ? saved : defaultOverlayPosition(index, total, singleColumn);
   }
   // Applies a computed position to a box element — left-anchored ({xPct}) or
   // right-anchored ({rightPct}, only ever a default, never a dragged/saved
@@ -548,9 +566,12 @@
 
       const row = shot.row || {};
       const overlayLayout = existingManifest.overlayLayout || {};
+      // The gallery card always crops the photo to a fixed 4:3 tile (see
+      // .shot-card__image-wrap), so it's always wide enough for two columns
+      // regardless of the source photo's own orientation.
       vars.forEach((v, i) => {
         if (row[v] === undefined || row[v] === '') return;
-        const pos = getOverlayPosition(v, i, overlayLayout, vars.length);
+        const pos = getOverlayPosition(v, i, overlayLayout, vars.length, false);
         const box = document.createElement('div');
         box.className = 'overlay-box';
         placeOverlayBox(box, pos);
@@ -583,19 +604,32 @@
     const row = shot.row || {};
     currentLightboxShotId = shot.id;
 
+    // The lightbox shows the photo at its own natural (uncropped) aspect
+    // ratio, so whether a two-column default layout fits depends on this
+    // particular photo's orientation — which isn't known until it has
+    // actually loaded. Render once immediately in case it's already
+    // decoded (e.g. reopening the same shot, where a repeat load event
+    // isn't guaranteed), and again on load to correct it once known.
+    const renderBoxes = () => {
+      if (currentLightboxShotId !== shot.id) return; // a different shot opened in the meantime
+      const singleColumn = !isLandscapeImage(el.lightboxImg);
+      el.lightboxBoxes.innerHTML = '';
+      vars.forEach((v, i) => {
+        if (row[v] === undefined || row[v] === '') return;
+        const pos = getOverlayPosition(v, i, overlayLayout, vars.length, singleColumn);
+        const box = document.createElement('div');
+        box.className = 'overlay-box';
+        placeOverlayBox(box, pos);
+        box.innerHTML = `<span></span><b></b>`;
+        box.querySelector('b').textContent = formatOverlayValue(v, row[v]);
+        box.querySelector('span').textContent = v;
+        el.lightboxBoxes.appendChild(box);
+      });
+    };
+    el.lightboxImg.onload = renderBoxes;
     el.lightboxImg.src = `./${shot.file}`;
     el.lightboxBoxes.innerHTML = '';
-    vars.forEach((v, i) => {
-      if (row[v] === undefined || row[v] === '') return;
-      const pos = getOverlayPosition(v, i, overlayLayout, vars.length);
-      const box = document.createElement('div');
-      box.className = 'overlay-box';
-      placeOverlayBox(box, pos);
-      box.innerHTML = `<span></span><b></b>`;
-      box.querySelector('b').textContent = formatOverlayValue(v, row[v]);
-      box.querySelector('span').textContent = v;
-      el.lightboxBoxes.appendChild(box);
-    });
+    if (el.lightboxImg.complete) renderBoxes();
 
     el.lightboxCategory.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
     el.lightboxCategory.innerHTML = '';
@@ -712,8 +746,13 @@
     el.overlayEditorBoxes.innerHTML = '';
     const vars = existingManifest.variables || [];
     const row = shot.row || {};
+    // Unlike the lightbox, the editor always crops the preview to a fixed
+    // 4:3 box — same as the gallery card, and for the same reason (so a
+    // dragged position lands in the same spot on the card). So it's always
+    // wide enough for two columns regardless of the source photo's own
+    // orientation; no orientation check needed here.
     vars.forEach((v, i) => {
-      const pos = getOverlayPosition(v, i, overlayWorkingPositions, vars.length);
+      const pos = getOverlayPosition(v, i, overlayWorkingPositions, vars.length, false);
       const box = document.createElement('div');
       box.className = 'overlay-box overlay-box--editable';
       placeOverlayBox(box, pos);
