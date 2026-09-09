@@ -193,6 +193,11 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
 .lightbox__close:hover{border-color:rgba(255,107,107,.5);color:#fff}
 .lightbox__delete{position:fixed;top:18px;left:18px;height:40px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(255,107,107,.4);border-radius:10px;background:rgba(255,107,107,.1);color:#ffb3b3;font-size:.76rem;font-weight:700;cursor:pointer;z-index:71}
 .lightbox__delete:hover{border-color:rgba(255,107,107,.7);color:#fff;background:rgba(255,107,107,.22)}
+.lightbox__nav{position:fixed;top:50%;transform:translateY(-50%);width:48px;height:48px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:50%;background:rgba(255,255,255,.04);color:var(--text);font-size:1.8rem;line-height:1;cursor:pointer;z-index:71}
+.lightbox__nav:hover{border-color:rgba(255,255,255,.5);color:#fff;background:rgba(255,255,255,.1)}
+.lightbox__nav.is-hidden{display:none}
+.lightbox__nav--prev{left:18px}
+.lightbox__nav--next{right:18px}
 .lightbox__inner{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:100%}
 .lightbox__image-wrap{position:relative;display:inline-block;line-height:0;border-radius:12px;overflow:hidden;background:#04090f}
 .lightbox__image-wrap img{display:block;max-width:92vw;max-height:80vh;width:auto;height:auto}
@@ -269,6 +274,9 @@ button,.ghost-button,.file-drop,.col-chip,.text-link{touch-action:manipulation;-
   .lightbox{padding:14px}
   .lightbox__close{top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));width:44px;height:44px}
   .lightbox__delete{top:max(12px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));height:44px;padding:0 12px}
+  .lightbox__nav{width:40px;height:40px;font-size:1.5rem}
+  .lightbox__nav--prev{left:max(6px,env(safe-area-inset-left))}
+  .lightbox__nav--next{right:max(6px,env(safe-area-inset-right))}
   .lightbox__image-wrap img{max-width:94vw;max-height:74vh}
   .overlay-box{font-size:.56rem;padding:2px 5px}
 

@@ -60,6 +60,8 @@
     lightbox: document.getElementById('lightbox'),
     lightboxClose: document.getElementById('lightboxClose'),
     lightboxDelete: document.getElementById('lightboxDelete'),
+    lightboxPrev: document.getElementById('lightboxPrev'),
+    lightboxNext: document.getElementById('lightboxNext'),
     lightboxImageWrap: document.getElementById('lightboxImageWrap'),
     lightboxImg: document.getElementById('lightboxImg'),
     lightboxBoxes: document.getElementById('lightboxBoxes'),
@@ -101,6 +103,7 @@
 
   let selectedDateKey = null;
   let selectedCategory = 'all';
+  let currentGalleryOrder = []; // the shots currently shown in the grid, in their displayed order — lets the lightbox step next/prev
 
   // set once a shot is deleted or re-categorized from the gallery (not the
   // import flow) — these edits happen straight against existingManifest so
@@ -555,6 +558,7 @@
 
     const filtered = selectedCategory === 'all' ? dayShots : dayShots.filter(s => (s.category || 'other') === selectedCategory);
     const sorted = [...filtered].sort((a, b) => new Date(b.capturedAt) - new Date(a.capturedAt));
+    currentGalleryOrder = sorted; // lets the lightbox step to the next/previous photo in this same order
 
     el.shotGrid.innerHTML = '';
     const vars = existingManifest.variables || [];
@@ -677,6 +681,13 @@
     });
     el.lightboxDate.textContent = formatShotDate(shot.capturedAt);
 
+    // Prev/next only make sense when there's something to step to — hide
+    // them rather than leaving a dead-end arrow when the gallery has just
+    // this one shot (or the filtered view has been narrowed to one).
+    const canNavigate = currentGalleryOrder.length > 1;
+    el.lightboxPrev.classList.toggle('is-hidden', !canNavigate);
+    el.lightboxNext.classList.toggle('is-hidden', !canNavigate);
+
     el.lightbox.classList.remove('is-hidden');
   }
   function closeLightbox() {
@@ -684,10 +695,23 @@
     el.lightboxImg.src = '';
     currentLightboxShotId = null;
   }
+  // Steps to the next/previous shot in the currently displayed gallery
+  // order (same date + category filter the grid is showing). Wraps around
+  // at either end so the arrows always do something while more than one
+  // photo is in view.
+  function stepLightbox(delta) {
+    if (!currentLightboxShotId || currentGalleryOrder.length < 2) return;
+    const idx = currentGalleryOrder.findIndex(s => s.id === currentLightboxShotId);
+    if (idx === -1) return;
+    const next = currentGalleryOrder[(idx + delta + currentGalleryOrder.length) % currentGalleryOrder.length];
+    openLightbox(next);
+  }
   el.lightboxClose.addEventListener('click', closeLightbox);
   el.lightbox.addEventListener('click', (e) => {
     if (e.target === el.lightbox) closeLightbox(); // click on the backdrop, not the photo itself
   });
+  el.lightboxPrev.addEventListener('click', (e) => { e.stopPropagation(); stepLightbox(-1); });
+  el.lightboxNext.addEventListener('click', (e) => { e.stopPropagation(); stepLightbox(1); });
   el.lightboxCategory.addEventListener('click', (e) => e.stopPropagation()); // don't let picking an option close the lightbox
   el.lightboxCategory.addEventListener('change', () => {
     if (!currentLightboxShotId) return;
@@ -700,9 +724,13 @@
     if (deleteShot(currentLightboxShotId)) closeLightbox();
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Escape') return;
-    if (!el.lightbox.classList.contains('is-hidden')) closeLightbox();
-    else if (!el.overlayEditor.classList.contains('is-hidden')) closeOverlayEditor();
+    if (el.lightbox.classList.contains('is-hidden')) {
+      if (e.key === 'Escape' && !el.overlayEditor.classList.contains('is-hidden')) closeOverlayEditor();
+      return;
+    }
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft') stepLightbox(-1);
+    else if (e.key === 'ArrowRight') stepLightbox(1);
   });
 
   // ---------- gallery edits: delete a published shot, change its category ----------
