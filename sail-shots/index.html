@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#07111d" />
   <title>Sail Shots · Seagull Lab</title>
-  <link rel="stylesheet" href="./styles.css?v=20260909o" />
+  <link rel="stylesheet" href="./styles.css?v=20260909p" />
 </head>
 <body>
   <div id="app">
@@ -36,7 +36,6 @@
             <button id="galleryDiscardChanges" class="text-link" type="button">Discard</button>
             <button id="galleryDownloadChanges" class="ghost-button" type="button">Download updated manifest.json</button>
           </div>
-          <button id="editLayoutBtn" class="ghost-button is-hidden" type="button">Edit Overlay Layout</button>
         </div>
         <div id="dateTabs" class="date-tabs is-hidden"></div>
         <div id="categoryChips" class="category-chips is-hidden"></div>
@@ -109,49 +108,29 @@
     </main>
   </div>
 
-  <div id="overlayEditor" class="overlay-editor is-hidden">
-    <div class="overlay-editor__panel">
-      <div class="overlay-editor__head">
-        <h2>Edit overlay layout</h2>
-        <button id="overlayEditorClose" class="overlay-editor__close" type="button" aria-label="Close">&times;</button>
-      </div>
-      <p class="import-step__hint">Drag each box to where you want it on the photo. Positions are saved as a percentage of the photo, so they land in the same spot on every shot regardless of size. This has no upload backend either &mdash; locking in downloads an updated <code>manifest.json</code> for you to publish the same way as everything else.</p>
-
-      <label class="field-inline">
-        <span>Preview photo</span>
-        <select id="overlayEditorShotSelect"></select>
-      </label>
-
-      <div id="overlayEditorImageWrap" class="overlay-editor__image-wrap">
-        <img id="overlayEditorImg" alt="" />
-        <div id="overlayEditorBoxes"></div>
-      </div>
-
-      <div class="overlay-editor__actions">
-        <button id="overlayEditorReset" class="text-link" type="button">Reset to default positions</button>
-        <div class="overlay-editor__actions-right">
-          <button id="overlayEditorCancel" class="ghost-button" type="button">Cancel</button>
-          <button id="overlayEditorLock" class="ghost-button" type="button">Lock positions &amp; Download manifest.json</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div id="lightbox" class="lightbox is-hidden">
     <button id="lightboxDelete" class="lightbox__delete" type="button">Delete photo</button>
     <button id="lightboxClose" class="lightbox__close" type="button" aria-label="Close">&times;</button>
     <button id="lightboxPrev" class="lightbox__nav lightbox__nav--prev" type="button" aria-label="Previous photo">&lsaquo;</button>
     <button id="lightboxNext" class="lightbox__nav lightbox__nav--next" type="button" aria-label="Next photo">&rsaquo;</button>
     <div class="lightbox__inner">
-      <div id="lightboxImageWrap" class="lightbox__image-wrap">
-        <img id="lightboxImg" alt="" />
-        <div id="lightboxBoxes"></div>
-        <select id="lightboxCategory" class="shot-card__category"></select>
-        <div id="lightboxDate" class="lightbox__date"></div>
+      <div class="lightbox__body">
+        <div class="lightbox__data">
+          <select id="lightboxCategory" class="shot-card__category"></select>
+          <div id="lightboxDate" class="lightbox__date"></div>
+          <div id="lightboxVars" class="lightbox__vars"></div>
+        </div>
+        <div id="lightboxImageWrap" class="lightbox__image-wrap">
+          <img id="lightboxImg" alt="" />
+        </div>
+        <div class="lightbox__comment-wrap">
+          <label class="lightbox__comment-label" for="lightboxComment">Comments</label>
+          <textarea id="lightboxComment" class="lightbox__comment" placeholder="Add a comment…"></textarea>
+        </div>
       </div>
     </div>
   </div>
 
-  <script src="./app.js?v=20260909o"></script>
+  <script src="./app.js?v=20260909p"></script>
 </body>
 </html>

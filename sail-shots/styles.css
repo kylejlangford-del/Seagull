@@ -32,43 +32,6 @@ h1{margin:10px 0 14px;font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:.98;lette
 .gallery-changes-bar{display:flex;align-items:center;gap:12px;padding:8px 10px 8px 14px;border:1px solid rgba(71,231,219,.35);border-radius:11px;background:rgba(71,231,219,.06)}
 .gallery-changes-bar__label{font-size:.74rem;font-weight:700;color:var(--accent)}
 
-/* Data overlay boxes — rendered directly on top of a photo, positioned by
-   percentage so the same layout lines up on every shot regardless of size */
-/* max-width + wrap (not nowrap) keeps a long variable name from running past
-   the left/right edge of the photo on a narrow gallery card — it wraps onto
-   a second line instead. The label (span) is the one that can get long; the
-   value (b) stays on its own line via white-space:nowrap so a number is
-   never split mid-digit. */
-/* No background pill — the text sits straight on the photo, so it needs a
-   hard dark outline (via layered text-shadow, not a box) to stay readable
-   over sky, sail or water alike. Shrink-to-fit width (not a fixed column
-   width) so label and value sit tight together like a HUD readout instead
-   of being stretched apart with dead space between them — that only reads
-   right when there's a background to frame the row, which we no longer have. */
-/* line-height:1.3 (not the inherited "normal") matters most here: the
-   lightbox wrap sets line-height:0 so it shrink-wraps tightly to the photo
-   with no letterboxing gap (see the .shot-card__category comment below for
-   the same trick on a <select>) — without an explicit reset here that
-   collapses this box's own line height too, so consecutive stacked rows'
-   text visually overlaps regardless of how far apart their positions are. */
-.overlay-box{position:absolute;z-index:1;display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:2px 6px;max-width:60%;padding:1px 2px;pointer-events:none;transform:translate(0,0);line-height:1.3}
-.overlay-box span{white-space:normal;overflow-wrap:anywhere}
-.overlay-box b{white-space:nowrap}
-.overlay-box b{color:var(--accent);font-weight:800;font-variant-numeric:tabular-nums;text-shadow:-1px -1px 2px rgba(0,0,0,.9),1px -1px 2px rgba(0,0,0,.9),-1px 1px 2px rgba(0,0,0,.9),1px 1px 2px rgba(0,0,0,.9),0 0 6px rgba(0,0,0,.55)}
-.overlay-box span{color:#fff;font-weight:700;text-shadow:-1px -1px 2px rgba(0,0,0,.9),1px -1px 2px rgba(0,0,0,.9),-1px 1px 2px rgba(0,0,0,.9),1px 1px 2px rgba(0,0,0,.9),0 0 6px rgba(0,0,0,.55)}
-.overlay-box--editable{pointer-events:auto;cursor:grab;touch-action:none;border:1px solid rgba(71,231,219,.6);border-radius:6px;padding:3px 6px;background:rgba(6,16,27,.35);user-select:none}
-/* The lightbox has no card/editor-imposed size limit, so at the browser's
-   default font size a shot with a full 20+ variable set has too little
-   room per row — the smaller size here keeps rows one line each so they
-   can't wrap and crowd into the row below. */
-#lightboxBoxes .overlay-box{font-size:.78rem}
-/* The gallery card is much narrower than the lightbox, so at the shared
-   .66rem size a long label like "MainCunninghamLoad_kgf" wraps onto a
-   second line and can crowd the row below it — shrink text on the card
-   specifically so two full columns of long names still fit without
-   crowding, while the lightbox (plenty of width) stays at full size. */
-.shot-card__image-wrap .overlay-box{font-size:.53rem;max-width:64%;line-height:1.3}
-.overlay-box--editable.is-dragging{cursor:grabbing;box-shadow:0 0 0 2px var(--accent)}
 
 /* Date tabs + category filter chips */
 .date-tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
@@ -113,6 +76,10 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
 .shot-card__category--other{color:var(--muted-2)}
 .shot-card__delete{position:absolute;z-index:2;left:10px;top:10px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:7px;background:rgba(255,107,107,.14);backdrop-filter:blur(3px);color:#ffb3b3;font-size:.95rem;line-height:1;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .shot-card__delete:hover{border-color:rgba(255,107,107,.6);color:#fff;background:rgba(255,107,107,.28)}
+.shot-card__comment-wrap{padding:10px 12px 12px}
+.shot-card__comment{width:100%;resize:vertical;min-height:40px;padding:7px 9px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.03);color:var(--text);font-size:.76rem;line-height:1.4}
+.shot-card__comment::placeholder{color:var(--muted)}
+.shot-card__comment:focus{outline:none;border-color:rgba(71,231,219,.5)}
 .shot-card__body{padding:12px 14px 14px}
 .shot-card__vars{display:flex;flex-wrap:wrap;gap:6px}
 .var-chip{display:inline-flex;align-items:baseline;gap:4px;padding:4px 9px;border-radius:7px;background:rgba(71,231,219,.08);border:1px solid rgba(71,231,219,.18);font-size:.68rem}
@@ -170,23 +137,9 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
 .preview-item__remove{width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:8px;background:rgba(255,107,107,.06);color:#ffb3b3;font-size:1.1rem;line-height:1;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .preview-item__remove:hover{border-color:rgba(255,107,107,.55);color:#fff;background:rgba(255,107,107,.16)}
 
-/* Overlay layout editor */
-.overlay-editor{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(4,9,15,.82);backdrop-filter:blur(4px)}
-.overlay-editor__panel{width:min(720px,100%);max-height:92vh;overflow:auto;padding:22px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,rgba(12,29,44,.98),rgba(7,18,29,.99))}
-.overlay-editor__head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:6px}
-.overlay-editor__head h2{margin:0;font-size:1.1rem;letter-spacing:-.01em}
-.overlay-editor__close{width:32px;height:32px;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.03);color:var(--muted-2);font-size:1.2rem;line-height:1;cursor:pointer}
-.overlay-editor__close:hover{border-color:rgba(255,107,107,.5);color:#fff}
-.overlay-editor__image-wrap{position:relative;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:#04090f;margin:14px 0}
-/* Same crop bias as the gallery card (50% 70%, not center) — otherwise a box
-   dragged here to sit next to the boat could land somewhere else on the
-   actual card, since the two would be showing different parts of the photo. */
-.overlay-editor__image-wrap img{width:100%;height:100%;object-fit:cover;object-position:50% 70%;display:block;pointer-events:none;user-select:none}
-#overlayEditorBoxes{position:absolute;inset:0}
-.overlay-editor__actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:6px}
-.overlay-editor__actions-right{display:flex;gap:8px}
-
-/* Lightbox — full, uncropped photo with the same overlay boxes on top */
+/* Lightbox — full, uncropped photo with the boat data in a panel to its
+   left and a free-text comment box to its right, instead of floating on
+   top of the photo itself */
 .lightbox{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(2,5,9,.92);backdrop-filter:blur(6px)}
 .lightbox.is-hidden{display:none}
 .lightbox__close{position:fixed;top:18px;right:18px;width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.04);color:var(--text);font-size:1.4rem;line-height:1;cursor:pointer;z-index:71}
@@ -198,18 +151,36 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
 .lightbox__nav.is-hidden{display:none}
 .lightbox__nav--prev{left:18px}
 .lightbox__nav--next{right:18px}
-.lightbox__inner{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:100%}
+/* Deliberately NOT display:flex — a flex container here would stretch (or
+   worse, shrink-to-fit) .lightbox__body to whatever height this box
+   resolves to, fighting the max-height clamp below and collapsing the
+   photo to 0 height instead of letting the panel scroll. Plain block
+   sizing lets .lightbox__body be its natural (possibly taller) content
+   height, and overflow-y:auto scrolls it if that exceeds the clamp. */
+.lightbox__inner{max-width:100%;max-height:100%;overflow-y:auto}
+.lightbox__body{display:flex;align-items:stretch;gap:14px;max-width:94vw;max-height:88vh}
 .lightbox__image-wrap{position:relative;display:inline-block;line-height:0;border-radius:12px;overflow:hidden;background:#04090f}
-.lightbox__image-wrap img{display:block;max-width:92vw;max-height:80vh;width:auto;height:auto}
-#lightboxBoxes{position:absolute;inset:0}
-/* Sits directly on the photo's bottom-right corner now (it used to be a
-   plain caption below the image) — the mirror corner from .shot-card__date
-   so it never runs into the overlay data, which is left-anchored even in
-   the single-column portrait layout and can reach nearly to the bottom
-   edge there. Needs its own line-height for the same reason .overlay-box
-   does: .lightbox__image-wrap resets line-height to 0 to shrink-wrap
-   tightly around the photo, and that would otherwise collapse this too. */
-.lightbox__date{position:absolute;z-index:2;right:10px;bottom:10px;padding:4px 9px;border-radius:7px;background:rgba(6,16,27,.72);backdrop-filter:blur(3px);color:var(--text);font-size:.78rem;font-weight:700;line-height:1.3}
+.lightbox__image-wrap img{display:block;max-width:56vw;max-height:88vh;width:auto;height:auto}
+
+/* Side panels — the data readout (left) and the comment box (right) — are
+   the same fixed width so the photo sits centered between two balanced
+   columns instead of the data crowding onto the photo like before. Each
+   scrolls independently (overflow-y:auto) so a long variable list or a
+   long comment never forces the whole lightbox taller than the viewport. */
+.lightbox__data,.lightbox__comment-wrap{width:230px;flex:0 0 230px;display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025);overflow-y:auto}
+/* .shot-card__category is shared with the gallery card, where it's an
+   absolutely-positioned corner badge — reset that here so it just sits as
+   the first line of the data panel instead. */
+.lightbox__data select.shot-card__category{position:static;align-self:flex-start;width:fit-content}
+.lightbox__date{color:var(--text);font-size:.78rem;font-weight:700}
+.lightbox__vars{display:flex;flex-direction:column;gap:7px;padding-top:10px;border-top:1px solid var(--line)}
+.lightbox__var-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:.78rem}
+.lightbox__var-row span{color:var(--muted-2);font-weight:600;overflow-wrap:anywhere}
+.lightbox__var-row b{color:var(--accent);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lightbox__comment-label{color:var(--muted);font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em}
+.lightbox__comment{flex:1;min-height:120px;resize:vertical;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.03);color:var(--text);font-size:.82rem;line-height:1.5;font-family:inherit}
+.lightbox__comment::placeholder{color:var(--muted)}
+.lightbox__comment:focus{outline:none;border-color:rgba(71,231,219,.5)}
 
 /* iPhone / small-screen layout */
 html{overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%}
@@ -264,12 +235,6 @@ button,.ghost-button,.file-drop,.col-chip,.text-link{touch-action:manipulation;-
   .gallery-toolbar .ghost-button{flex:1;justify-content:center;min-height:44px}
   .gallery-changes-bar{width:100%;flex-wrap:wrap;justify-content:space-between}
   .gallery-changes-bar .ghost-button{min-height:40px}
-  .overlay-box{font-size:.6rem;padding:3px 6px}
-  .overlay-editor{padding:0}
-  .overlay-editor__panel{width:100%;max-height:100vh;height:100%;border-radius:0;padding:16px}
-  .overlay-editor__actions{flex-direction:column;align-items:stretch}
-  .overlay-editor__actions-right{flex-direction:column}
-  .overlay-editor__actions-right .ghost-button{min-height:44px;justify-content:center}
 
   .lightbox{padding:14px}
   .lightbox__close{top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));width:44px;height:44px}
@@ -277,8 +242,15 @@ button,.ghost-button,.file-drop,.col-chip,.text-link{touch-action:manipulation;-
   .lightbox__nav{width:40px;height:40px;font-size:1.5rem}
   .lightbox__nav--prev{left:max(6px,env(safe-area-inset-left))}
   .lightbox__nav--next{right:max(6px,env(safe-area-inset-right))}
-  .lightbox__image-wrap img{max-width:94vw;max-height:74vh}
-  .overlay-box{font-size:.56rem;padding:2px 5px}
+  /* Not enough width for three side-by-side columns on a phone — stack
+     data, then photo, then comment box, and let the whole stack scroll.
+     padding-top clears the fixed Delete/Close buttons (~44px tall, inset
+     from the top) so the data panel's first row doesn't start underneath
+     them. */
+  .lightbox__inner{padding-top:calc(44px + max(12px,env(safe-area-inset-top)) + 12px)}
+  .lightbox__body{flex-direction:column;max-width:100%;max-height:none}
+  .lightbox__image-wrap img{max-width:100%;max-height:50vh}
+  .lightbox__data,.lightbox__comment-wrap{width:100%;flex:0 0 auto;max-height:none}
 
   .preview-item{grid-template-columns:52px 1fr auto;gap:9px;padding:8px}
   .preview-item__thumb{width:52px;height:52px}

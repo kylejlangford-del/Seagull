@@ -39,23 +39,12 @@
     importView: document.getElementById('importView'),
     galleryView: document.getElementById('galleryView'),
     emptyState: document.getElementById('emptyState'),
-    editLayoutBtn: document.getElementById('editLayoutBtn'),
     dateTabs: document.getElementById('dateTabs'),
     categoryChips: document.getElementById('categoryChips'),
     shotGrid: document.getElementById('shotGrid'),
     galleryChangesBar: document.getElementById('galleryChangesBar'),
     galleryDiscardChanges: document.getElementById('galleryDiscardChanges'),
     galleryDownloadChanges: document.getElementById('galleryDownloadChanges'),
-
-    overlayEditor: document.getElementById('overlayEditor'),
-    overlayEditorClose: document.getElementById('overlayEditorClose'),
-    overlayEditorShotSelect: document.getElementById('overlayEditorShotSelect'),
-    overlayEditorImageWrap: document.getElementById('overlayEditorImageWrap'),
-    overlayEditorImg: document.getElementById('overlayEditorImg'),
-    overlayEditorBoxes: document.getElementById('overlayEditorBoxes'),
-    overlayEditorReset: document.getElementById('overlayEditorReset'),
-    overlayEditorCancel: document.getElementById('overlayEditorCancel'),
-    overlayEditorLock: document.getElementById('overlayEditorLock'),
 
     lightbox: document.getElementById('lightbox'),
     lightboxClose: document.getElementById('lightboxClose'),
@@ -64,9 +53,10 @@
     lightboxNext: document.getElementById('lightboxNext'),
     lightboxImageWrap: document.getElementById('lightboxImageWrap'),
     lightboxImg: document.getElementById('lightboxImg'),
-    lightboxBoxes: document.getElementById('lightboxBoxes'),
+    lightboxVars: document.getElementById('lightboxVars'),
     lightboxCategory: document.getElementById('lightboxCategory'),
     lightboxDate: document.getElementById('lightboxDate'),
+    lightboxComment: document.getElementById('lightboxComment'),
 
     csvInput: document.getElementById('csvInput'),
     csvDropLabel: document.getElementById('csvDropLabel'),
@@ -111,12 +101,6 @@
   // aren't "real" until published, so a banner offers a manifest download
   // rather than firing one on every click
   let manifestDirty = false;
-
-  // working copy of overlayLayout edited while the overlay editor is open —
-  // nothing here touches existingManifest (or the published site) until the
-  // user hits "Lock positions", same as every other edit in this app
-  let overlayWorkingPositions = {};
-  let overlayEditorShotId = null;
 
   // ---------- persistence (working config only — the published gallery
   // always reads manifest.json, never localStorage, so it looks the same
@@ -380,83 +364,6 @@
     renderGallery();
   }
 
-  // ---------- overlay box positioning (shared by the gallery and the editor) ----------
-  // Vars with no locked position yet default into two columns — the first
-  // half of the variable list down the left edge, the second half down the
-  // right — with nothing placed in the horizontal middle, since that's where
-  // the boat/mast usually sits in these shots. Each column's row spacing is
-  // computed from how many variables actually landed in it, spread evenly
-  // between a top and bottom margin, so it always fits the frame regardless
-  // of how many variables are selected (rather than a fixed step that could
-  // run past the bottom on a long list). The right column is anchored from
-  // the RIGHT edge (not left, like the left column) so a long label's own
-  // width never pushes it past the edge of the photo — only left/top offsets
-  // can't guarantee that, since box width varies with the variable name.
-  // This is only ever the un-arranged starting point; the same order is used
-  // in the gallery, the lightbox and the editor so a box looks the same
-  // wherever it appears until it's dragged onto a custom saved position.
-  const OVERLAY_TOP_PCT = 32;
-  const OVERLAY_BOTTOM_PCT = 78;
-  const OVERLAY_EDGE_PCT = 3;
-  // Single-column mode stacks every box down one edge instead of splitting
-  // left/right, so it doesn't need the tighter 32-78 band that two-column
-  // mode uses to dodge the gallery card's delete button and category badge
-  // (the lightbox's own delete/category controls sit outside this band, or
-  // off to the opposite side). With up to ~20+ variables all in one column,
-  // it needs the extra room — 32-78 only leaves enough vertical space per
-  // row for roughly a dozen items before rows start overlapping each other.
-  const OVERLAY_SINGLE_TOP_PCT = 6;
-  const OVERLAY_SINGLE_BOTTOM_PCT = 97;
-  // The lightbox now has a date/time badge fixed to the photo's bottom-right
-  // corner (~10-34px tall+inset). At a typical desktop size that's a sliver
-  // of the image and 78 leaves plenty of room below the last row — but a
-  // wide/landscape photo shown at a narrow mobile width renders short
-  // (capped by width, not height), so that same fixed-pixel badge eats a
-  // much bigger share of it and can run into the two-column layout's last
-  // row. Only the lightbox's two-column case needs the tighter band — the
-  // card and editor are always a fixed, comfortably tall 4:3 crop with no
-  // badge in that corner.
-  const OVERLAY_LIGHTBOX_TWOCOL_BOTTOM_PCT = 68;
-  // A left/right split only makes sense when the photo is wide enough that
-  // "3% from the left" and "3% from the right" land nowhere near each other.
-  // The gallery card is always cropped to a fixed 4:3 box, so it's always
-  // wide enough — but the lightbox and the overlay editor show the photo at
-  // its own natural size, and a portrait-oriented shot (common for an
-  // on-the-water action photo — see DSC01118, 3376x6000 once its EXIF
-  // rotation is applied) is narrow enough that both columns collide right
-  // over the boat in the middle. singleColumn stacks every box down one
-  // edge instead, so it never happens.
-  const OVERLAY_LANDSCAPE_MIN_RATIO = 1.15;
-  function isLandscapeImage(imgEl) {
-    if (!imgEl || !imgEl.naturalWidth || !imgEl.naturalHeight) return true; // unknown yet — assume the normal (two-column) case
-    return imgEl.naturalWidth / imgEl.naturalHeight >= OVERLAY_LANDSCAPE_MIN_RATIO;
-  }
-  function defaultOverlayPosition(index, total, singleColumn, bottomPct) {
-    if (singleColumn) {
-      const yPct = total <= 1 ? OVERLAY_SINGLE_TOP_PCT : OVERLAY_SINGLE_TOP_PCT + (index * (OVERLAY_SINGLE_BOTTOM_PCT - OVERLAY_SINGLE_TOP_PCT)) / (total - 1);
-      return { xPct: OVERLAY_EDGE_PCT, yPct };
-    }
-    const bottom = bottomPct === undefined ? OVERLAY_BOTTOM_PCT : bottomPct;
-    const leftCount = Math.ceil(total / 2);
-    const inLeft = index < leftCount;
-    const col = inLeft ? index : index - leftCount;
-    const colSize = inLeft ? leftCount : (total - leftCount);
-    const yPct = colSize <= 1 ? OVERLAY_TOP_PCT : OVERLAY_TOP_PCT + (col * (bottom - OVERLAY_TOP_PCT)) / (colSize - 1);
-    return inLeft ? { xPct: OVERLAY_EDGE_PCT, yPct } : { rightPct: OVERLAY_EDGE_PCT, yPct };
-  }
-  function getOverlayPosition(varName, index, positions, total, singleColumn, bottomPct) {
-    const saved = positions && positions[varName];
-    return (saved && typeof saved.xPct === 'number' && typeof saved.yPct === 'number') ? saved : defaultOverlayPosition(index, total, singleColumn, bottomPct);
-  }
-  // Applies a computed position to a box element — left-anchored ({xPct}) or
-  // right-anchored ({rightPct}, only ever a default, never a dragged/saved
-  // position — dragging always saves an {xPct} from the left, same as before).
-  function placeOverlayBox(box, pos) {
-    if (pos.rightPct !== undefined) { box.style.right = `${pos.rightPct}%`; box.style.left = ''; }
-    else { box.style.left = `${pos.xPct}%`; box.style.right = ''; }
-    box.style.top = `${pos.yPct}%`;
-  }
-  function round1(n) { return Math.round(n * 10) / 10; }
 
   // Boat-data values arrive at whatever precision the CSV happened to log
   // (often 2 decimals even for a load in the thousands, e.g. "2774.81"),
@@ -478,7 +385,7 @@
   function formatShotDate(iso) {
     const d = new Date(iso);
     if (isNaN(d.getTime())) return 'Unknown time';
-    return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit' });
   }
 
   function dateKeyOf(shot) {
@@ -508,7 +415,6 @@
     const shots = existingManifest.shots || [];
     const hasShots = shots.length > 0;
     el.emptyState.classList.toggle('is-hidden', hasShots);
-    el.editLayoutBtn.classList.toggle('is-hidden', !hasShots);
     el.dateTabs.classList.toggle('is-hidden', !hasShots);
     el.categoryChips.classList.toggle('is-hidden', !hasShots);
     if (!hasShots) { el.shotGrid.innerHTML = ''; return; }
@@ -561,7 +467,6 @@
     currentGalleryOrder = sorted; // lets the lightbox step to the next/previous photo in this same order
 
     el.shotGrid.innerHTML = '';
-    const vars = existingManifest.variables || [];
     sorted.forEach(shot => {
       const card = document.createElement('article');
       card.className = 'shot-card';
@@ -604,27 +509,27 @@
       });
       imgWrap.appendChild(deleteBtn);
 
-      const row = shot.row || {};
-      const overlayLayout = existingManifest.overlayLayout || {};
-      // The gallery card always crops the photo to a fixed 4:3 tile (see
-      // .shot-card__image-wrap), so it's always wide enough for two columns
-      // regardless of the source photo's own orientation.
-      vars.forEach((v, i) => {
-        if (row[v] === undefined || row[v] === '') return;
-        const pos = getOverlayPosition(v, i, overlayLayout, vars.length, false);
-        const box = document.createElement('div');
-        box.className = 'overlay-box';
-        placeOverlayBox(box, pos);
-        box.innerHTML = `<span></span><b></b>`;
-        box.querySelector('b').textContent = formatOverlayValue(v, row[v]);
-        box.querySelector('span').textContent = v;
-        imgWrap.appendChild(box);
-      });
-
       imgWrap.classList.add('is-clickable');
       imgWrap.addEventListener('click', () => openLightbox(shot));
 
       card.appendChild(imgWrap);
+
+      // The full boat-data readout now only lives in the lightbox (left
+      // panel), so it doesn't clash with the photo here — the card stays a
+      // clean thumbnail with just the category/date badges. A comment box
+      // sits right under it, so a quick note can be added without opening
+      // the lightbox at all.
+      const commentWrap = document.createElement('div');
+      commentWrap.className = 'shot-card__comment-wrap';
+      const commentInput = document.createElement('textarea');
+      commentInput.className = 'shot-card__comment';
+      commentInput.rows = 2;
+      commentInput.placeholder = 'Add a comment…';
+      commentInput.value = shot.comment || '';
+      commentInput.addEventListener('input', () => setShotComment(shot.id, commentInput.value));
+      commentWrap.appendChild(commentInput);
+      card.appendChild(commentWrap);
+
       el.shotGrid.appendChild(card);
     });
   }
@@ -632,44 +537,19 @@
   // ---------- lightbox (full-size photo view) ----------
   // The card thumbnails are cropped to a 4:3 tile; the lightbox shows the
   // whole, uncropped photo instead — that's the point of "full screen". The
-  // image wrap has no explicit size of its own (see CSS: display:inline-block
-  // around a size-capped <img>), so it shrink-wraps to exactly the image's
-  // rendered box with no letterboxing, and the same percentage-based overlay
-  // positions land correctly on the full photo without any extra math.
+  // boat data used to float directly on top of the photo, which got
+  // unreadable fast once a dozen-plus variables were selected — it now
+  // lives in a plain list in a panel to the left of the photo instead, with
+  // a comment box in a matching panel on the right, so nothing sits on the
+  // photo itself anymore.
   let currentLightboxShotId = null;
 
   function openLightbox(shot) {
     const vars = existingManifest.variables || [];
-    const overlayLayout = existingManifest.overlayLayout || {};
     const row = shot.row || {};
     currentLightboxShotId = shot.id;
 
-    // The lightbox shows the photo at its own natural (uncropped) aspect
-    // ratio, so whether a two-column default layout fits depends on this
-    // particular photo's orientation — which isn't known until it has
-    // actually loaded. Render once immediately in case it's already
-    // decoded (e.g. reopening the same shot, where a repeat load event
-    // isn't guaranteed), and again on load to correct it once known.
-    const renderBoxes = () => {
-      if (currentLightboxShotId !== shot.id) return; // a different shot opened in the meantime
-      const singleColumn = !isLandscapeImage(el.lightboxImg);
-      el.lightboxBoxes.innerHTML = '';
-      vars.forEach((v, i) => {
-        if (row[v] === undefined || row[v] === '') return;
-        const pos = getOverlayPosition(v, i, overlayLayout, vars.length, singleColumn, OVERLAY_LIGHTBOX_TWOCOL_BOTTOM_PCT);
-        const box = document.createElement('div');
-        box.className = 'overlay-box';
-        placeOverlayBox(box, pos);
-        box.innerHTML = `<span></span><b></b>`;
-        box.querySelector('b').textContent = formatOverlayValue(v, row[v]);
-        box.querySelector('span').textContent = v;
-        el.lightboxBoxes.appendChild(box);
-      });
-    };
-    el.lightboxImg.onload = renderBoxes;
     el.lightboxImg.src = photoSrc(shot.file);
-    el.lightboxBoxes.innerHTML = '';
-    if (el.lightboxImg.complete) renderBoxes();
 
     el.lightboxCategory.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
     el.lightboxCategory.innerHTML = '';
@@ -680,6 +560,19 @@
       el.lightboxCategory.appendChild(opt);
     });
     el.lightboxDate.textContent = formatShotDate(shot.capturedAt);
+
+    el.lightboxVars.innerHTML = '';
+    vars.forEach(v => {
+      if (row[v] === undefined || row[v] === '') return;
+      const item = document.createElement('div');
+      item.className = 'lightbox__var-row';
+      item.innerHTML = `<span></span><b></b>`;
+      item.querySelector('span').textContent = v;
+      item.querySelector('b').textContent = formatOverlayValue(v, row[v]);
+      el.lightboxVars.appendChild(item);
+    });
+
+    el.lightboxComment.value = shot.comment || '';
 
     // Prev/next only make sense when there's something to step to — hide
     // them rather than leaving a dead-end arrow when the gallery has just
@@ -723,14 +616,18 @@
     if (!currentLightboxShotId) return;
     if (deleteShot(currentLightboxShotId)) closeLightbox();
   });
+  el.lightboxComment.addEventListener('input', () => {
+    if (!currentLightboxShotId) return;
+    setShotComment(currentLightboxShotId, el.lightboxComment.value);
+  });
   document.addEventListener('keydown', (e) => {
-    if (el.lightbox.classList.contains('is-hidden')) {
-      if (e.key === 'Escape' && !el.overlayEditor.classList.contains('is-hidden')) closeOverlayEditor();
-      return;
-    }
+    if (el.lightbox.classList.contains('is-hidden')) return;
+    // Don't hijack the left/right arrow keys for prev/next while the
+    // comment box has focus — that's just normal cursor movement while typing.
+    const typingComment = document.activeElement === el.lightboxComment;
     if (e.key === 'Escape') closeLightbox();
-    else if (e.key === 'ArrowLeft') stepLightbox(-1);
-    else if (e.key === 'ArrowRight') stepLightbox(1);
+    else if (!typingComment && e.key === 'ArrowLeft') stepLightbox(-1);
+    else if (!typingComment && e.key === 'ArrowRight') stepLightbox(1);
   });
 
   // ---------- gallery edits: delete a published shot, change its category ----------
@@ -780,6 +677,19 @@
     renderGallery();
   }
 
+  // Unlike category, a comment is free text typed one keystroke at a time —
+  // re-rendering the whole grid on every keystroke (like setShotCategory
+  // does) would blow away focus and cursor position mid-type, so this just
+  // updates the data model and flags the manifest dirty without touching
+  // the DOM. Both the card's comment box and the lightbox's write through
+  // this same function, so either stays in sync with existingManifest.
+  function setShotComment(shotId, comment) {
+    const shot = existingManifest.shots.find(s => s.id === shotId);
+    if (!shot || (shot.comment || '') === comment) return;
+    shot.comment = comment;
+    markManifestDirty();
+  }
+
   el.galleryDownloadChanges.addEventListener('click', () => {
     downloadManifestFile(currentManifestSnapshot());
     clearManifestDirty();
@@ -788,108 +698,6 @@
     if (!confirm('Discard your unpublished deletes/category changes and reload the published manifest.json?')) return;
     clearManifestDirty();
     loadManifest();
-  });
-
-  // ---------- overlay layout editor ----------
-  function populateOverlayEditorShotSelect() {
-    const shots = [...existingManifest.shots].sort((a, b) => new Date(b.capturedAt) - new Date(a.capturedAt));
-    el.overlayEditorShotSelect.innerHTML = '';
-    shots.forEach(s => {
-      const opt = document.createElement('option');
-      opt.value = s.id;
-      opt.textContent = `${filenameOf(s.file)} — ${formatShotDate(s.capturedAt)}`;
-      el.overlayEditorShotSelect.appendChild(opt);
-    });
-    return shots[0] ? shots[0].id : null;
-  }
-
-  function renderOverlayEditorPreview() {
-    const shot = existingManifest.shots.find(s => s.id === overlayEditorShotId) || existingManifest.shots[0];
-    if (!shot) return;
-    el.overlayEditorImg.src = photoSrc(shot.file);
-    el.overlayEditorBoxes.innerHTML = '';
-    const vars = existingManifest.variables || [];
-    const row = shot.row || {};
-    // Unlike the lightbox, the editor always crops the preview to a fixed
-    // 4:3 box — same as the gallery card, and for the same reason (so a
-    // dragged position lands in the same spot on the card). So it's always
-    // wide enough for two columns regardless of the source photo's own
-    // orientation; no orientation check needed here.
-    vars.forEach((v, i) => {
-      const pos = getOverlayPosition(v, i, overlayWorkingPositions, vars.length, false);
-      const box = document.createElement('div');
-      box.className = 'overlay-box overlay-box--editable';
-      placeOverlayBox(box, pos);
-      box.innerHTML = `<span></span><b></b>`;
-      box.querySelector('b').textContent = (row[v] !== undefined && row[v] !== '') ? formatOverlayValue(v, row[v]) : '—';
-      box.querySelector('span').textContent = v;
-      box.addEventListener('pointerdown', (e) => startOverlayDrag(e, v, box));
-      el.overlayEditorBoxes.appendChild(box);
-    });
-  }
-
-  function startOverlayDrag(e, varName, boxEl) {
-    e.preventDefault();
-    boxEl.setPointerCapture(e.pointerId);
-    const wrapRect = el.overlayEditorImageWrap.getBoundingClientRect();
-    const boxRect = boxEl.getBoundingClientRect();
-    const offsetX = e.clientX - boxRect.left;
-    const offsetY = e.clientY - boxRect.top;
-    boxEl.classList.add('is-dragging');
-    // A right-anchored default box has only `right` set in its inline style;
-    // dragging always switches to a left-anchored saved position (matching
-    // every other custom position), so clear `right` up front — otherwise
-    // having both left and right set at once would stretch the box's width
-    // to fill the gap between them instead of sizing to its own content.
-    boxEl.style.right = '';
-
-    function move(ev) {
-      let xPct = ((ev.clientX - offsetX - wrapRect.left) / wrapRect.width) * 100;
-      let yPct = ((ev.clientY - offsetY - wrapRect.top) / wrapRect.height) * 100;
-      xPct = Math.max(0, Math.min(96, xPct));
-      yPct = Math.max(0, Math.min(94, yPct));
-      boxEl.style.left = `${xPct}%`;
-      boxEl.style.top = `${yPct}%`;
-      overlayWorkingPositions[varName] = { xPct: round1(xPct), yPct: round1(yPct) };
-    }
-    function up() {
-      boxEl.classList.remove('is-dragging');
-      boxEl.removeEventListener('pointermove', move);
-      boxEl.removeEventListener('pointerup', up);
-      boxEl.removeEventListener('pointercancel', up);
-    }
-    boxEl.addEventListener('pointermove', move);
-    boxEl.addEventListener('pointerup', up);
-    boxEl.addEventListener('pointercancel', up);
-  }
-
-  function openOverlayEditor() {
-    if (!existingManifest.shots.length) return;
-    overlayWorkingPositions = {};
-    Object.entries(existingManifest.overlayLayout || {}).forEach(([k, v]) => { overlayWorkingPositions[k] = { ...v }; });
-    overlayEditorShotId = populateOverlayEditorShotSelect();
-    renderOverlayEditorPreview();
-    el.overlayEditor.classList.remove('is-hidden');
-  }
-  function closeOverlayEditor() {
-    el.overlayEditor.classList.add('is-hidden');
-  }
-
-  el.editLayoutBtn.addEventListener('click', openOverlayEditor);
-  el.overlayEditorClose.addEventListener('click', closeOverlayEditor);
-  el.overlayEditorCancel.addEventListener('click', closeOverlayEditor);
-  el.overlayEditorShotSelect.addEventListener('change', () => {
-    overlayEditorShotId = el.overlayEditorShotSelect.value;
-    renderOverlayEditorPreview();
-  });
-  el.overlayEditorReset.addEventListener('click', () => {
-    overlayWorkingPositions = {};
-    renderOverlayEditorPreview();
-  });
-  el.overlayEditorLock.addEventListener('click', () => {
-    existingManifest.overlayLayout = { ...overlayWorkingPositions };
-    downloadManifestFile(currentManifestSnapshot());
-    closeOverlayEditor();
   });
 
   // ---------- import: CSV step ----------
@@ -1152,6 +960,7 @@
         gapSeconds: p.gapSeconds,
         category: p.category || 'other',
         row: p.matchedRow || {},
+        comment: '',
       }));
 
     const dayNotes = { ...(existingManifest.dayNotes || {}) };
