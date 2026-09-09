@@ -485,7 +485,7 @@
         box.className = 'overlay-box';
         box.style.left = `${pos.xPct}%`;
         box.style.top = `${pos.yPct}%`;
-        box.innerHTML = `<b></b><span></span>`;
+        box.innerHTML = `<span></span><b></b>`;
         box.querySelector('b').textContent = row[v];
         box.querySelector('span').textContent = v;
         imgWrap.appendChild(box);
@@ -520,7 +520,7 @@
       box.className = 'overlay-box';
       box.style.left = `${pos.xPct}%`;
       box.style.top = `${pos.yPct}%`;
-      box.innerHTML = `<b></b><span></span>`;
+      box.innerHTML = `<span></span><b></b>`;
       box.querySelector('b').textContent = row[v];
       box.querySelector('span').textContent = v;
       el.lightboxBoxes.appendChild(box);
@@ -572,7 +572,7 @@
       box.className = 'overlay-box overlay-box--editable';
       box.style.left = `${pos.xPct}%`;
       box.style.top = `${pos.yPct}%`;
-      box.innerHTML = `<b></b><span></span>`;
+      box.innerHTML = `<span></span><b></b>`;
       box.querySelector('b').textContent = (row[v] !== undefined && row[v] !== '') ? row[v] : '—';
       box.querySelector('span').textContent = v;
       box.addEventListener('pointerdown', (e) => startOverlayDrag(e, v, box));
