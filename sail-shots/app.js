@@ -404,6 +404,16 @@
   // row for roughly a dozen items before rows start overlapping each other.
   const OVERLAY_SINGLE_TOP_PCT = 6;
   const OVERLAY_SINGLE_BOTTOM_PCT = 97;
+  // The lightbox now has a date/time badge fixed to the photo's bottom-right
+  // corner (~10-34px tall+inset). At a typical desktop size that's a sliver
+  // of the image and 78 leaves plenty of room below the last row — but a
+  // wide/landscape photo shown at a narrow mobile width renders short
+  // (capped by width, not height), so that same fixed-pixel badge eats a
+  // much bigger share of it and can run into the two-column layout's last
+  // row. Only the lightbox's two-column case needs the tighter band — the
+  // card and editor are always a fixed, comfortably tall 4:3 crop with no
+  // badge in that corner.
+  const OVERLAY_LIGHTBOX_TWOCOL_BOTTOM_PCT = 68;
   // A left/right split only makes sense when the photo is wide enough that
   // "3% from the left" and "3% from the right" land nowhere near each other.
   // The gallery card is always cropped to a fixed 4:3 box, so it's always
@@ -418,21 +428,22 @@
     if (!imgEl || !imgEl.naturalWidth || !imgEl.naturalHeight) return true; // unknown yet — assume the normal (two-column) case
     return imgEl.naturalWidth / imgEl.naturalHeight >= OVERLAY_LANDSCAPE_MIN_RATIO;
   }
-  function defaultOverlayPosition(index, total, singleColumn) {
+  function defaultOverlayPosition(index, total, singleColumn, bottomPct) {
     if (singleColumn) {
       const yPct = total <= 1 ? OVERLAY_SINGLE_TOP_PCT : OVERLAY_SINGLE_TOP_PCT + (index * (OVERLAY_SINGLE_BOTTOM_PCT - OVERLAY_SINGLE_TOP_PCT)) / (total - 1);
       return { xPct: OVERLAY_EDGE_PCT, yPct };
     }
+    const bottom = bottomPct === undefined ? OVERLAY_BOTTOM_PCT : bottomPct;
     const leftCount = Math.ceil(total / 2);
     const inLeft = index < leftCount;
     const col = inLeft ? index : index - leftCount;
     const colSize = inLeft ? leftCount : (total - leftCount);
-    const yPct = colSize <= 1 ? OVERLAY_TOP_PCT : OVERLAY_TOP_PCT + (col * (OVERLAY_BOTTOM_PCT - OVERLAY_TOP_PCT)) / (colSize - 1);
+    const yPct = colSize <= 1 ? OVERLAY_TOP_PCT : OVERLAY_TOP_PCT + (col * (bottom - OVERLAY_TOP_PCT)) / (colSize - 1);
     return inLeft ? { xPct: OVERLAY_EDGE_PCT, yPct } : { rightPct: OVERLAY_EDGE_PCT, yPct };
   }
-  function getOverlayPosition(varName, index, positions, total, singleColumn) {
+  function getOverlayPosition(varName, index, positions, total, singleColumn, bottomPct) {
     const saved = positions && positions[varName];
-    return (saved && typeof saved.xPct === 'number' && typeof saved.yPct === 'number') ? saved : defaultOverlayPosition(index, total, singleColumn);
+    return (saved && typeof saved.xPct === 'number' && typeof saved.yPct === 'number') ? saved : defaultOverlayPosition(index, total, singleColumn, bottomPct);
   }
   // Applies a computed position to a box element — left-anchored ({xPct}) or
   // right-anchored ({rightPct}, only ever a default, never a dragged/saved
@@ -641,7 +652,7 @@
       el.lightboxBoxes.innerHTML = '';
       vars.forEach((v, i) => {
         if (row[v] === undefined || row[v] === '') return;
-        const pos = getOverlayPosition(v, i, overlayLayout, vars.length, singleColumn);
+        const pos = getOverlayPosition(v, i, overlayLayout, vars.length, singleColumn, OVERLAY_LIGHTBOX_TWOCOL_BOTTOM_PCT);
         const box = document.createElement('div');
         box.className = 'overlay-box';
         placeOverlayBox(box, pos);

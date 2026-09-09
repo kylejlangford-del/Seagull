@@ -197,7 +197,14 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
 .lightbox__image-wrap{position:relative;display:inline-block;line-height:0;border-radius:12px;overflow:hidden;background:#04090f}
 .lightbox__image-wrap img{display:block;max-width:92vw;max-height:80vh;width:auto;height:auto}
 #lightboxBoxes{position:absolute;inset:0}
-.lightbox__date{color:var(--muted-2);font-size:.78rem;font-weight:700}
+/* Sits directly on the photo's bottom-right corner now (it used to be a
+   plain caption below the image) — the mirror corner from .shot-card__date
+   so it never runs into the overlay data, which is left-anchored even in
+   the single-column portrait layout and can reach nearly to the bottom
+   edge there. Needs its own line-height for the same reason .overlay-box
+   does: .lightbox__image-wrap resets line-height to 0 to shrink-wrap
+   tightly around the photo, and that would otherwise collapse this too. */
+.lightbox__date{position:absolute;z-index:2;right:10px;bottom:10px;padding:4px 9px;border-radius:7px;background:rgba(6,16,27,.72);backdrop-filter:blur(3px);color:var(--text);font-size:.78rem;font-weight:700;line-height:1.3}
 
 /* iPhone / small-screen layout */
 html{overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%}
