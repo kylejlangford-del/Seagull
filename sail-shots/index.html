@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#07111d" />
   <title>Sail Shots · Seagull Lab</title>
-  <link rel="stylesheet" href="./styles.css?v=20260909" />
+  <link rel="stylesheet" href="./styles.css?v=20260909b" />
 </head>
 <body>
   <div id="app">
@@ -30,6 +30,8 @@
           <span>No sail shots yet</span>
           <strong>Tap &ldquo;Add Shots&rdquo; above to bring in your first batch of photos.</strong>
         </div>
+        <div id="dateTabs" class="date-tabs is-hidden"></div>
+        <div id="categoryChips" class="category-chips is-hidden"></div>
         <div id="shotGrid" class="shot-grid"></div>
       </section>
 
@@ -47,6 +49,16 @@
             <label class="field-inline">
               <span>Timestamp column</span>
               <select id="timestampSelect"></select>
+            </label>
+
+            <p class="import-step__hint import-step__hint--tight">Optional — pick heading and true-wind-angle columns and each photo gets an auto-suggested category (Manoeuvre Sequence, Gybe Exit, Straight Line Upwind/Downwind). You can always change it per photo below.</p>
+            <label class="field-inline">
+              <span>Heading column</span>
+              <select id="headingSelect"></select>
+            </label>
+            <label class="field-inline">
+              <span>TWA column</span>
+              <select id="twaSelect"></select>
             </label>
 
             <div class="col-toggle-wrap is-open">
@@ -68,6 +80,10 @@
             <input id="photoInput" type="file" accept="image/*" multiple />
             <span id="photoDropLabel">Choose photos&hellip;</span>
           </label>
+          <label class="field-inline field-inline--stack">
+            <span>Sail codes / notes for today</span>
+            <input id="dayNotesInput" type="text" placeholder="e.g. M1-3, J2-4" />
+          </label>
         </div>
 
         <div id="previewStep" class="import-step is-hidden">
@@ -84,6 +100,6 @@
       </section>
     </main>
   </div>
-  <script src="./app.js?v=20260909"></script>
+  <script src="./app.js?v=20260909b"></script>
 </body>
 </html>

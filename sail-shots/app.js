@@ -3,11 +3,28 @@
   const CONFIG_KEY = 'seagull-sailshots-config-v1';
   const GAP_WARN_SECONDS = 30 * 60; // 30 minutes
 
+  // ---------- categorization tuning ----------
+  const CLASSIFY_WINDOW_SECONDS = 15; // how far either side of the photo to look
+  const TURN_RATE_THRESHOLD = 3; // avg deg/sec heading swing across the window counts as "turning"
+  const DOWNWIND_TWA_THRESHOLD = 90; // |TWA| >= this => downwind, below => upwind
+  const GYBE_TWA_THRESHOLD = 150; // |TWA| passing this close to dead-run during a turn => gybe, not a tack
+
+  const CATEGORIES = [
+    { value: 'manoeuvre', label: 'Manoeuvre Sequence' },
+    { value: 'gybe-exit', label: 'Gybe Exit' },
+    { value: 'upwind', label: 'Straight Line Upwind' },
+    { value: 'downwind', label: 'Straight Line Downwind' },
+    { value: 'other', label: 'Other / Uncategorized' },
+  ];
+  const CATEGORY_LABEL = Object.fromEntries(CATEGORIES.map(c => [c.value, c.label]));
+
   const el = {
     addBtn: document.getElementById('addBtn'),
     importView: document.getElementById('importView'),
     galleryView: document.getElementById('galleryView'),
     emptyState: document.getElementById('emptyState'),
+    dateTabs: document.getElementById('dateTabs'),
+    categoryChips: document.getElementById('categoryChips'),
     shotGrid: document.getElementById('shotGrid'),
 
     csvInput: document.getElementById('csvInput'),
@@ -15,12 +32,15 @@
     csvSummary: document.getElementById('csvSummary'),
     csvConfig: document.getElementById('csvConfig'),
     timestampSelect: document.getElementById('timestampSelect'),
+    headingSelect: document.getElementById('headingSelect'),
+    twaSelect: document.getElementById('twaSelect'),
     variablePicker: document.getElementById('variablePicker'),
     varsAll: document.getElementById('varsAll'),
     varsNone: document.getElementById('varsNone'),
 
     photoInput: document.getElementById('photoInput'),
     photoDropLabel: document.getElementById('photoDropLabel'),
+    dayNotesInput: document.getElementById('dayNotesInput'),
 
     previewStep: document.getElementById('previewStep'),
     previewList: document.getElementById('previewList'),
@@ -29,12 +49,19 @@
     downloadManifest: document.getElementById('downloadManifest'),
   };
 
-  let existingManifest = { timestampColumn: '', variables: [], shots: [] };
+  let existingManifest = { timestampColumn: '', variables: [], shots: [], dayNotes: {} };
   let csvHeaders = [];
   let csvRows = [];
+  let sortedRows = []; // [{ ts: epochMillis, row: {...} }] ascending by timestamp, rebuilt whenever timestampColumn changes
   let timestampColumn = '';
+  let headingColumn = '';
+  let twaColumn = '';
   let selectedVars = new Set();
-  let photos = []; // { file, name, capturedAt: Date|null, source: 'exif'|'file-modified'|null, matchedRow, gapSeconds, matched: bool }
+  // photos: { file, name, capturedAt: Date|null, source, matchedRow, matchedIndex, gapSeconds, category, categoryManual }
+  let photos = [];
+
+  let selectedDateKey = null;
+  let selectedCategory = 'all';
 
   // ---------- persistence (working config only — the published gallery
   // always reads manifest.json, never localStorage, so it looks the same
@@ -48,7 +75,9 @@
   }
   function saveConfig() {
     try {
-      localStorage.setItem(CONFIG_KEY, JSON.stringify({ timestampColumn, variables: [...selectedVars] }));
+      localStorage.setItem(CONFIG_KEY, JSON.stringify({
+        timestampColumn, headingColumn, twaColumn, variables: [...selectedVars],
+      }));
     } catch (e) { /* ignore quota errors */ }
   }
 
@@ -89,6 +118,14 @@
   function guessTimestampHeader(headers) {
     const preferred = headers.find(h => /time|date|utc|stamp/i.test(h));
     return preferred || headers[0];
+  }
+  function guessHeadingHeader(headers) {
+    return headers.find(h => /heading|hdg/i.test(h)) || '';
+  }
+  function guessTwaHeader(headers) {
+    // \b doesn't fire between "TWA" and a following "_" (both are \w), so
+    // match on non-letter boundaries explicitly rather than \b.
+    return headers.find(h => /(^|[^a-z])twa([^a-z]|$)/i.test(h) || /true.*wind.*angle/i.test(h)) || '';
   }
 
   // ---------- EXIF date extraction ----------
@@ -175,25 +212,102 @@
     return { date: null, source: null };
   }
 
-  // ---------- matching ----------
-  function matchNearestRow(capturedAt) {
-    if (!capturedAt || !timestampColumn || csvRows.length === 0) return null;
-    let best = null, bestDiff = Infinity;
-    for (const row of csvRows) {
-      const rowDate = parseTimestampValue(row[timestampColumn]);
-      if (!rowDate) continue;
-      const diff = Math.abs(rowDate.getTime() - capturedAt.getTime());
-      if (diff < bestDiff) { bestDiff = diff; best = row; }
+  // ---------- matching (binary search over a sorted-by-time array) ----------
+  function buildSortedRows() {
+    sortedRows = csvRows
+      .map(row => {
+        const d = timestampColumn ? parseTimestampValue(row[timestampColumn]) : null;
+        return d ? { ts: d.getTime(), row } : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a.ts - b.ts);
+  }
+
+  function findNearestIndex(targetTs) {
+    if (sortedRows.length === 0) return -1;
+    let lo = 0, hi = sortedRows.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (sortedRows[mid].ts < targetTs) lo = mid + 1; else hi = mid;
     }
-    if (!best) return null;
-    return { row: best, gapSeconds: bestDiff / 1000 };
+    if (lo > 0) {
+      const prevDiff = Math.abs(sortedRows[lo - 1].ts - targetTs);
+      const curDiff = Math.abs(sortedRows[lo].ts - targetTs);
+      if (prevDiff <= curDiff) return lo - 1;
+    }
+    return lo;
+  }
+
+  function matchNearestRow(capturedAt) {
+    if (!capturedAt || sortedRows.length === 0) return null;
+    const idx = findNearestIndex(capturedAt.getTime());
+    if (idx < 0) return null;
+    const match = sortedRows[idx];
+    return { row: match.row, gapSeconds: Math.abs(match.ts - capturedAt.getTime()) / 1000, index: idx };
+  }
+
+  // ---------- auto-categorization ----------
+  // Smallest signed angular difference b-a, wrapped to [-180, 180].
+  function angDiff(a, b) {
+    let d = (b - a) % 360;
+    if (d > 180) d -= 360;
+    if (d < -180) d += 360;
+    return d;
+  }
+
+  // Expands outward from centerIndex to the widest span of rows within
+  // windowSeconds either side, in time (not row count) — cheap because the
+  // window is short in wall-clock time even if the CSV has gaps.
+  function getWindowIndices(centerIndex, windowSeconds) {
+    const centerTs = sortedRows[centerIndex].ts;
+    let startIdx = centerIndex, endIdx = centerIndex;
+    while (startIdx > 0 && (centerTs - sortedRows[startIdx - 1].ts) <= windowSeconds * 1000) startIdx--;
+    while (endIdx < sortedRows.length - 1 && (sortedRows[endIdx + 1].ts - centerTs) <= windowSeconds * 1000) endIdx++;
+    return [startIdx, endIdx];
+  }
+
+  // Auto-suggests a category from the heading/TWA trend around the matched
+  // row. Returns null when there isn't enough data to guess — the shot then
+  // starts as "Other" and the user picks manually.
+  function classifyShot(index) {
+    if (index < 0 || index >= sortedRows.length || !headingColumn) return null;
+
+    const [startIdx, endIdx] = getWindowIndices(index, CLASSIFY_WINDOW_SECONDS);
+    const pts = [];
+    for (let i = startIdx; i <= endIdx; i++) {
+      const heading = parseFloat(sortedRows[i].row[headingColumn]);
+      const twa = twaColumn ? parseFloat(sortedRows[i].row[twaColumn]) : NaN;
+      if (!isNaN(heading)) pts.push({ ts: sortedRows[i].ts, heading, twa });
+    }
+    if (pts.length < 2) return null;
+
+    let swing = 0, crossedDeadRun = false;
+    for (let i = 1; i < pts.length; i++) {
+      swing += Math.abs(angDiff(pts[i - 1].heading, pts[i].heading));
+      if (!isNaN(pts[i].twa) && Math.abs(pts[i].twa) >= GYBE_TWA_THRESHOLD) crossedDeadRun = true;
+    }
+    const durationSec = Math.max(1, (pts[pts.length - 1].ts - pts[0].ts) / 1000);
+    const turnRate = swing / durationSec;
+
+    const centerTwa = twaColumn ? parseFloat(sortedRows[index].row[twaColumn]) : NaN;
+
+    if (turnRate >= TURN_RATE_THRESHOLD) {
+      if (crossedDeadRun && !isNaN(centerTwa) && Math.abs(centerTwa) >= DOWNWIND_TWA_THRESHOLD) return 'gybe-exit';
+      return 'manoeuvre';
+    }
+    if (!isNaN(centerTwa)) return Math.abs(centerTwa) < DOWNWIND_TWA_THRESHOLD ? 'upwind' : 'downwind';
+    return null;
   }
 
   function rematchAllPhotos() {
     photos.forEach(p => {
       const m = matchNearestRow(p.capturedAt);
       p.matchedRow = m ? m.row : null;
+      p.matchedIndex = m ? m.index : -1;
       p.gapSeconds = m ? m.gapSeconds : null;
+      if (!p.categoryManual) {
+        p.category = m ? (classifyShot(m.index) || 'other') : (p.category || 'other');
+      }
     });
     renderPreview();
   }
@@ -206,6 +320,7 @@
     } catch (e) { /* first run — manifest.json may not exist yet */ }
     if (!Array.isArray(existingManifest.shots)) existingManifest.shots = [];
     if (!Array.isArray(existingManifest.variables)) existingManifest.variables = [];
+    if (!existingManifest.dayNotes || typeof existingManifest.dayNotes !== 'object') existingManifest.dayNotes = {};
     renderGallery();
   }
 
@@ -215,12 +330,86 @@
     return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
   }
 
+  function dateKeyOf(shot) {
+    const d = new Date(shot.capturedAt);
+    if (isNaN(d.getTime())) return 'unknown';
+    const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  function formatDateKey(key) {
+    if (key === 'unknown') return 'Unknown date';
+    const [y, m, d] = key.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    return dt.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+
+  function makeChip(cls, value, label, isActive, onClick) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = cls + (isActive ? ' is-active' : '');
+    chip.textContent = label;
+    chip.addEventListener('click', onClick);
+    return chip;
+  }
+
   function renderGallery() {
-    const shots = [...existingManifest.shots].sort((a, b) => new Date(b.capturedAt) - new Date(a.capturedAt));
-    el.emptyState.classList.toggle('is-hidden', shots.length > 0);
+    const shots = existingManifest.shots || [];
+    const hasShots = shots.length > 0;
+    el.emptyState.classList.toggle('is-hidden', hasShots);
+    el.dateTabs.classList.toggle('is-hidden', !hasShots);
+    el.categoryChips.classList.toggle('is-hidden', !hasShots);
+    if (!hasShots) { el.shotGrid.innerHTML = ''; return; }
+
+    const byDate = new Map();
+    shots.forEach(s => {
+      const key = dateKeyOf(s);
+      if (!byDate.has(key)) byDate.set(key, []);
+      byDate.get(key).push(s);
+    });
+    const dateKeys = [...byDate.keys()].sort((a, b) => b.localeCompare(a)); // newest first
+    if (!selectedDateKey || !byDate.has(selectedDateKey)) selectedDateKey = dateKeys[0];
+
+    el.dateTabs.innerHTML = '';
+    dateKeys.forEach(key => {
+      const note = (existingManifest.dayNotes || {})[key];
+      const tab = document.createElement('button');
+      tab.type = 'button';
+      tab.className = 'date-tab' + (key === selectedDateKey ? ' is-active' : '');
+      const title = document.createElement('strong');
+      title.textContent = formatDateKey(key);
+      tab.appendChild(title);
+      if (note) {
+        const sub = document.createElement('span');
+        sub.textContent = note;
+        tab.appendChild(sub);
+      }
+      tab.addEventListener('click', () => { selectedDateKey = key; selectedCategory = 'all'; renderGallery(); });
+      el.dateTabs.appendChild(tab);
+    });
+
+    const dayShots = byDate.get(selectedDateKey) || [];
+    const counts = { all: dayShots.length };
+    CATEGORIES.forEach(c => { counts[c.value] = 0; });
+    dayShots.forEach(s => { const cat = s.category || 'other'; counts[cat] = (counts[cat] || 0) + 1; });
+
+    el.categoryChips.innerHTML = '';
+    el.categoryChips.appendChild(makeChip('category-chip', 'all', `All (${counts.all})`, selectedCategory === 'all', () => {
+      selectedCategory = 'all'; renderGallery();
+    }));
+    CATEGORIES.forEach(c => {
+      if (counts[c.value] === 0) return;
+      el.categoryChips.appendChild(makeChip('category-chip', c.value, `${c.label} (${counts[c.value]})`, selectedCategory === c.value, () => {
+        selectedCategory = c.value; renderGallery();
+      }));
+    });
+
+    const filtered = selectedCategory === 'all' ? dayShots : dayShots.filter(s => (s.category || 'other') === selectedCategory);
+    const sorted = [...filtered].sort((a, b) => new Date(b.capturedAt) - new Date(a.capturedAt));
+
     el.shotGrid.innerHTML = '';
     const vars = existingManifest.variables || [];
-    shots.forEach(shot => {
+    sorted.forEach(shot => {
       const card = document.createElement('article');
       card.className = 'shot-card';
 
@@ -235,6 +424,10 @@
       dateTag.className = 'shot-card__date';
       dateTag.textContent = formatShotDate(shot.capturedAt);
       imgWrap.appendChild(dateTag);
+      const catTag = document.createElement('span');
+      catTag.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
+      catTag.textContent = CATEGORY_LABEL[shot.category] || CATEGORY_LABEL.other;
+      imgWrap.appendChild(catTag);
       card.appendChild(imgWrap);
 
       const body = document.createElement('div');
@@ -277,6 +470,25 @@
       ? saved.timestampColumn
       : guessTimestampHeader(csvHeaders);
     el.timestampSelect.value = timestampColumn;
+  }
+
+  function populateClassifyColumns() {
+    const saved = loadConfig();
+    [el.headingSelect, el.twaSelect].forEach(sel => {
+      sel.innerHTML = '';
+      const noneOpt = document.createElement('option');
+      noneOpt.value = ''; noneOpt.textContent = '— none, skip auto-categorizing —';
+      sel.appendChild(noneOpt);
+      csvHeaders.forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h; opt.textContent = h;
+        sel.appendChild(opt);
+      });
+    });
+    headingColumn = (saved.headingColumn && csvHeaders.includes(saved.headingColumn)) ? saved.headingColumn : guessHeadingHeader(csvHeaders);
+    twaColumn = (saved.twaColumn && csvHeaders.includes(saved.twaColumn)) ? saved.twaColumn : guessTwaHeader(csvHeaders);
+    el.headingSelect.value = headingColumn;
+    el.twaSelect.value = twaColumn;
   }
 
   function populateVariablePicker() {
@@ -324,6 +536,8 @@
     el.csvSummary.classList.remove('is-hidden');
 
     populateTimestampSelect();
+    buildSortedRows();
+    populateClassifyColumns();
     populateVariablePicker();
     el.csvConfig.classList.remove('is-hidden');
     saveConfig();
@@ -332,9 +546,21 @@
 
   el.timestampSelect.addEventListener('change', () => {
     timestampColumn = el.timestampSelect.value;
+    buildSortedRows();
     const candidates = csvHeaders.filter(h => h !== timestampColumn);
     selectedVars = new Set([...selectedVars].filter(v => candidates.includes(v)));
     renderVariablePicker(candidates);
+    saveConfig();
+    rematchAllPhotos();
+  });
+
+  el.headingSelect.addEventListener('change', () => {
+    headingColumn = el.headingSelect.value;
+    saveConfig();
+    rematchAllPhotos();
+  });
+  el.twaSelect.addEventListener('change', () => {
+    twaColumn = el.twaSelect.value;
     saveConfig();
     rematchAllPhotos();
   });
@@ -364,7 +590,11 @@
 
     const newPhotos = await Promise.all(files.map(async file => {
       const { date, source } = await readCaptureDate(file);
-      return { file, name: file.name, capturedAt: date, source, matchedRow: null, gapSeconds: null };
+      return {
+        file, name: file.name, capturedAt: date, source,
+        matchedRow: null, matchedIndex: -1, gapSeconds: null,
+        category: 'other', categoryManual: false,
+      };
     }));
     photos = photos.concat(newPhotos);
     rematchAllPhotos();
@@ -430,6 +660,26 @@
         meta.appendChild(dupBadge);
       }
 
+      const catLabel = document.createElement('label');
+      catLabel.className = 'preview-item__category';
+      const catLabelText = document.createElement('span');
+      catLabelText.textContent = p.categoryManual ? 'Category (set by you)' : 'Category (auto-suggested)';
+      catLabel.appendChild(catLabelText);
+      const catSelect = document.createElement('select');
+      CATEGORIES.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.value; opt.textContent = c.label;
+        if ((p.category || 'other') === c.value) opt.selected = true;
+        catSelect.appendChild(opt);
+      });
+      catSelect.addEventListener('change', () => {
+        p.category = catSelect.value;
+        p.categoryManual = true;
+        catLabelText.textContent = 'Category (set by you)';
+      });
+      catLabel.appendChild(catSelect);
+      meta.appendChild(catLabel);
+
       item.appendChild(meta);
 
       const removeBtn = document.createElement('button');
@@ -462,12 +712,24 @@
         capturedAt: p.capturedAt.toISOString(),
         capturedAtSource: p.source,
         gapSeconds: p.gapSeconds,
+        category: p.category || 'other',
         row: p.matchedRow || {},
       }));
+
+    const dayNotes = { ...(existingManifest.dayNotes || {}) };
+    const noteText = (el.dayNotesInput.value || '').trim();
+    if (noteText) {
+      const datesInBatch = new Set(photos.filter(p => p.capturedAt).map(p => dateKeyOf({ capturedAt: p.capturedAt.toISOString() })));
+      datesInBatch.forEach(d => { dayNotes[d] = noteText; });
+    }
+
     return {
       timestampColumn,
+      headingColumn,
+      twaColumn,
       variables: [...selectedVars],
       shots: [...existingManifest.shots, ...newShots],
+      dayNotes,
     };
   }
 
