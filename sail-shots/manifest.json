@@ -75,7 +75,54 @@
         "MainTravellerAngle_deg": "3.67",
         "MainTravellerCarPosition": "0.36"
       }
+    },
+    {
+      "id": "2026-09-09T10-56-15-000Z-dsc01132",
+      "file": "photos/DSC01132.JPG",
+      "capturedAt": "2026-09-09T10:56:15.000Z",
+      "capturedAtSource": "exif",
+      "gapSeconds": 0,
+      "category": "gybe-exit",
+      "row": {
+        "Timestamp": "2026-09-09T10:56:15Z",
+        "TWS_kts": "8.14",
+        "TWA_deg": "-126.46",
+        "TWD_deg": "200.83",
+        "BSP_kts": "21.87",
+        "VMG_kts": "-12.65",
+        "Leeway_deg": "1.12",
+        "Heading_deg": "327.30",
+        "AWA_deg": "-16.44",
+        "AWS_kts": "9.46",
+        "RudderRake_deg": "0.18",
+        "RudderAngle_deg": "0.39",
+        "FoilCantPort_deg": "85.26",
+        "FoilCantStbd_deg": "59.73",
+        "FoilFlapPort_deg": "0.22",
+        "FoilFlapStbd_deg": "9.17",
+        "FoilSinkPort_m": "0.44",
+        "FoilSinkStbd_m": "-0.61",
+        "JibSheetLoad_kgf": "247.32",
+        "JibCunninghamLoad_kgf": "26.08",
+        "JibTrackLoad_kgf": "186.36",
+        "JibTrackAngleTarget_deg": "8.00",
+        "MainSheetLoad_kgf": "2774.81",
+        "MainCunninghamLoad_kgf": "-105.33",
+        "MainTravellerLoad_kgf": "441.77",
+        "TrimActual_deg": "-3.07",
+        "TrimTarget_deg": "-2.00",
+        "Heel_deg": "-0.90",
+        "Pitch_deg": "3.07",
+        "RideHeight_raw": "16235.40",
+        "MastRotation_deg": "21.61",
+        "FootCamber_deg": "22.64",
+        "MainTravellerAngle_deg": "-1.03",
+        "MainTravellerCarPosition": "-0.10"
+      }
     }
   ],
-  "dayNotes": {}
+  "dayNotes": {
+    "2026-09-09": "M1-3, J2-4"
+  },
+  "overlayLayout": {}
 }
