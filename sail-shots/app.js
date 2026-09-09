@@ -2,6 +2,37 @@
   const MANIFEST_PATH = './manifest.json';
   const CONFIG_KEY = 'seagull-sailshots-config-v1';
   const GAP_WARN_SECONDS = 30 * 60; // 30 minutes
+
+  // ---------- publishing straight to GitHub ----------
+  // This page still has no server of its own, but a delete/category/comment
+  // edit can publish itself instead of making Kyle download manifest.json
+  // and upload it by hand — as long as a GitHub token is on file. The token
+  // is a personal access token HE creates and pastes in once (see
+  // connectGithub() below); it's kept only in this browser's localStorage
+  // and used only for direct browser->api.github.com calls, never sent
+  // anywhere else. Without a token, everything falls back to the original
+  // download/discard flow further down.
+  const GITHUB_OWNER = 'kylejlangford-del';
+  const GITHUB_REPO = 'Seagull';
+  const GITHUB_BRANCH = 'main';
+  const GITHUB_MANIFEST_PATH = 'sail-shots/manifest.json';
+  const GITHUB_TOKEN_KEY = 'seagull-sailshots-github-token-v1';
+  const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_MANIFEST_PATH}`;
+
+  function getGithubToken() {
+    try { return localStorage.getItem(GITHUB_TOKEN_KEY) || ''; } catch { return ''; }
+  }
+  function setGithubToken(token) {
+    try {
+      if (token) localStorage.setItem(GITHUB_TOKEN_KEY, token);
+      else localStorage.removeItem(GITHUB_TOKEN_KEY);
+    } catch { /* localStorage unavailable — token just won't persist across reloads */ }
+  }
+  // btoa() only handles Latin1 — this widens any UTF-8 (e.g. a comment with
+  // a curly quote or emoji) into the byte sequence btoa expects first.
+  function utf8ToBase64(str) {
+    return btoa(unescape(encodeURIComponent(str)));
+  }
   // New shots' photo files are hosted on Cloudflare R2 (not committed to this
   // repo — 700MB+ of photos doesn't belong in git or GitHub's web upload).
   // Older shots still have a plain "photos/whatever.jpg" repo-relative path
@@ -36,6 +67,7 @@
 
   const el = {
     addBtn: document.getElementById('addBtn'),
+    githubConnectBtn: document.getElementById('githubConnectBtn'),
     importView: document.getElementById('importView'),
     galleryView: document.getElementById('galleryView'),
     emptyState: document.getElementById('emptyState'),
@@ -45,6 +77,7 @@
     galleryChangesBar: document.getElementById('galleryChangesBar'),
     galleryDiscardChanges: document.getElementById('galleryDiscardChanges'),
     galleryDownloadChanges: document.getElementById('galleryDownloadChanges'),
+    githubStatus: document.getElementById('githubStatus'),
 
     lightbox: document.getElementById('lightbox'),
     lightboxClose: document.getElementById('lightboxClose'),
@@ -527,6 +560,7 @@
       commentInput.placeholder = 'Add a comment…';
       commentInput.value = shot.comment || '';
       commentInput.addEventListener('input', () => setShotComment(shot.id, commentInput.value));
+      commentInput.addEventListener('blur', () => flushPendingPublish());
       commentWrap.appendChild(commentInput);
       card.appendChild(commentWrap);
 
@@ -584,6 +618,7 @@
     el.lightbox.classList.remove('is-hidden');
   }
   function closeLightbox() {
+    flushPendingPublish(); // don't leave a just-typed comment waiting on the debounce timer
     el.lightbox.classList.add('is-hidden');
     el.lightboxImg.src = '';
     currentLightboxShotId = null;
@@ -620,6 +655,7 @@
     if (!currentLightboxShotId) return;
     setShotComment(currentLightboxShotId, el.lightboxComment.value);
   });
+  el.lightboxComment.addEventListener('blur', () => flushPendingPublish());
   document.addEventListener('keydown', (e) => {
     if (el.lightbox.classList.contains('is-hidden')) return;
     // Don't hijack the left/right arrow keys for prev/next while the
@@ -630,19 +666,12 @@
     else if (!typingComment && e.key === 'ArrowRight') stepLightbox(1);
   });
 
-  // ---------- gallery edits: delete a published shot, change its category ----------
-  // Both act straight on existingManifest so the gallery updates immediately,
-  // but — same rule as everything else in this no-backend app — nothing is
-  // "real" until manifest.json is republished, so these just flag the change
-  // and surface a download/discard bar instead of downloading a file per click.
-  function markManifestDirty() {
-    manifestDirty = true;
-    el.galleryChangesBar.classList.remove('is-hidden');
-  }
-  function clearManifestDirty() {
-    manifestDirty = false;
-    el.galleryChangesBar.classList.add('is-hidden');
-  }
+  // ---------- gallery edits: delete a published shot, change its category, add a comment ----------
+  // All three act straight on existingManifest so the gallery updates
+  // immediately. What happens next depends on whether a GitHub token is on
+  // file (see connectGithub() below): with one, the change publishes itself
+  // in the background; without one, this falls back to the original
+  // download/discard bar so nothing is ever silently lost.
   function currentManifestSnapshot(overrides = {}) {
     return {
       timestampColumn: existingManifest.timestampColumn || '',
@@ -656,11 +685,116 @@
     };
   }
 
+  let publishDebounceTimer = null;
+  let publishInFlight = false;
+  let publishQueued = false;
+  let githubStatusFadeTimer = null;
+
+  function setGithubStatus(kind, message) {
+    clearTimeout(githubStatusFadeTimer);
+    el.githubStatus.innerHTML = '';
+    el.githubStatus.classList.remove('github-status--saving', 'github-status--saved', 'github-status--error');
+    if (kind === 'saving') {
+      el.githubStatus.classList.remove('is-hidden');
+      el.githubStatus.classList.add('github-status--saving');
+      el.githubStatus.textContent = 'Saving to GitHub…';
+    } else if (kind === 'saved') {
+      el.githubStatus.classList.remove('is-hidden');
+      el.githubStatus.classList.add('github-status--saved');
+      el.githubStatus.textContent = 'Saved — live on the site in about a minute';
+      githubStatusFadeTimer = setTimeout(() => el.githubStatus.classList.add('is-hidden'), 5000);
+    } else if (kind === 'error') {
+      el.githubStatus.classList.remove('is-hidden');
+      el.githubStatus.classList.add('github-status--error');
+      el.githubStatus.append(`Couldn't publish automatically: ${message || 'unknown error'}. `);
+      const retry = document.createElement('button');
+      retry.type = 'button';
+      retry.className = 'text-link';
+      retry.textContent = 'Retry';
+      retry.addEventListener('click', () => publishManifestToGithub());
+      el.githubStatus.appendChild(retry);
+      // Fall back to the manual bar too, so the change is never stuck only
+      // as an in-memory edit with no way out if retries keep failing.
+      el.galleryChangesBar.classList.remove('is-hidden');
+    } else {
+      el.githubStatus.classList.add('is-hidden');
+    }
+  }
+
+  // Reads the manifest file's current sha (required by GitHub's API to
+  // confirm we're not overwriting someone else's newer commit) and PUTs the
+  // updated content in its place — the same "get sha, then commit" dance
+  // the GitHub web UI does under the hood.
+  async function publishManifestToGithub() {
+    const token = getGithubToken();
+    if (!token) return false;
+    if (publishInFlight) { publishQueued = true; return true; }
+    publishInFlight = true;
+    setGithubStatus('saving');
+    try {
+      const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' };
+      const getRes = await fetch(`${GITHUB_API_URL}?ref=${GITHUB_BRANCH}`, { headers, cache: 'no-store' });
+      if (!getRes.ok) throw new Error(getRes.status === 401 ? 'token rejected — reconnect GitHub' : `couldn't read the current file (${getRes.status})`);
+      const currentFile = await getRes.json();
+      const manifest = currentManifestSnapshot();
+      const putRes = await fetch(GITHUB_API_URL, {
+        method: 'PUT',
+        headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: 'Update sail shots manifest',
+          content: utf8ToBase64(JSON.stringify(manifest, null, 2)),
+          sha: currentFile.sha,
+          branch: GITHUB_BRANCH,
+        }),
+      });
+      if (!putRes.ok) {
+        const errBody = await putRes.json().catch(() => ({}));
+        throw new Error(errBody.message || `GitHub rejected the update (${putRes.status})`);
+      }
+      manifestDirty = false;
+      el.galleryChangesBar.classList.add('is-hidden');
+      setGithubStatus('saved');
+      return true;
+    } catch (err) {
+      console.error('Publish to GitHub failed:', err);
+      setGithubStatus('error', err.message);
+      return false;
+    } finally {
+      publishInFlight = false;
+      if (publishQueued) { publishQueued = false; publishManifestToGithub(); }
+    }
+  }
+
+  // debounceMs lets frequent edits (typing a comment) wait for a pause
+  // before publishing, instead of committing on every keystroke; discrete
+  // edits (delete, category) publish right away.
+  function schedulePublish(debounceMs) {
+    if (publishDebounceTimer) { clearTimeout(publishDebounceTimer); publishDebounceTimer = null; }
+    if (!debounceMs) { publishManifestToGithub(); return; }
+    publishDebounceTimer = setTimeout(() => { publishDebounceTimer = null; publishManifestToGithub(); }, debounceMs);
+  }
+  function flushPendingPublish() {
+    if (publishDebounceTimer) { clearTimeout(publishDebounceTimer); publishDebounceTimer = null; publishManifestToGithub(); }
+  }
+
+  function markManifestDirty(opts = {}) {
+    manifestDirty = true;
+    if (getGithubToken()) schedulePublish(opts.debounceMs || 0);
+    else el.galleryChangesBar.classList.remove('is-hidden');
+  }
+  function clearManifestDirty() {
+    manifestDirty = false;
+    el.galleryChangesBar.classList.add('is-hidden');
+  }
+
   function deleteShot(shotId) {
     const shot = existingManifest.shots.find(s => s.id === shotId);
     if (!shot) return false;
     const label = filenameOf(shot.file) || 'this photo';
-    if (!confirm(`Delete ${label} from the gallery?\n\nThis removes it from manifest.json — you'll still need to download and publish the update below. The photo file itself stays in the repo until that's done.`)) {
+    const publishNote = getGithubToken()
+      ? 'This publishes automatically — it\'ll be off the live site in about a minute.'
+      : 'This removes it from manifest.json — you\'ll still need to download and publish the update below.';
+    if (!confirm(`Delete ${label} from the gallery?\n\n${publishNote} The photo file itself stays in the repo until that's done.`)) {
       return false;
     }
     existingManifest.shots = existingManifest.shots.filter(s => s.id !== shotId);
@@ -683,11 +817,13 @@
   // updates the data model and flags the manifest dirty without touching
   // the DOM. Both the card's comment box and the lightbox's write through
   // this same function, so either stays in sync with existingManifest.
+  // Auto-publish is debounced here (unlike delete/category) so it commits
+  // once after a pause in typing, not on every keystroke.
   function setShotComment(shotId, comment) {
     const shot = existingManifest.shots.find(s => s.id === shotId);
     if (!shot || (shot.comment || '') === comment) return;
     shot.comment = comment;
-    markManifestDirty();
+    markManifestDirty({ debounceMs: 1500 });
   }
 
   el.galleryDownloadChanges.addEventListener('click', () => {
@@ -698,6 +834,32 @@
     if (!confirm('Discard your unpublished deletes/category changes and reload the published manifest.json?')) return;
     clearManifestDirty();
     loadManifest();
+  });
+
+  // ---------- connecting GitHub for automatic publishing ----------
+  function updateGithubConnectBtn() {
+    const connected = !!getGithubToken();
+    el.githubConnectBtn.textContent = connected ? 'GitHub: Connected' : 'Connect GitHub';
+    el.githubConnectBtn.setAttribute('aria-pressed', connected ? 'true' : 'false');
+  }
+  el.githubConnectBtn.addEventListener('click', () => {
+    if (getGithubToken()) {
+      if (confirm('Disconnect GitHub?\n\nDeletes, category changes and comments will go back to the manual download/publish flow until you reconnect.')) {
+        setGithubToken('');
+        updateGithubConnectBtn();
+        setGithubStatus('idle');
+      }
+      return;
+    }
+    const token = prompt(
+      'Paste a GitHub personal access token to publish gallery edits automatically.\n\n' +
+      'Create a fine-grained token at github.com/settings/personal-access-tokens/new, scoped ONLY to the "Seagull" repository, with "Contents" permission set to Read and write.\n\n' +
+      'It\'s stored only in this browser and sent only to api.github.com — never anywhere else.'
+    );
+    if (token && token.trim()) {
+      setGithubToken(token.trim());
+      updateGithubConnectBtn();
+    }
   });
 
   // ---------- import: CSV step ----------
@@ -1002,5 +1164,6 @@
     el.addBtn.textContent = isOpen ? 'Add Shots' : 'Hide';
   });
 
+  updateGithubConnectBtn();
   loadManifest();
 })();

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#07111d" />
   <title>Sail Shots · Seagull Lab</title>
-  <link rel="stylesheet" href="./styles.css?v=20260909p" />
+  <link rel="stylesheet" href="./styles.css?v=20260909q" />
 </head>
 <body>
   <div id="app">
@@ -15,6 +15,7 @@
       </a>
       <div class="title-block"><span>AC40</span><strong>Sail Shots</strong></div>
       <div class="header-actions">
+        <button id="githubConnectBtn" class="ghost-button" type="button" aria-pressed="false">Connect GitHub</button>
         <button id="addBtn" class="ghost-button" type="button" aria-pressed="false" aria-controls="importView">Add Shots</button>
         <a class="ghost-button" href="../">Home</a>
       </div>
@@ -36,6 +37,7 @@
             <button id="galleryDiscardChanges" class="text-link" type="button">Discard</button>
             <button id="galleryDownloadChanges" class="ghost-button" type="button">Download updated manifest.json</button>
           </div>
+          <div id="githubStatus" class="github-status is-hidden"></div>
         </div>
         <div id="dateTabs" class="date-tabs is-hidden"></div>
         <div id="categoryChips" class="category-chips is-hidden"></div>
@@ -131,6 +133,6 @@
     </div>
   </div>
 
-  <script src="./app.js?v=20260909p"></script>
+  <script src="./app.js?v=20260909q"></script>
 </body>
 </html>

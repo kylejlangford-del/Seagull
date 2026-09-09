@@ -31,6 +31,15 @@ h1{margin:10px 0 14px;font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:.98;lette
 .gallery-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
 .gallery-changes-bar{display:flex;align-items:center;gap:12px;padding:8px 10px 8px 14px;border:1px solid rgba(71,231,219,.35);border-radius:11px;background:rgba(71,231,219,.06)}
 .gallery-changes-bar__label{font-size:.74rem;font-weight:700;color:var(--accent)}
+/* Status pill shown while an edit is publishing itself straight to GitHub
+   (see the "Connect GitHub" button) — replaces the gallery-changes-bar for
+   anyone with a token on file, since there's nothing left to discard or
+   download by hand. */
+.github-status{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:11px;font-size:.74rem;font-weight:700}
+.github-status--saving{border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted-2)}
+.github-status--saved{border:1px solid rgba(71,231,219,.35);background:rgba(71,231,219,.06);color:var(--accent)}
+.github-status--error{border:1px solid rgba(255,107,107,.4);background:rgba(255,107,107,.08);color:#ffb3b3}
+.github-status--error .text-link{color:inherit;text-decoration-color:currentColor}
 
 
 /* Date tabs + category filter chips */
