@@ -88,6 +88,10 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
 .shot-card__category--upwind{color:var(--cat-upwind)}
 .shot-card__category--downwind{color:var(--cat-downwind)}
 .shot-card__category--other{color:var(--muted-2)}
+/* Badge on a collapsed manoeuvre-group card, showing how many photos are
+   hidden behind the one shown. Sits where the category select would go on
+   a normal card, since group cards don't have one. */
+.shot-card__stack-count{position:absolute;z-index:2;right:10px;top:10px;padding:4px 9px;border-radius:7px;background:rgba(6,16,27,.72);backdrop-filter:blur(3px);color:var(--text);font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
 .shot-card__delete{position:absolute;z-index:2;left:10px;top:10px;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:7px;background:rgba(255,107,107,.14);backdrop-filter:blur(3px);color:#ffb3b3;font-size:.95rem;line-height:1;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .shot-card__delete:hover{border-color:rgba(255,107,107,.6);color:#fff;background:rgba(255,107,107,.28)}
 .shot-card__comment-wrap{padding:10px 12px 12px}
@@ -207,8 +211,12 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
 .lightbox__twist{display:flex;flex-direction:column;gap:8px;padding-top:10px;border-top:1px solid var(--line)}
 .lightbox__twist-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .lightbox__twist-head>span{color:var(--muted);font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em}
-.lightbox__twist-actions{display:flex;align-items:center;gap:10px}
+.lightbox__twist-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;row-gap:6px}
 .lightbox__twist-actions .text-link{padding:0}
+.lightbox__twist-points{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.twist-stepper-btn{width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:6px;background:rgba(255,255,255,.03);color:var(--text);font-size:.85rem;line-height:1;padding:0;cursor:pointer}
+.twist-stepper-btn:hover{border-color:rgba(71,231,219,.5)}
+#twistPointCountLabel{min-width:14px;text-align:center;color:var(--text);font-weight:800}
 .lightbox__twist-hint{font-size:.72rem;color:var(--accent);line-height:1.4}
 .lightbox__twist-graph{width:100%;height:auto;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:10px}
 .twist-graph__axis{stroke:var(--muted);stroke-width:1}

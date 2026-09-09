@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#07111d" />
   <title>Sail Shots · Seagull Lab</title>
-  <link rel="stylesheet" href="./styles.css?v=20260909u" />
+  <link rel="stylesheet" href="./styles.css?v=20260909v" />
 </head>
 <body>
   <div id="app">
@@ -125,6 +125,12 @@
             <div class="lightbox__twist-head">
               <span>Twist profile</span>
               <div class="lightbox__twist-actions">
+                <div class="lightbox__twist-points">
+                  <span>Points</span>
+                  <button id="twistPointsMinus" class="twist-stepper-btn" type="button" aria-label="Fewer points">&minus;</button>
+                  <span id="twistPointCountLabel">5</span>
+                  <button id="twistPointsPlus" class="twist-stepper-btn" type="button" aria-label="More points">+</button>
+                </div>
                 <button id="twistTraceBtn" class="text-link" type="button">Trace</button>
                 <button id="twistClearBtn" class="text-link is-hidden" type="button">Clear</button>
                 <button id="twistSaveBtn" class="text-link is-hidden" type="button">Save</button>
@@ -147,6 +153,6 @@
     </div>
   </div>
 
-  <script src="./app.js?v=20260909u"></script>
+  <script src="./app.js?v=20260909v"></script>
 </body>
 </html>

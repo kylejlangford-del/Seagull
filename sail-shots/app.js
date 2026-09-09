@@ -64,11 +64,17 @@
   // ---------- twist profile tuning (Straight Line Upwind only) ----------
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const TWIST_ANALYSIS_MAX_DIM = 1400; // downscale the photo before pixel-scanning it, for speed
-  const TWIST_TRACE_STEPS = 20; // sample points between the boom reference and the masthead (21 points total)
+  // The pixel-level edge trace always walks this many internal steps, for
+  // good curve accuracy regardless of how many points the user actually
+  // sees/edits — that count is separate (see twistPointCount below) and is
+  // just a resample of this dense trace down to fewer, easier-to-drag points.
+  const TWIST_DENSE_STEPS = 40;
   const TWIST_SEARCH_RADIUS_FRAC = 0.045; // how far either side of the predicted x the edge search looks, as a fraction of image width
   const TWIST_EDGE_MIN_SCORE = 8; // below this, the local gradient is too weak to trust — fall back toward the straight-line guess
   const TWIST_GRAPH_W = 220, TWIST_GRAPH_H = 170;
   const TWIST_GRAPH_PAD = { left: 34, right: 10, top: 10, bottom: 22 };
+  const TWIST_POINT_COUNT_MIN = 3, TWIST_POINT_COUNT_MAX = 21;
+  let twistPointCount = 5; // how many points are shown/edited/saved by default — adjustable via the +/- stepper
 
   const CATEGORIES = [
     { value: 'manoeuvre', label: 'Manoeuvre Sequence' },
@@ -113,6 +119,9 @@
     twistHint: document.getElementById('twistHint'),
     twistGraph: document.getElementById('twistGraph'),
     twistOverlay: document.getElementById('twistOverlay'),
+    twistPointsMinus: document.getElementById('twistPointsMinus'),
+    twistPointsPlus: document.getElementById('twistPointsPlus'),
+    twistPointCountLabel: document.getElementById('twistPointCountLabel'),
 
     csvInput: document.getElementById('csvInput'),
     csvDropLabel: document.getElementById('csvDropLabel'),
@@ -536,10 +545,14 @@
   // times; whether it's a tack or a gybe is read off the average TWA across
   // the cluster, using the same upwind/downwind split the auto-categorizer
   // uses elsewhere (below DOWNWIND_TWA_THRESHOLD => upwind => tack).
-  // Returns a Map from shot.id to its group label.
-  function manoeuvreGroupLabels(shots) {
-    const labels = new Map();
+  // Returns an array of { label, shots }, one entry per cluster — each
+  // cluster's own shots sorted chronologically (earliest first, so opening
+  // the group starts at the first shot of that manoeuvre and steps forward
+  // through the rest). The array of groups itself is newest-group-first, to
+  // match the rest of the gallery's "sorted newest first" convention.
+  function manoeuvreGroups(shots) {
     const ascending = [...shots].sort((a, b) => new Date(a.capturedAt) - new Date(b.capturedAt));
+    const groups = [];
     let tackCount = 0, gybeCount = 0, clusterStart = 0;
     const flushCluster = (endExclusive) => {
       const cluster = ascending.slice(clusterStart, endExclusive);
@@ -549,14 +562,14 @@
         .filter(v => !Number.isNaN(v));
       const avgAbsTwa = twas.length ? twas.reduce((sum, v) => sum + Math.abs(v), 0) / twas.length : 0;
       const label = avgAbsTwa >= DOWNWIND_TWA_THRESHOLD ? `Gybe ${++gybeCount}` : `Tack ${++tackCount}`;
-      cluster.forEach(s => labels.set(s.id, label));
+      groups.push({ label, shots: cluster });
     };
     for (let i = 1; i < ascending.length; i++) {
       const gapSec = (new Date(ascending[i].capturedAt) - new Date(ascending[i - 1].capturedAt)) / 1000;
       if (gapSec > MANOEUVRE_GROUP_GAP_SECONDS) { flushCluster(i); clusterStart = i; }
     }
     flushCluster(ascending.length);
-    return labels;
+    return groups.reverse();
   }
 
   function renderGallery() {
@@ -614,92 +627,136 @@
     const sorted = [...filtered].sort((a, b) => new Date(b.capturedAt) - new Date(a.capturedAt));
     currentGalleryOrder = sorted; // lets the lightbox step to the next/previous photo in this same order
 
-    // Manoeuvre Sequence view only: group shots into their individual
-    // tack/gybe and drop a heading in front of each group. Clusters are
-    // contiguous in time, so they stay contiguous in `sorted` too (just
-    // walked in the opposite direction) — no need to reorder anything.
-    const manoeuvreLabels = selectedCategory === 'manoeuvre' ? manoeuvreGroupLabels(filtered) : null;
-    let lastGroupLabel = undefined;
-
     el.shotGrid.innerHTML = '';
-    sorted.forEach(shot => {
-      if (manoeuvreLabels) {
-        const label = manoeuvreLabels.get(shot.id) || null;
-        if (label !== lastGroupLabel) {
-          const header = document.createElement('div');
-          const isGybe = /^Gybe/.test(label || '');
-          header.className = `shot-grid__group-label shot-grid__group-label--${isGybe ? 'gybe' : 'tack'}`;
-          header.textContent = label || 'Manoeuvre';
-          el.shotGrid.appendChild(header);
-          lastGroupLabel = label;
-        }
-      }
 
-      const card = document.createElement('article');
-      card.className = 'shot-card';
-
-      const imgWrap = document.createElement('div');
-      imgWrap.className = 'shot-card__image-wrap';
-      const img = document.createElement('img');
-      img.src = photoSrc(shot.file);
-      img.alt = '';
-      img.loading = 'lazy';
-      imgWrap.appendChild(img);
-      const dateTag = document.createElement('span');
-      dateTag.className = 'shot-card__date';
-      dateTag.textContent = formatShotDate(shot.capturedAt);
-      imgWrap.appendChild(dateTag);
-
-      const catSelect = document.createElement('select');
-      catSelect.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
-      catSelect.setAttribute('aria-label', 'Category');
-      CATEGORIES.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c.value; opt.textContent = c.label;
-        if ((shot.category || 'other') === c.value) opt.selected = true;
-        catSelect.appendChild(opt);
+    // Manoeuvre Sequence view only: collapse each tack/gybe burst down to a
+    // single card (the earliest shot in it) with a header and a "N photos"
+    // badge instead of one card per photo — opening it starts at that first
+    // shot and steps forward through the rest in chronological order.
+    if (selectedCategory === 'manoeuvre') {
+      manoeuvreGroups(filtered).forEach(group => {
+        const header = document.createElement('div');
+        const isGybe = /^Gybe/.test(group.label);
+        header.className = `shot-grid__group-label shot-grid__group-label--${isGybe ? 'gybe' : 'tack'}`;
+        header.textContent = group.label;
+        el.shotGrid.appendChild(header);
+        el.shotGrid.appendChild(renderManoeuvreGroupCard(group));
       });
-      catSelect.addEventListener('click', (e) => e.stopPropagation()); // don't open the lightbox
-      catSelect.addEventListener('change', () => {
-        setShotCategory(shot.id, catSelect.value);
-      });
-      imgWrap.appendChild(catSelect);
+      return;
+    }
 
-      const deleteBtn = document.createElement('button');
-      deleteBtn.type = 'button';
-      deleteBtn.className = 'shot-card__delete';
-      deleteBtn.setAttribute('aria-label', 'Delete photo');
-      deleteBtn.textContent = '×';
-      deleteBtn.addEventListener('click', (e) => {
-        e.stopPropagation(); // don't open the lightbox
-        deleteShot(shot.id);
-      });
-      imgWrap.appendChild(deleteBtn);
+    sorted.forEach(shot => el.shotGrid.appendChild(renderShotCard(shot)));
+  }
 
-      imgWrap.classList.add('is-clickable');
-      imgWrap.addEventListener('click', () => openLightbox(shot));
+  // A normal, single-photo gallery card: thumbnail (clickable to open the
+  // lightbox), category picker, delete button, and a quick-comment box.
+  function renderShotCard(shot) {
+    const card = document.createElement('article');
+    card.className = 'shot-card';
 
-      card.appendChild(imgWrap);
+    const imgWrap = document.createElement('div');
+    imgWrap.className = 'shot-card__image-wrap';
+    const img = document.createElement('img');
+    img.src = photoSrc(shot.file);
+    img.alt = '';
+    img.loading = 'lazy';
+    imgWrap.appendChild(img);
+    const dateTag = document.createElement('span');
+    dateTag.className = 'shot-card__date';
+    dateTag.textContent = formatShotDate(shot.capturedAt);
+    imgWrap.appendChild(dateTag);
 
-      // The full boat-data readout now only lives in the lightbox (left
-      // panel), so it doesn't clash with the photo here — the card stays a
-      // clean thumbnail with just the category/date badges. A comment box
-      // sits right under it, so a quick note can be added without opening
-      // the lightbox at all.
-      const commentWrap = document.createElement('div');
-      commentWrap.className = 'shot-card__comment-wrap';
-      const commentInput = document.createElement('textarea');
-      commentInput.className = 'shot-card__comment';
-      commentInput.rows = 2;
-      commentInput.placeholder = 'Add a comment…';
-      commentInput.value = shot.comment || '';
-      commentInput.addEventListener('input', () => setShotComment(shot.id, commentInput.value));
-      commentInput.addEventListener('blur', () => flushPendingPublish());
-      commentWrap.appendChild(commentInput);
-      card.appendChild(commentWrap);
-
-      el.shotGrid.appendChild(card);
+    const catSelect = document.createElement('select');
+    catSelect.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
+    catSelect.setAttribute('aria-label', 'Category');
+    CATEGORIES.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.value; opt.textContent = c.label;
+      if ((shot.category || 'other') === c.value) opt.selected = true;
+      catSelect.appendChild(opt);
     });
+    catSelect.addEventListener('click', (e) => e.stopPropagation()); // don't open the lightbox
+    catSelect.addEventListener('change', () => {
+      setShotCategory(shot.id, catSelect.value);
+    });
+    imgWrap.appendChild(catSelect);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'shot-card__delete';
+    deleteBtn.setAttribute('aria-label', 'Delete photo');
+    deleteBtn.textContent = '×';
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); // don't open the lightbox
+      deleteShot(shot.id);
+    });
+    imgWrap.appendChild(deleteBtn);
+
+    imgWrap.classList.add('is-clickable');
+    imgWrap.addEventListener('click', () => openLightbox(shot));
+
+    card.appendChild(imgWrap);
+
+    // The full boat-data readout now only lives in the lightbox (left
+    // panel), so it doesn't clash with the photo here — the card stays a
+    // clean thumbnail with just the category/date badges. A comment box
+    // sits right under it, so a quick note can be added without opening
+    // the lightbox at all.
+    const commentWrap = document.createElement('div');
+    commentWrap.className = 'shot-card__comment-wrap';
+    const commentInput = document.createElement('textarea');
+    commentInput.className = 'shot-card__comment';
+    commentInput.rows = 2;
+    commentInput.placeholder = 'Add a comment…';
+    commentInput.value = shot.comment || '';
+    commentInput.addEventListener('input', () => setShotComment(shot.id, commentInput.value));
+    commentInput.addEventListener('blur', () => flushPendingPublish());
+    commentWrap.appendChild(commentInput);
+    card.appendChild(commentWrap);
+
+    return card;
+  }
+
+  // A collapsed manoeuvre-group card: shows only the group's earliest shot
+  // as the thumbnail (that's the one that opens), with a "N photos" badge
+  // when there's more than one hidden behind it. No per-shot controls here
+  // (category/delete/comment) since those would be ambiguous applied to a
+  // whole burst — they stay available per-photo inside the lightbox once
+  // you've opened the group and stepped to the shot you want.
+  function renderManoeuvreGroupCard(group) {
+    const repShot = group.shots[0]; // earliest in the group — the one that opens
+    const card = document.createElement('article');
+    card.className = 'shot-card';
+
+    const imgWrap = document.createElement('div');
+    imgWrap.className = 'shot-card__image-wrap is-clickable';
+    const img = document.createElement('img');
+    img.src = photoSrc(repShot.file);
+    img.alt = '';
+    img.loading = 'lazy';
+    imgWrap.appendChild(img);
+
+    const dateTag = document.createElement('span');
+    dateTag.className = 'shot-card__date';
+    dateTag.textContent = formatShotDate(repShot.capturedAt);
+    imgWrap.appendChild(dateTag);
+
+    if (group.shots.length > 1) {
+      const stackBadge = document.createElement('span');
+      stackBadge.className = 'shot-card__stack-count';
+      stackBadge.textContent = `${group.shots.length} photos`;
+      imgWrap.appendChild(stackBadge);
+    }
+
+    imgWrap.addEventListener('click', () => {
+      // Scope prev/next to just this manoeuvre's own shots, in
+      // chronological order, rather than the whole Manoeuvre Sequence list.
+      currentGalleryOrder = group.shots;
+      openLightbox(repShot);
+    });
+
+    card.appendChild(imgWrap);
+    return card;
   }
 
   // ---------- lightbox (full-size photo view) ----------
@@ -904,12 +961,14 @@
   }
 
   // Follows the leech edge from (startX,startY) up to (endX,endY) in image
-  // pixel space, sampling TWIST_TRACE_STEPS+1 evenly-spaced heights. At each
+  // pixel space, sampling TWIST_DENSE_STEPS+1 evenly-spaced heights. At each
   // height it searches a window around the previous point's x for the
   // strongest vertical edge (biggest horizontal brightness gradient) —
   // that's the sail/background boundary. A weak/ambiguous local signal
   // (open sky, low contrast) falls back toward the straight reference line
-  // rather than snapping onto noise.
+  // rather than snapping onto noise. Always traces at the same dense
+  // resolution regardless of how many points the user wants to see — see
+  // resamplePoints() for the step that thins this down.
   function traceLeechEdge(imageData, width, height, startX, startY, endX, endY) {
     const data = imageData.data;
     const luminance = (x, y) => {
@@ -927,9 +986,9 @@
     const searchRadius = Math.max(12, Math.round(width * TWIST_SEARCH_RADIUS_FRAC));
     const points = [{ x: startX, y: startY }];
     let curX = startX;
-    for (let s = 1; s <= TWIST_TRACE_STEPS; s++) {
-      const y = startY + ((endY - startY) * s) / TWIST_TRACE_STEPS;
-      const predictedX = startX + ((endX - startX) * s) / TWIST_TRACE_STEPS;
+    for (let s = 1; s <= TWIST_DENSE_STEPS; s++) {
+      const y = startY + ((endY - startY) * s) / TWIST_DENSE_STEPS;
+      const predictedX = startX + ((endX - startX) * s) / TWIST_DENSE_STEPS;
       const lo = Math.max(0, Math.round(curX - searchRadius));
       const hi = Math.min(width - 1, Math.round(curX + searchRadius));
       let bestX = predictedX, bestScore = -1;
@@ -944,8 +1003,31 @@
     return points;
   }
 
-  async function runAutoTrace(shot, referenceFrac, headFrac) {
-    const { w: dispW, h: dispH } = twistImgDims();
+  // Thins an evenly-height-spaced point list down to n points, still evenly
+  // spaced by the same height parameter (interpolating between the two
+  // nearest dense points when n doesn't divide evenly). Used to turn the
+  // dense pixel-level trace into the handful of points the user actually
+  // sees and can drag.
+  function resamplePoints(pts, n) {
+    n = Math.max(2, Math.min(n, pts.length));
+    if (n === pts.length) return pts.slice();
+    const lastIdx = pts.length - 1;
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      const pos = (i / (n - 1)) * lastIdx;
+      const lo = Math.floor(pos), hi = Math.min(lastIdx, Math.ceil(pos));
+      const t = pos - lo;
+      const a = pts[lo], b = pts[hi];
+      out.push({ xFrac: a.xFrac + (b.xFrac - a.xFrac) * t, yFrac: a.yFrac + (b.yFrac - a.yFrac) * t });
+    }
+    return out;
+  }
+
+  // Traces the leech edge at full (dense) resolution and returns it as
+  // image-fraction points. Point-count reduction happens separately, in
+  // resamplePoints(), so adjusting the point count later doesn't need to
+  // re-scan the photo.
+  async function traceDenseFrac(shot, referenceFrac, headFrac) {
     try {
       const { imageData, width, height } = await loadImageDataForAnalysis(shot.file);
       const startX = referenceFrac.xFrac * width, startY = referenceFrac.yFrac * height;
@@ -957,8 +1039,8 @@
       // hand rather than a dead end: a straight line between their two clicks.
       console.error('Twist auto-trace fell back to a straight line:', e);
       const pts = [];
-      for (let s = 0; s <= TWIST_TRACE_STEPS; s++) {
-        const t = s / TWIST_TRACE_STEPS;
+      for (let s = 0; s <= TWIST_DENSE_STEPS; s++) {
+        const t = s / TWIST_DENSE_STEPS;
         pts.push({
           xFrac: referenceFrac.xFrac + (headFrac.xFrac - referenceFrac.xFrac) * t,
           yFrac: referenceFrac.yFrac + (headFrac.yFrac - referenceFrac.yFrac) * t,
@@ -978,7 +1060,7 @@
     if (pts.length === 0) return;
     const { w, h } = twistImgDims();
     const px = (p) => ({ x: p.xFrac * w, y: p.yFrac * h });
-    const r = Math.max(6, Math.round(Math.min(w, h) * 0.012));
+    const r = Math.max(4, Math.round(Math.min(w, h) * 0.006));
 
     if (pts.length > 1) {
       const line = document.createElementNS(SVG_NS, 'polyline');
@@ -992,7 +1074,7 @@
       const circle = document.createElementNS(SVG_NS, 'circle');
       circle.setAttribute('cx', c.x);
       circle.setAttribute('cy', c.y);
-      circle.setAttribute('r', isEndpoint ? r * 1.4 : r);
+      circle.setAttribute('r', isEndpoint ? r * 1.3 : r);
       circle.setAttribute('class', 'twist-overlay__point' + (isEndpoint ? ' is-endpoint' : '') + (twistState.dragIndex === i ? ' is-dragging' : ''));
       svg.appendChild(circle);
     });
@@ -1031,9 +1113,10 @@
       twistState.mode = 'tracing';
       updateTwistHint('Tracing the leech edge…');
       const shot = currentLightboxShot();
-      const points = await runAutoTrace(shot, twistState.referenceFrac, twistState.headFrac);
+      const dense = await traceDenseFrac(shot, twistState.referenceFrac, twistState.headFrac);
       if (!twistState || twistState.mode !== 'tracing') return; // trace was cancelled while awaiting
-      twistState.points = points;
+      twistState.densePoints = dense; // kept so the point-count stepper can re-thin without re-scanning the photo
+      twistState.points = resamplePoints(dense, twistPointCount);
       twistState.mode = 'editing';
       twistState.dragIndex = null;
       updateTwistHint('Double-click a point to pick it up, double-click again to drop it in place. Then Save.');
@@ -1041,6 +1124,25 @@
       renderTwistOverlay();
     }
   }
+
+  // Changes how many points are shown/edited — clamped to
+  // [TWIST_POINT_COUNT_MIN, TWIST_POINT_COUNT_MAX]. If a trace is already in
+  // progress, re-thins it from the cached dense trace immediately (no need
+  // to re-scan the photo); otherwise it just applies to the next trace.
+  function setTwistPointCount(n) {
+    n = Math.max(TWIST_POINT_COUNT_MIN, Math.min(TWIST_POINT_COUNT_MAX, n));
+    if (n === twistPointCount) return;
+    twistPointCount = n;
+    el.twistPointCountLabel.textContent = String(twistPointCount);
+    if (twistState && twistState.mode === 'editing' && twistState.densePoints) {
+      twistState.points = resamplePoints(twistState.densePoints, twistPointCount);
+      twistState.dragIndex = null;
+      renderTwistOverlay();
+    }
+  }
+  el.twistPointsMinus.addEventListener('click', () => setTwistPointCount(twistPointCount - 1));
+  el.twistPointsPlus.addEventListener('click', () => setTwistPointCount(twistPointCount + 1));
+  el.twistPointCountLabel.textContent = String(twistPointCount);
 
   el.twistOverlay.addEventListener('click', (e) => {
     if (!twistState || (twistState.mode !== 'await-reference' && twistState.mode !== 'await-head')) return;
