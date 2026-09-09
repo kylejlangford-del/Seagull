@@ -34,10 +34,23 @@ h1{margin:10px 0 14px;font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:.98;lette
 
 /* Data overlay boxes — rendered directly on top of a photo, positioned by
    percentage so the same layout lines up on every shot regardless of size */
-.overlay-box{position:absolute;z-index:1;display:inline-flex;align-items:baseline;gap:4px;padding:4px 8px;border-radius:7px;background:rgba(6,16,27,.72);backdrop-filter:blur(3px);font-size:.66rem;white-space:nowrap;pointer-events:none;transform:translate(0,0)}
+/* max-width + wrap (not nowrap) keeps a long variable name from running past
+   the left/right edge of the photo on a narrow gallery card — it wraps onto
+   a second line instead. The label (span) is the one that can get long; the
+   value (b) stays on its own line via white-space:nowrap so a number is
+   never split mid-digit. */
+.overlay-box{position:absolute;z-index:1;display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:2px 4px;max-width:46%;padding:4px 8px;border-radius:7px;background:rgba(6,16,27,.72);backdrop-filter:blur(3px);font-size:.66rem;pointer-events:none;transform:translate(0,0)}
+.overlay-box span{white-space:normal;overflow-wrap:anywhere}
+.overlay-box b{white-space:nowrap}
 .overlay-box b{color:var(--accent);font-weight:800}
 .overlay-box span{color:var(--muted-2);font-weight:600}
 .overlay-box--editable{pointer-events:auto;cursor:grab;touch-action:none;border:1px solid rgba(71,231,219,.5);user-select:none}
+/* The gallery card is much narrower than the lightbox, so at the shared
+   .66rem size a long label like "MainCunninghamLoad_kgf" wraps onto a
+   second line and can crowd the row below it — shrink text on the card
+   specifically so two full columns of long names still fit without
+   crowding, while the lightbox (plenty of width) stays at full size. */
+.shot-card__image-wrap .overlay-box{font-size:.53rem;max-width:48%;padding:3px 5px;gap:0 3px;line-height:1.25}
 .overlay-box--editable.is-dragging{cursor:grabbing;box-shadow:0 0 0 2px var(--accent)}
 
 /* Date tabs + category filter chips */
@@ -148,7 +161,10 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
 .overlay-editor__close{width:32px;height:32px;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:8px;background:rgba(255,255,255,.03);color:var(--muted-2);font-size:1.2rem;line-height:1;cursor:pointer}
 .overlay-editor__close:hover{border-color:rgba(255,107,107,.5);color:#fff}
 .overlay-editor__image-wrap{position:relative;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:#04090f;margin:14px 0}
-.overlay-editor__image-wrap img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none}
+/* Same crop bias as the gallery card (50% 70%, not center) — otherwise a box
+   dragged here to sit next to the boat could land somewhere else on the
+   actual card, since the two would be showing different parts of the photo. */
+.overlay-editor__image-wrap img{width:100%;height:100%;object-fit:cover;object-position:50% 70%;display:block;pointer-events:none;user-select:none}
 #overlayEditorBoxes{position:absolute;inset:0}
 .overlay-editor__actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:6px}
 .overlay-editor__actions-right{display:flex;gap:8px}

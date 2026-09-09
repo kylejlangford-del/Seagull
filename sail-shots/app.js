@@ -362,22 +362,42 @@
   }
 
   // ---------- overlay box positioning (shared by the gallery and the editor) ----------
-  // Vars with no locked position yet stack down the top-left corner in columns
-  // of up to 9, wrapping into a new column rather than piling every box past
-  // the 9th on top of each other — with a large variable count (people do pick
-  // 20+) a single unbounded column ran off the bottom of the photo and every
-  // overflow box landed in the same unreadable spot. This is only ever the
-  // un-arranged starting point; the same order is used in the gallery and the
-  // editor so a box looks the same wherever it appears until it's dragged.
-  const OVERLAY_ROWS_PER_COL = 9;
-  function defaultOverlayPosition(index) {
-    const col = Math.floor(index / OVERLAY_ROWS_PER_COL);
-    const row = index % OVERLAY_ROWS_PER_COL;
-    return { xPct: Math.min(70, 3 + col * 32), yPct: 6 + row * 9 };
+  // Vars with no locked position yet default into two columns — the first
+  // half of the variable list down the left edge, the second half down the
+  // right — with nothing placed in the horizontal middle, since that's where
+  // the boat/mast usually sits in these shots. Each column's row spacing is
+  // computed from how many variables actually landed in it, spread evenly
+  // between a top and bottom margin, so it always fits the frame regardless
+  // of how many variables are selected (rather than a fixed step that could
+  // run past the bottom on a long list). The right column is anchored from
+  // the RIGHT edge (not left, like the left column) so a long label's own
+  // width never pushes it past the edge of the photo — only left/top offsets
+  // can't guarantee that, since box width varies with the variable name.
+  // This is only ever the un-arranged starting point; the same order is used
+  // in the gallery, the lightbox and the editor so a box looks the same
+  // wherever it appears until it's dragged onto a custom saved position.
+  const OVERLAY_TOP_PCT = 6;
+  const OVERLAY_BOTTOM_PCT = 90;
+  const OVERLAY_EDGE_PCT = 3;
+  function defaultOverlayPosition(index, total) {
+    const leftCount = Math.ceil(total / 2);
+    const inLeft = index < leftCount;
+    const col = inLeft ? index : index - leftCount;
+    const colSize = inLeft ? leftCount : (total - leftCount);
+    const yPct = colSize <= 1 ? OVERLAY_TOP_PCT : OVERLAY_TOP_PCT + (col * (OVERLAY_BOTTOM_PCT - OVERLAY_TOP_PCT)) / (colSize - 1);
+    return inLeft ? { xPct: OVERLAY_EDGE_PCT, yPct } : { rightPct: OVERLAY_EDGE_PCT, yPct };
   }
-  function getOverlayPosition(varName, index, positions) {
+  function getOverlayPosition(varName, index, positions, total) {
     const saved = positions && positions[varName];
-    return (saved && typeof saved.xPct === 'number' && typeof saved.yPct === 'number') ? saved : defaultOverlayPosition(index);
+    return (saved && typeof saved.xPct === 'number' && typeof saved.yPct === 'number') ? saved : defaultOverlayPosition(index, total);
+  }
+  // Applies a computed position to a box element — left-anchored ({xPct}) or
+  // right-anchored ({rightPct}, only ever a default, never a dragged/saved
+  // position — dragging always saves an {xPct} from the left, same as before).
+  function placeOverlayBox(box, pos) {
+    if (pos.rightPct !== undefined) { box.style.right = `${pos.rightPct}%`; box.style.left = ''; }
+    else { box.style.left = `${pos.xPct}%`; box.style.right = ''; }
+    box.style.top = `${pos.yPct}%`;
   }
   function round1(n) { return Math.round(n * 10) / 10; }
 
@@ -513,11 +533,10 @@
       const overlayLayout = existingManifest.overlayLayout || {};
       vars.forEach((v, i) => {
         if (row[v] === undefined || row[v] === '') return;
-        const pos = getOverlayPosition(v, i, overlayLayout);
+        const pos = getOverlayPosition(v, i, overlayLayout, vars.length);
         const box = document.createElement('div');
         box.className = 'overlay-box';
-        box.style.left = `${pos.xPct}%`;
-        box.style.top = `${pos.yPct}%`;
+        placeOverlayBox(box, pos);
         box.innerHTML = `<span></span><b></b>`;
         box.querySelector('b').textContent = row[v];
         box.querySelector('span').textContent = v;
@@ -551,11 +570,10 @@
     el.lightboxBoxes.innerHTML = '';
     vars.forEach((v, i) => {
       if (row[v] === undefined || row[v] === '') return;
-      const pos = getOverlayPosition(v, i, overlayLayout);
+      const pos = getOverlayPosition(v, i, overlayLayout, vars.length);
       const box = document.createElement('div');
       box.className = 'overlay-box';
-      box.style.left = `${pos.xPct}%`;
-      box.style.top = `${pos.yPct}%`;
+      placeOverlayBox(box, pos);
       box.innerHTML = `<span></span><b></b>`;
       box.querySelector('b').textContent = row[v];
       box.querySelector('span').textContent = v;
@@ -678,11 +696,10 @@
     const vars = existingManifest.variables || [];
     const row = shot.row || {};
     vars.forEach((v, i) => {
-      const pos = getOverlayPosition(v, i, overlayWorkingPositions);
+      const pos = getOverlayPosition(v, i, overlayWorkingPositions, vars.length);
       const box = document.createElement('div');
       box.className = 'overlay-box overlay-box--editable';
-      box.style.left = `${pos.xPct}%`;
-      box.style.top = `${pos.yPct}%`;
+      placeOverlayBox(box, pos);
       box.innerHTML = `<span></span><b></b>`;
       box.querySelector('b').textContent = (row[v] !== undefined && row[v] !== '') ? row[v] : '—';
       box.querySelector('span').textContent = v;
@@ -699,6 +716,12 @@
     const offsetX = e.clientX - boxRect.left;
     const offsetY = e.clientY - boxRect.top;
     boxEl.classList.add('is-dragging');
+    // A right-anchored default box has only `right` set in its inline style;
+    // dragging always switches to a left-anchored saved position (matching
+    // every other custom position), so clear `right` up front — otherwise
+    // having both left and right set at once would stretch the box's width
+    // to fill the gap between them instead of sizing to its own content.
+    boxEl.style.right = '';
 
     function move(ev) {
       let xPct = ((ev.clientX - offsetX - wrapRect.left) / wrapRect.width) * 100;
