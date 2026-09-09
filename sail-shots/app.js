@@ -27,6 +27,9 @@
     dateTabs: document.getElementById('dateTabs'),
     categoryChips: document.getElementById('categoryChips'),
     shotGrid: document.getElementById('shotGrid'),
+    galleryChangesBar: document.getElementById('galleryChangesBar'),
+    galleryDiscardChanges: document.getElementById('galleryDiscardChanges'),
+    galleryDownloadChanges: document.getElementById('galleryDownloadChanges'),
 
     overlayEditor: document.getElementById('overlayEditor'),
     overlayEditorClose: document.getElementById('overlayEditorClose'),
@@ -40,6 +43,7 @@
 
     lightbox: document.getElementById('lightbox'),
     lightboxClose: document.getElementById('lightboxClose'),
+    lightboxDelete: document.getElementById('lightboxDelete'),
     lightboxImageWrap: document.getElementById('lightboxImageWrap'),
     lightboxImg: document.getElementById('lightboxImg'),
     lightboxBoxes: document.getElementById('lightboxBoxes'),
@@ -81,6 +85,13 @@
 
   let selectedDateKey = null;
   let selectedCategory = 'all';
+
+  // set once a shot is deleted or re-categorized from the gallery (not the
+  // import flow) — these edits happen straight against existingManifest so
+  // the page reflects them immediately, but like everything else here they
+  // aren't "real" until published, so a banner offers a manifest download
+  // rather than firing one on every click
+  let manifestDirty = false;
 
   // working copy of overlayLayout edited while the overlay editor is open —
   // nothing here touches existingManifest (or the published site) until the
@@ -471,10 +482,32 @@
       dateTag.className = 'shot-card__date';
       dateTag.textContent = formatShotDate(shot.capturedAt);
       imgWrap.appendChild(dateTag);
-      const catTag = document.createElement('span');
-      catTag.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
-      catTag.textContent = CATEGORY_LABEL[shot.category] || CATEGORY_LABEL.other;
-      imgWrap.appendChild(catTag);
+
+      const catSelect = document.createElement('select');
+      catSelect.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
+      catSelect.setAttribute('aria-label', 'Category');
+      CATEGORIES.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.value; opt.textContent = c.label;
+        if ((shot.category || 'other') === c.value) opt.selected = true;
+        catSelect.appendChild(opt);
+      });
+      catSelect.addEventListener('click', (e) => e.stopPropagation()); // don't open the lightbox
+      catSelect.addEventListener('change', () => {
+        setShotCategory(shot.id, catSelect.value);
+      });
+      imgWrap.appendChild(catSelect);
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.type = 'button';
+      deleteBtn.className = 'shot-card__delete';
+      deleteBtn.setAttribute('aria-label', 'Delete photo');
+      deleteBtn.textContent = '×';
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // don't open the lightbox
+        deleteShot(shot.id);
+      });
+      imgWrap.appendChild(deleteBtn);
 
       const row = shot.row || {};
       const overlayLayout = existingManifest.overlayLayout || {};
@@ -506,10 +539,13 @@
   // around a size-capped <img>), so it shrink-wraps to exactly the image's
   // rendered box with no letterboxing, and the same percentage-based overlay
   // positions land correctly on the full photo without any extra math.
+  let currentLightboxShotId = null;
+
   function openLightbox(shot) {
     const vars = existingManifest.variables || [];
     const overlayLayout = existingManifest.overlayLayout || {};
     const row = shot.row || {};
+    currentLightboxShotId = shot.id;
 
     el.lightboxImg.src = `./${shot.file}`;
     el.lightboxBoxes.innerHTML = '';
@@ -527,7 +563,13 @@
     });
 
     el.lightboxCategory.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
-    el.lightboxCategory.textContent = CATEGORY_LABEL[shot.category] || CATEGORY_LABEL.other;
+    el.lightboxCategory.innerHTML = '';
+    CATEGORIES.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.value; opt.textContent = c.label;
+      if ((shot.category || 'other') === c.value) opt.selected = true;
+      el.lightboxCategory.appendChild(opt);
+    });
     el.lightboxDate.textContent = formatShotDate(shot.capturedAt);
 
     el.lightbox.classList.remove('is-hidden');
@@ -535,15 +577,84 @@
   function closeLightbox() {
     el.lightbox.classList.add('is-hidden');
     el.lightboxImg.src = '';
+    currentLightboxShotId = null;
   }
   el.lightboxClose.addEventListener('click', closeLightbox);
   el.lightbox.addEventListener('click', (e) => {
     if (e.target === el.lightbox) closeLightbox(); // click on the backdrop, not the photo itself
   });
+  el.lightboxCategory.addEventListener('click', (e) => e.stopPropagation()); // don't let picking an option close the lightbox
+  el.lightboxCategory.addEventListener('change', () => {
+    if (!currentLightboxShotId) return;
+    setShotCategory(currentLightboxShotId, el.lightboxCategory.value);
+    const shot = existingManifest.shots.find(s => s.id === currentLightboxShotId);
+    el.lightboxCategory.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
+  });
+  el.lightboxDelete.addEventListener('click', () => {
+    if (!currentLightboxShotId) return;
+    if (deleteShot(currentLightboxShotId)) closeLightbox();
+  });
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     if (!el.lightbox.classList.contains('is-hidden')) closeLightbox();
     else if (!el.overlayEditor.classList.contains('is-hidden')) closeOverlayEditor();
+  });
+
+  // ---------- gallery edits: delete a published shot, change its category ----------
+  // Both act straight on existingManifest so the gallery updates immediately,
+  // but — same rule as everything else in this no-backend app — nothing is
+  // "real" until manifest.json is republished, so these just flag the change
+  // and surface a download/discard bar instead of downloading a file per click.
+  function markManifestDirty() {
+    manifestDirty = true;
+    el.galleryChangesBar.classList.remove('is-hidden');
+  }
+  function clearManifestDirty() {
+    manifestDirty = false;
+    el.galleryChangesBar.classList.add('is-hidden');
+  }
+  function currentManifestSnapshot(overrides = {}) {
+    return {
+      timestampColumn: existingManifest.timestampColumn || '',
+      headingColumn: existingManifest.headingColumn || '',
+      twaColumn: existingManifest.twaColumn || '',
+      variables: existingManifest.variables || [],
+      shots: existingManifest.shots || [],
+      dayNotes: existingManifest.dayNotes || {},
+      overlayLayout: existingManifest.overlayLayout || {},
+      ...overrides,
+    };
+  }
+
+  function deleteShot(shotId) {
+    const shot = existingManifest.shots.find(s => s.id === shotId);
+    if (!shot) return false;
+    const label = (shot.file || '').split('/').pop() || 'this photo';
+    if (!confirm(`Delete ${label} from the gallery?\n\nThis removes it from manifest.json — you'll still need to download and publish the update below. The photo file itself stays in the repo until that's done.`)) {
+      return false;
+    }
+    existingManifest.shots = existingManifest.shots.filter(s => s.id !== shotId);
+    markManifestDirty();
+    renderGallery();
+    return true;
+  }
+
+  function setShotCategory(shotId, category) {
+    const shot = existingManifest.shots.find(s => s.id === shotId);
+    if (!shot || shot.category === category) return;
+    shot.category = category;
+    markManifestDirty();
+    renderGallery();
+  }
+
+  el.galleryDownloadChanges.addEventListener('click', () => {
+    downloadManifestFile(currentManifestSnapshot());
+    clearManifestDirty();
+  });
+  el.galleryDiscardChanges.addEventListener('click', () => {
+    if (!confirm('Discard your unpublished deletes/category changes and reload the published manifest.json?')) return;
+    clearManifestDirty();
+    loadManifest();
   });
 
   // ---------- overlay layout editor ----------
@@ -633,16 +744,8 @@
     renderOverlayEditorPreview();
   });
   el.overlayEditorLock.addEventListener('click', () => {
-    const manifest = {
-      timestampColumn: existingManifest.timestampColumn || '',
-      headingColumn: existingManifest.headingColumn || '',
-      twaColumn: existingManifest.twaColumn || '',
-      variables: existingManifest.variables || [],
-      shots: existingManifest.shots || [],
-      dayNotes: existingManifest.dayNotes || {},
-      overlayLayout: { ...overlayWorkingPositions },
-    };
-    downloadManifestFile(manifest);
+    existingManifest.overlayLayout = { ...overlayWorkingPositions };
+    downloadManifestFile(currentManifestSnapshot());
     closeOverlayEditor();
   });
 
