@@ -434,11 +434,27 @@
     { color: 'orange', vars: ['MainSheetLoad_kgf', 'MainCunninghamLoad_kgf', 'FootCamber_deg', 'Clew_position', MAST_AOA_KEY, 'MastRotation_deg', 'MainTravellerAngle_deg'] },
   ];
 
+  // The boat logs MastRotation_deg as an unsigned magnitude (always
+  // positive, whichever side the mast is actually rotated to) — but AWA_deg
+  // is signed by which side the wind's on (negative = wind from port). To
+  // combine them (for Mast AOA, and to show a rotation value that actually
+  // means something on its own) the magnitude needs the sign of AWA_deg —
+  // confirmed with Kyle: same sign as AWA_deg, e.g. AWA -14° + raw rotation
+  // 21.4° -> signed rotation -21.4°.
+  function normalizedMastRotation(row) {
+    if (row['MastRotation_deg'] === undefined || row['MastRotation_deg'] === '') return undefined;
+    const mag = Math.abs(Number(row['MastRotation_deg']));
+    if (Number.isNaN(mag)) return undefined;
+    const awaNum = Number(row['AWA_deg']);
+    const sign = (row['AWA_deg'] === undefined || row['AWA_deg'] === '' || Number.isNaN(awaNum) || awaNum === 0) ? 1 : Math.sign(awaNum);
+    return sign * mag;
+  }
+
   function computeMastAoa(row) {
+    if (row['AWA_deg'] === undefined || row['AWA_deg'] === '') return undefined;
     const awa = Number(row['AWA_deg']);
-    const rot = Number(row['MastRotation_deg']);
-    if (row['AWA_deg'] === undefined || row['MastRotation_deg'] === undefined) return undefined;
-    if (Number.isNaN(awa) || Number.isNaN(rot)) return undefined;
+    const rot = normalizedMastRotation(row);
+    if (Number.isNaN(awa) || rot === undefined || Number.isNaN(rot)) return undefined;
     return awa - rot;
   }
 
@@ -450,6 +466,11 @@
       const val = computeMastAoa(row);
       if (val === undefined) return undefined;
       return { label: 'Mast AOA', value: formatOverlayValue('MastAOA_deg', val) };
+    }
+    if (key === 'MastRotation_deg') {
+      const val = normalizedMastRotation(row);
+      if (val === undefined) return undefined;
+      return { label: key, value: formatOverlayValue(key, val) };
     }
     if (row[key] === undefined || row[key] === '') return undefined;
     return { label: key, value: formatOverlayValue(key, row[key]) };
