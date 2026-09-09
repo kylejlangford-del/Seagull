@@ -61,6 +61,15 @@
   // reliably a minute-plus apart. 60s sits comfortably between the two.
   const MANOEUVRE_GROUP_GAP_SECONDS = 60;
 
+  // ---------- twist profile tuning (Straight Line Upwind only) ----------
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const TWIST_ANALYSIS_MAX_DIM = 1400; // downscale the photo before pixel-scanning it, for speed
+  const TWIST_TRACE_STEPS = 20; // sample points between the boom reference and the masthead (21 points total)
+  const TWIST_SEARCH_RADIUS_FRAC = 0.045; // how far either side of the predicted x the edge search looks, as a fraction of image width
+  const TWIST_EDGE_MIN_SCORE = 8; // below this, the local gradient is too weak to trust — fall back toward the straight-line guess
+  const TWIST_GRAPH_W = 220, TWIST_GRAPH_H = 170;
+  const TWIST_GRAPH_PAD = { left: 34, right: 10, top: 10, bottom: 22 };
+
   const CATEGORIES = [
     { value: 'manoeuvre', label: 'Manoeuvre Sequence' },
     { value: 'gybe-exit', label: 'Gybe Exit' },
@@ -95,6 +104,15 @@
     lightboxCategory: document.getElementById('lightboxCategory'),
     lightboxDate: document.getElementById('lightboxDate'),
     lightboxComment: document.getElementById('lightboxComment'),
+
+    twistSection: document.getElementById('twistSection'),
+    twistTraceBtn: document.getElementById('twistTraceBtn'),
+    twistClearBtn: document.getElementById('twistClearBtn'),
+    twistSaveBtn: document.getElementById('twistSaveBtn'),
+    twistCancelBtn: document.getElementById('twistCancelBtn'),
+    twistHint: document.getElementById('twistHint'),
+    twistGraph: document.getElementById('twistGraph'),
+    twistOverlay: document.getElementById('twistOverlay'),
 
     csvInput: document.getElementById('csvInput'),
     csvDropLabel: document.getElementById('csvDropLabel'),
@@ -693,12 +711,21 @@
   // a comment box in a matching panel on the right, so nothing sits on the
   // photo itself anymore.
   let currentLightboxShotId = null;
+  // Twist-profile trace in progress, or null when idle. See the "twist
+  // profile" block below for the full state machine.
+  let twistState = null;
 
   function openLightbox(shot) {
     const row = shot.row || {};
     currentLightboxShotId = shot.id;
+    endTwistTrace(); // switching shots (open, or prev/next) abandons any in-progress trace
 
     el.lightboxImg.src = photoSrc(shot.file);
+    // The twist overlay's viewBox is set to the photo's own natural pixel
+    // size (once known) so its circles/lines aren't stretched by a mismatch
+    // between that size's aspect ratio and a generic square viewBox.
+    el.lightboxImg.onload = syncTwistOverlayViewBox;
+    if (el.lightboxImg.complete) syncTwistOverlayViewBox();
 
     el.lightboxCategory.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
     el.lightboxCategory.innerHTML = '';
@@ -742,10 +769,13 @@
     el.lightboxPrev.classList.toggle('is-hidden', !canNavigate);
     el.lightboxNext.classList.toggle('is-hidden', !canNavigate);
 
+    renderTwistSection(shot);
+
     el.lightbox.classList.remove('is-hidden');
   }
   function closeLightbox() {
     flushPendingPublish(); // don't leave a just-typed comment waiting on the debounce timer
+    endTwistTrace();
     el.lightbox.classList.add('is-hidden');
     el.lightboxImg.src = '';
     currentLightboxShotId = null;
@@ -773,6 +803,8 @@
     setShotCategory(currentLightboxShotId, el.lightboxCategory.value);
     const shot = existingManifest.shots.find(s => s.id === currentLightboxShotId);
     el.lightboxCategory.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
+    endTwistTrace(); // recategorizing mid-trace would leave a stale reference to the wrong tool
+    if (shot) renderTwistSection(shot);
   });
   el.lightboxDelete.addEventListener('click', () => {
     if (!currentLightboxShotId) return;
@@ -792,6 +824,375 @@
     else if (!typingComment && e.key === 'ArrowLeft') stepLightbox(-1);
     else if (!typingComment && e.key === 'ArrowRight') stepLightbox(1);
   });
+
+  // ---------- twist profile: trace the mainsail leech and plot its offset from the boom up to the masthead, as a % of mast height ----------
+  // Straight Line Upwind shots only. The user clicks two points on the
+  // photo — the boom/traveller reference (bottom) and roughly the masthead
+  // (top) — and the app auto-traces the leech edge between them by
+  // following the strongest local brightness edge column-by-column. The
+  // result is editable: double-click a point to pick it up, move the
+  // mouse, double-click again to drop it in its corrected spot.
+  //
+  // Persisted on the shot as `twistProfile: { points: [{xFrac,yFrac}, ...] }`
+  // — image-fraction coordinates (0-1 of the photo's natural width/height),
+  // ordered bottom (boom) to top (head) — so it survives a re-render at any
+  // display size and publishes/downloads the same way every other edit does.
+
+  function currentLightboxShot() {
+    return existingManifest.shots.find(s => s.id === currentLightboxShotId) || null;
+  }
+
+  // Keeps the overlay's viewBox matched to the photo's own pixel aspect
+  // ratio. Without this, a square-ish default viewBox stretched onto a
+  // tall/narrow sail crop would draw the point handles as ellipses instead
+  // of circles — this makes 1 viewBox unit = 1 photo pixel in both axes.
+  function syncTwistOverlayViewBox() {
+    const w = el.lightboxImg.naturalWidth, h = el.lightboxImg.naturalHeight;
+    if (!w || !h) return;
+    el.twistOverlay.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    if (twistState) renderTwistOverlay();
+  }
+
+  function twistImgDims() {
+    return { w: el.lightboxImg.naturalWidth || 1000, h: el.lightboxImg.naturalHeight || 1000 };
+  }
+
+  function updateTwistHint(text) {
+    el.twistHint.textContent = text || '';
+    el.twistHint.classList.toggle('is-hidden', !text);
+  }
+
+  // Converts a pointer event over the photo into image-fraction coordinates
+  // (0-1), regardless of how the photo is currently scaled on screen.
+  function twistFracFromEvent(e) {
+    const rect = el.lightboxImageWrap.getBoundingClientRect();
+    const xFrac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    const yFrac = Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
+    return { xFrac, yFrac };
+  }
+
+  // ---- pixel analysis: load the photo into an offscreen canvas we can read back ----
+  // Requires the image host to send CORS headers (the R2 bucket now does —
+  // see its CORS Policy setting); without that, getImageData throws and the
+  // trace falls back to a straight line between the two clicked points.
+  function loadImageDataForAnalysis(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const scale = Math.min(1, TWIST_ANALYSIS_MAX_DIM / Math.max(img.naturalWidth, img.naturalHeight));
+        const w = Math.max(1, Math.round(img.naturalWidth * scale));
+        const h = Math.max(1, Math.round(img.naturalHeight * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        try {
+          resolve({ imageData: ctx.getImageData(0, 0, w, h), width: w, height: h });
+        } catch (e) { reject(e); }
+      };
+      img.onerror = () => reject(new Error('could not load the photo for analysis'));
+      // The lightbox's own <img> already loaded this same URL without a
+      // crossorigin attribute, which the browser caches as a non-CORS-
+      // validated response. Requesting the identical URL here with
+      // crossOrigin='anonymous' would reuse that cached response and fail
+      // to load every time, silently defeating auto-trace. A cache-busting
+      // query param forces a fresh, properly CORS-validated request.
+      const bust = (url.includes('?') ? '&' : '?') + '_cb=' + Date.now();
+      img.src = url + bust;
+    });
+  }
+
+  // Follows the leech edge from (startX,startY) up to (endX,endY) in image
+  // pixel space, sampling TWIST_TRACE_STEPS+1 evenly-spaced heights. At each
+  // height it searches a window around the previous point's x for the
+  // strongest vertical edge (biggest horizontal brightness gradient) —
+  // that's the sail/background boundary. A weak/ambiguous local signal
+  // (open sky, low contrast) falls back toward the straight reference line
+  // rather than snapping onto noise.
+  function traceLeechEdge(imageData, width, height, startX, startY, endX, endY) {
+    const data = imageData.data;
+    const luminance = (x, y) => {
+      x = Math.max(0, Math.min(width - 1, Math.round(x)));
+      y = Math.max(0, Math.min(height - 1, Math.round(y)));
+      const i = (y * width + x) * 4;
+      return 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+    };
+    const edgeStrength = (x, y) => {
+      let sum = 0;
+      for (let dy = -1; dy <= 1; dy++) sum += Math.abs(luminance(x + 2, y + dy) - luminance(x - 2, y + dy));
+      return sum;
+    };
+
+    const searchRadius = Math.max(12, Math.round(width * TWIST_SEARCH_RADIUS_FRAC));
+    const points = [{ x: startX, y: startY }];
+    let curX = startX;
+    for (let s = 1; s <= TWIST_TRACE_STEPS; s++) {
+      const y = startY + ((endY - startY) * s) / TWIST_TRACE_STEPS;
+      const predictedX = startX + ((endX - startX) * s) / TWIST_TRACE_STEPS;
+      const lo = Math.max(0, Math.round(curX - searchRadius));
+      const hi = Math.min(width - 1, Math.round(curX + searchRadius));
+      let bestX = predictedX, bestScore = -1;
+      for (let x = lo; x <= hi; x++) {
+        const score = edgeStrength(x, y);
+        if (score > bestScore) { bestScore = score; bestX = x; }
+      }
+      if (bestScore < TWIST_EDGE_MIN_SCORE) bestX = curX + (predictedX - curX) * 0.5;
+      points.push({ x: bestX, y });
+      curX = bestX;
+    }
+    return points;
+  }
+
+  async function runAutoTrace(shot, referenceFrac, headFrac) {
+    const { w: dispW, h: dispH } = twistImgDims();
+    try {
+      const { imageData, width, height } = await loadImageDataForAnalysis(shot.file);
+      const startX = referenceFrac.xFrac * width, startY = referenceFrac.yFrac * height;
+      const endX = headFrac.xFrac * width, endY = headFrac.yFrac * height;
+      const pxPoints = traceLeechEdge(imageData, width, height, startX, startY, endX, endY);
+      return pxPoints.map(p => ({ xFrac: p.x / width, yFrac: p.y / height }));
+    } catch (e) {
+      // CORS/network failure — still give the user something to correct by
+      // hand rather than a dead end: a straight line between their two clicks.
+      console.error('Twist auto-trace fell back to a straight line:', e);
+      const pts = [];
+      for (let s = 0; s <= TWIST_TRACE_STEPS; s++) {
+        const t = s / TWIST_TRACE_STEPS;
+        pts.push({
+          xFrac: referenceFrac.xFrac + (headFrac.xFrac - referenceFrac.xFrac) * t,
+          yFrac: referenceFrac.yFrac + (headFrac.yFrac - referenceFrac.yFrac) * t,
+        });
+      }
+      return pts;
+    }
+  }
+
+  // ---- overlay: the traced line + draggable points, drawn on the photo itself ----
+  function renderTwistOverlay() {
+    const svg = el.twistOverlay;
+    svg.innerHTML = '';
+    if (!twistState) return;
+    const pts = (twistState.points && twistState.points.length) ? twistState.points
+      : (twistState.referenceFrac ? [twistState.referenceFrac] : []);
+    if (pts.length === 0) return;
+    const { w, h } = twistImgDims();
+    const px = (p) => ({ x: p.xFrac * w, y: p.yFrac * h });
+    const r = Math.max(6, Math.round(Math.min(w, h) * 0.012));
+
+    if (pts.length > 1) {
+      const line = document.createElementNS(SVG_NS, 'polyline');
+      line.setAttribute('points', pts.map(p => { const c = px(p); return `${c.x},${c.y}`; }).join(' '));
+      line.setAttribute('class', 'twist-overlay__line');
+      svg.appendChild(line);
+    }
+    pts.forEach((p, i) => {
+      const c = px(p);
+      const isEndpoint = i === 0 || i === pts.length - 1;
+      const circle = document.createElementNS(SVG_NS, 'circle');
+      circle.setAttribute('cx', c.x);
+      circle.setAttribute('cy', c.y);
+      circle.setAttribute('r', isEndpoint ? r * 1.4 : r);
+      circle.setAttribute('class', 'twist-overlay__point' + (isEndpoint ? ' is-endpoint' : '') + (twistState.dragIndex === i ? ' is-dragging' : ''));
+      svg.appendChild(circle);
+    });
+  }
+
+  function startTwistTrace() {
+    const shot = currentLightboxShot();
+    if (!shot) return;
+    twistState = { mode: 'await-reference', referenceFrac: null, headFrac: null, points: [], dragIndex: null };
+    el.twistOverlay.classList.remove('is-hidden');
+    el.twistOverlay.classList.add('is-active');
+    el.twistTraceBtn.classList.add('is-hidden');
+    el.twistClearBtn.classList.add('is-hidden');
+    el.twistSaveBtn.classList.add('is-hidden');
+    el.twistCancelBtn.classList.remove('is-hidden');
+    updateTwistHint('Click the boom/traveller reference point on the photo.');
+    renderTwistOverlay();
+  }
+
+  function endTwistTrace() {
+    twistState = null;
+    el.twistOverlay.classList.add('is-hidden');
+    el.twistOverlay.classList.remove('is-active');
+    el.twistOverlay.innerHTML = '';
+    updateTwistHint('');
+  }
+
+  async function advanceTwistPick(frac) {
+    if (twistState.mode === 'await-reference') {
+      twistState.referenceFrac = frac;
+      twistState.mode = 'await-head';
+      updateTwistHint('Now click near the top of the leech (the masthead).');
+      renderTwistOverlay();
+    } else if (twistState.mode === 'await-head') {
+      twistState.headFrac = frac;
+      twistState.mode = 'tracing';
+      updateTwistHint('Tracing the leech edge…');
+      const shot = currentLightboxShot();
+      const points = await runAutoTrace(shot, twistState.referenceFrac, twistState.headFrac);
+      if (!twistState || twistState.mode !== 'tracing') return; // trace was cancelled while awaiting
+      twistState.points = points;
+      twistState.mode = 'editing';
+      twistState.dragIndex = null;
+      updateTwistHint('Double-click a point to pick it up, double-click again to drop it in place. Then Save.');
+      el.twistSaveBtn.classList.remove('is-hidden');
+      renderTwistOverlay();
+    }
+  }
+
+  el.twistOverlay.addEventListener('click', (e) => {
+    if (!twistState || (twistState.mode !== 'await-reference' && twistState.mode !== 'await-head')) return;
+    advanceTwistPick(twistFracFromEvent(e));
+  });
+  el.twistOverlay.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    if (!twistState || twistState.mode !== 'editing') return;
+    const frac = twistFracFromEvent(e);
+    if (twistState.dragIndex === null) {
+      let bestI = -1, bestD = Infinity;
+      twistState.points.forEach((p, i) => {
+        const d = Math.hypot(p.xFrac - frac.xFrac, p.yFrac - frac.yFrac);
+        if (d < bestD) { bestD = d; bestI = i; }
+      });
+      if (bestI >= 0 && bestD < 0.06) twistState.dragIndex = bestI;
+    } else {
+      twistState.points[twistState.dragIndex] = frac;
+      twistState.dragIndex = null;
+    }
+    renderTwistOverlay();
+  });
+  el.twistOverlay.addEventListener('mousemove', (e) => {
+    if (!twistState || twistState.dragIndex === null) return;
+    twistState.points[twistState.dragIndex] = twistFracFromEvent(e);
+    renderTwistOverlay();
+  });
+
+  el.twistTraceBtn.addEventListener('click', () => startTwistTrace());
+  el.twistCancelBtn.addEventListener('click', () => {
+    endTwistTrace();
+    const shot = currentLightboxShot();
+    if (shot) renderTwistSection(shot);
+  });
+  el.twistSaveBtn.addEventListener('click', () => {
+    const shot = currentLightboxShot();
+    if (!shot || !twistState || !twistState.points || twistState.points.length < 2) return;
+    shot.twistProfile = { points: twistState.points.map(p => ({ xFrac: p.xFrac, yFrac: p.yFrac })) };
+    markManifestDirty();
+    endTwistTrace();
+    renderTwistSection(shot);
+  });
+  el.twistClearBtn.addEventListener('click', () => {
+    const shot = currentLightboxShot();
+    if (!shot || !shot.twistProfile) return;
+    if (!confirm('Clear the twist trace for this photo?')) return;
+    delete shot.twistProfile;
+    markManifestDirty();
+    renderTwistSection(shot);
+  });
+
+  // ---- graph: height% (0=boom, 100=masthead) vs leech offset (% of mast height) ----
+  function computeTwistCurve(shot) {
+    const tp = shot.twistProfile;
+    if (!tp || !Array.isArray(tp.points) || tp.points.length < 2) return null;
+    const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
+    if (!iw || !ih) return null;
+    const pts = tp.points;
+    const ref = pts[0], head = pts[pts.length - 1];
+    const refPx = { x: ref.xFrac * iw, y: ref.yFrac * ih };
+    const headPx = { x: head.xFrac * iw, y: head.yFrac * ih };
+    const mastHeightPx = refPx.y - headPx.y; // image y grows downward, so the head sits at a smaller y
+    if (!(mastHeightPx > 0)) return null;
+    return pts.map(p => {
+      const ppx = { x: p.xFrac * iw, y: p.yFrac * ih };
+      return {
+        heightPct: ((refPx.y - ppx.y) / mastHeightPx) * 100,
+        offsetPct: ((ppx.x - refPx.x) / mastHeightPx) * 100,
+      };
+    });
+  }
+
+  function renderTwistGraph(shot) {
+    const curve = computeTwistCurve(shot);
+    const svg = el.twistGraph;
+    svg.innerHTML = '';
+    if (!curve) return;
+    const plotW = TWIST_GRAPH_W - TWIST_GRAPH_PAD.left - TWIST_GRAPH_PAD.right;
+    const plotH = TWIST_GRAPH_H - TWIST_GRAPH_PAD.top - TWIST_GRAPH_PAD.bottom;
+    const offsets = curve.map(p => p.offsetPct);
+    let xMin = Math.min(0, ...offsets), xMax = Math.max(0, ...offsets);
+    if (xMax - xMin < 1) { xMax += 1; xMin -= 1; }
+    const xPad = (xMax - xMin) * 0.12;
+    xMin -= xPad; xMax += xPad;
+    const xOf = (v) => TWIST_GRAPH_PAD.left + ((v - xMin) / (xMax - xMin)) * plotW;
+    const yOf = (v) => TWIST_GRAPH_PAD.top + (1 - v / 100) * plotH;
+
+    const axisX = document.createElementNS(SVG_NS, 'line');
+    axisX.setAttribute('x1', xOf(xMin)); axisX.setAttribute('x2', xOf(xMax));
+    axisX.setAttribute('y1', yOf(0)); axisX.setAttribute('y2', yOf(0));
+    axisX.setAttribute('class', 'twist-graph__axis');
+    svg.appendChild(axisX);
+    const axisY = document.createElementNS(SVG_NS, 'line');
+    axisY.setAttribute('x1', xOf(0)); axisY.setAttribute('x2', xOf(0));
+    axisY.setAttribute('y1', yOf(0)); axisY.setAttribute('y2', yOf(100));
+    axisY.setAttribute('class', 'twist-graph__axis');
+    svg.appendChild(axisY);
+
+    [0, 50, 100].forEach(hPct => {
+      const gl = document.createElementNS(SVG_NS, 'line');
+      gl.setAttribute('x1', xOf(xMin)); gl.setAttribute('x2', xOf(xMax));
+      gl.setAttribute('y1', yOf(hPct)); gl.setAttribute('y2', yOf(hPct));
+      gl.setAttribute('class', 'twist-graph__grid');
+      svg.appendChild(gl);
+      const lbl = document.createElementNS(SVG_NS, 'text');
+      lbl.setAttribute('x', TWIST_GRAPH_PAD.left - 6);
+      lbl.setAttribute('y', yOf(hPct) + 3);
+      lbl.setAttribute('class', 'twist-graph__label twist-graph__label--y');
+      lbl.textContent = hPct + '%';
+      svg.appendChild(lbl);
+    });
+
+    const poly = document.createElementNS(SVG_NS, 'polyline');
+    poly.setAttribute('points', curve.map(p => `${xOf(p.offsetPct)},${yOf(p.heightPct)}`).join(' '));
+    poly.setAttribute('class', 'twist-graph__curve');
+    svg.appendChild(poly);
+    curve.forEach(p => {
+      const dot = document.createElementNS(SVG_NS, 'circle');
+      dot.setAttribute('cx', xOf(p.offsetPct));
+      dot.setAttribute('cy', yOf(p.heightPct));
+      dot.setAttribute('r', 2);
+      dot.setAttribute('class', 'twist-graph__dot');
+      svg.appendChild(dot);
+    });
+
+    const cap = document.createElementNS(SVG_NS, 'text');
+    cap.setAttribute('x', TWIST_GRAPH_W / 2);
+    cap.setAttribute('y', TWIST_GRAPH_H - 4);
+    cap.setAttribute('class', 'twist-graph__label twist-graph__label--x');
+    cap.textContent = 'Leech offset (% of mast height)';
+    svg.appendChild(cap);
+  }
+
+  function renderTwistSection(shot) {
+    const isUpwind = (shot.category || 'other') === 'upwind';
+    el.twistSection.classList.toggle('is-hidden', !isUpwind);
+    if (!isUpwind) return;
+    const hasTrace = shot.twistProfile && Array.isArray(shot.twistProfile.points) && shot.twistProfile.points.length >= 2;
+    el.twistTraceBtn.textContent = hasTrace ? 'Re-trace' : 'Trace';
+    el.twistTraceBtn.classList.remove('is-hidden');
+    el.twistClearBtn.classList.toggle('is-hidden', !hasTrace);
+    el.twistSaveBtn.classList.add('is-hidden');
+    el.twistCancelBtn.classList.add('is-hidden');
+    updateTwistHint('');
+    if (hasTrace) {
+      renderTwistGraph(shot);
+      el.twistGraph.classList.remove('is-hidden');
+    } else {
+      el.twistGraph.innerHTML = '';
+      el.twistGraph.classList.add('is-hidden');
+    }
+  }
 
   // ---------- gallery edits: delete a published shot, change its category, add a comment ----------
   // All three act straight on existingManifest so the gallery updates

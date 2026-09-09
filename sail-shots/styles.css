@@ -202,6 +202,32 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
 /* Blank-line gap between the curated groups — on top of the row-to-row
    flex gap already on .lightbox__vars, this reads as a clear break. */
 .lightbox__var-gap{height:10px}
+
+/* ---------- twist profile (Straight Line Upwind only) ---------- */
+.lightbox__twist{display:flex;flex-direction:column;gap:8px;padding-top:10px;border-top:1px solid var(--line)}
+.lightbox__twist-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.lightbox__twist-head>span{color:var(--muted);font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em}
+.lightbox__twist-actions{display:flex;align-items:center;gap:10px}
+.lightbox__twist-actions .text-link{padding:0}
+.lightbox__twist-hint{font-size:.72rem;color:var(--accent);line-height:1.4}
+.lightbox__twist-graph{width:100%;height:auto;background:rgba(255,255,255,.02);border:1px solid var(--line);border-radius:10px}
+.twist-graph__axis{stroke:var(--muted);stroke-width:1}
+.twist-graph__grid{stroke:var(--line);stroke-width:1}
+.twist-graph__curve{fill:none;stroke:var(--accent);stroke-width:1.75;stroke-linejoin:round}
+.twist-graph__dot{fill:var(--accent)}
+.twist-graph__label{fill:var(--muted);font-size:8px;font-family:inherit}
+.twist-graph__label--y{text-anchor:end}
+.twist-graph__label--x{text-anchor:middle}
+
+/* Overlay sits directly on the lightbox photo while tracing — same box as
+   the <img> since .lightbox__image-wrap is sized to fit it exactly. */
+.lightbox__twist-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.lightbox__twist-overlay.is-active{pointer-events:auto;cursor:crosshair}
+.twist-overlay__line{fill:none;stroke:var(--accent);stroke-width:3;vector-effect:non-scaling-stroke;opacity:.9}
+.twist-overlay__point{fill:var(--accent);stroke:#06101b;stroke-width:2;vector-effect:non-scaling-stroke;cursor:grab}
+.twist-overlay__point.is-endpoint{fill:var(--warn)}
+.twist-overlay__point.is-dragging{fill:#fff;cursor:grabbing}
+
 .lightbox__comment-label{color:var(--muted);font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em}
 .lightbox__comment{flex:1;min-height:120px;resize:vertical;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.03);color:var(--text);font-size:.82rem;line-height:1.5;font-family:inherit}
 .lightbox__comment::placeholder{color:var(--muted)}

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#07111d" />
   <title>Sail Shots · Seagull Lab</title>
-  <link rel="stylesheet" href="./styles.css?v=20260909t" />
+  <link rel="stylesheet" href="./styles.css?v=20260909u" />
 </head>
 <body>
   <div id="app">
@@ -121,9 +121,23 @@
           <select id="lightboxCategory" class="shot-card__category"></select>
           <div id="lightboxDate" class="lightbox__date"></div>
           <div id="lightboxVars" class="lightbox__vars"></div>
+          <div id="twistSection" class="lightbox__twist is-hidden">
+            <div class="lightbox__twist-head">
+              <span>Twist profile</span>
+              <div class="lightbox__twist-actions">
+                <button id="twistTraceBtn" class="text-link" type="button">Trace</button>
+                <button id="twistClearBtn" class="text-link is-hidden" type="button">Clear</button>
+                <button id="twistSaveBtn" class="text-link is-hidden" type="button">Save</button>
+                <button id="twistCancelBtn" class="text-link is-hidden" type="button">Cancel</button>
+              </div>
+            </div>
+            <div id="twistHint" class="lightbox__twist-hint is-hidden"></div>
+            <svg id="twistGraph" class="lightbox__twist-graph is-hidden" viewBox="0 0 220 170"></svg>
+          </div>
         </div>
         <div id="lightboxImageWrap" class="lightbox__image-wrap">
           <img id="lightboxImg" alt="" />
+          <svg id="twistOverlay" class="lightbox__twist-overlay is-hidden" viewBox="0 0 1000 1000"></svg>
         </div>
         <div class="lightbox__comment-wrap">
           <label class="lightbox__comment-label" for="lightboxComment">Comments</label>
@@ -133,6 +147,6 @@
     </div>
   </div>
 
-  <script src="./app.js?v=20260909t"></script>
+  <script src="./app.js?v=20260909u"></script>
 </body>
 </html>
