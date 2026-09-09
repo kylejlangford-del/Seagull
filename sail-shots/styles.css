@@ -57,6 +57,11 @@ h1{margin:10px 0 14px;font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:.98;lette
 .category-chip.is-active{color:#06101b;background:var(--accent);border-color:var(--accent)}
 
 .shot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.shot-grid__group-label{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding-top:10px;font-size:.72rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-2)}
+.shot-grid__group-label:first-child{padding-top:0}
+.shot-grid__group-label::after{content:'';flex:1;height:1px;background:var(--line)}
+.shot-grid__group-label--tack{color:var(--cat-manoeuvre)}
+.shot-grid__group-label--gybe{color:var(--cat-gybe)}
 .shot-card{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:linear-gradient(180deg,rgba(12,29,44,.95),rgba(7,18,29,.98))}
 .shot-card__image-wrap{position:relative;aspect-ratio:4/3;background:#04090f;overflow:hidden}
 /* Action shots are usually tall portraits dominated by mast and sky, with the

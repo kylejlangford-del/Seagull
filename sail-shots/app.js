@@ -56,6 +56,11 @@
   const DOWNWIND_TWA_THRESHOLD = 90; // |TWA| >= this => downwind, below => upwind
   const GYBE_TWA_THRESHOLD = 150; // |TWA| passing this close to dead-run during a turn => gybe, not a tack
 
+  // Photos taken during the same manoeuvre land within a few seconds of each
+  // other (burst shooting); consecutive manoeuvres out on the water are
+  // reliably a minute-plus apart. 60s sits comfortably between the two.
+  const MANOEUVRE_GROUP_GAP_SECONDS = 60;
+
   const CATEGORIES = [
     { value: 'manoeuvre', label: 'Manoeuvre Sequence' },
     { value: 'gybe-exit', label: 'Gybe Exit' },
@@ -505,6 +510,37 @@
     return chip;
   }
 
+  // ---------- manoeuvre grouping (Manoeuvre Sequence category only) ----------
+  // Clusters the shots in one manoeuvre burst together and names each
+  // cluster in chronological order — "Tack 1", "Gybe 1", "Gybe 2", etc.,
+  // counted separately per type. A cluster is a run of shots with no gap
+  // bigger than MANOEUVRE_GROUP_GAP_SECONDS between consecutive capture
+  // times; whether it's a tack or a gybe is read off the average TWA across
+  // the cluster, using the same upwind/downwind split the auto-categorizer
+  // uses elsewhere (below DOWNWIND_TWA_THRESHOLD => upwind => tack).
+  // Returns a Map from shot.id to its group label.
+  function manoeuvreGroupLabels(shots) {
+    const labels = new Map();
+    const ascending = [...shots].sort((a, b) => new Date(a.capturedAt) - new Date(b.capturedAt));
+    let tackCount = 0, gybeCount = 0, clusterStart = 0;
+    const flushCluster = (endExclusive) => {
+      const cluster = ascending.slice(clusterStart, endExclusive);
+      if (cluster.length === 0) return;
+      const twas = cluster
+        .map(s => Number((s.row || {})['TWA_deg']))
+        .filter(v => !Number.isNaN(v));
+      const avgAbsTwa = twas.length ? twas.reduce((sum, v) => sum + Math.abs(v), 0) / twas.length : 0;
+      const label = avgAbsTwa >= DOWNWIND_TWA_THRESHOLD ? `Gybe ${++gybeCount}` : `Tack ${++tackCount}`;
+      cluster.forEach(s => labels.set(s.id, label));
+    };
+    for (let i = 1; i < ascending.length; i++) {
+      const gapSec = (new Date(ascending[i].capturedAt) - new Date(ascending[i - 1].capturedAt)) / 1000;
+      if (gapSec > MANOEUVRE_GROUP_GAP_SECONDS) { flushCluster(i); clusterStart = i; }
+    }
+    flushCluster(ascending.length);
+    return labels;
+  }
+
   function renderGallery() {
     const shots = existingManifest.shots || [];
     const hasShots = shots.length > 0;
@@ -560,8 +596,27 @@
     const sorted = [...filtered].sort((a, b) => new Date(b.capturedAt) - new Date(a.capturedAt));
     currentGalleryOrder = sorted; // lets the lightbox step to the next/previous photo in this same order
 
+    // Manoeuvre Sequence view only: group shots into their individual
+    // tack/gybe and drop a heading in front of each group. Clusters are
+    // contiguous in time, so they stay contiguous in `sorted` too (just
+    // walked in the opposite direction) — no need to reorder anything.
+    const manoeuvreLabels = selectedCategory === 'manoeuvre' ? manoeuvreGroupLabels(filtered) : null;
+    let lastGroupLabel = undefined;
+
     el.shotGrid.innerHTML = '';
     sorted.forEach(shot => {
+      if (manoeuvreLabels) {
+        const label = manoeuvreLabels.get(shot.id) || null;
+        if (label !== lastGroupLabel) {
+          const header = document.createElement('div');
+          const isGybe = /^Gybe/.test(label || '');
+          header.className = `shot-grid__group-label shot-grid__group-label--${isGybe ? 'gybe' : 'tack'}`;
+          header.textContent = label || 'Manoeuvre';
+          el.shotGrid.appendChild(header);
+          lastGroupLabel = label;
+        }
+      }
+
       const card = document.createElement('article');
       card.className = 'shot-card';
 
