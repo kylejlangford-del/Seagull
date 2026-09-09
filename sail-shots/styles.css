@@ -1,4 +1,4 @@
-:root{color-scheme:dark;--bg:#06101b;--surface:#0a1725;--surface-2:#0d1d2c;--line:rgba(132,151,174,.18);--text:#edf5fb;--muted:#8fa2b5;--muted-2:#b5c3cf;--accent:#47e7db;--danger:#ff6b6b;--warn:#ffb454;--cat-manoeuvre:#c792ea;--cat-gybe:#ff8fa3;--cat-upwind:#47e7db;--cat-downwind:#7ec8ff}
+:root{color-scheme:dark;--bg:#06101b;--surface:#0a1725;--surface-2:#0d1d2c;--line:rgba(132,151,174,.18);--text:#edf5fb;--muted:#8fa2b5;--muted-2:#b5c3cf;--accent:#47e7db;--danger:#ff6b6b;--warn:#ffb454;--cat-manoeuvre:#c792ea;--cat-gybe:#ff8fa3;--cat-upwind:#47e7db;--cat-downwind:#7ec8ff;--var-blue:#6fa8ff;--var-white:#f5f9fc;--var-red:#ff6b6b;--var-green:#4ade80;--var-orange:#ffb454}
 *{box-sizing:border-box}
 html,body,#app{margin:0;min-height:100%}
 body{color:var(--text);background:radial-gradient(circle at 72% 20%,rgba(35,79,95,.25),transparent 28rem),linear-gradient(180deg,#081522,#06101b);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -185,7 +185,18 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
 .lightbox__vars{display:flex;flex-direction:column;gap:7px;padding-top:10px;border-top:1px solid var(--line)}
 .lightbox__var-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-size:.78rem}
 .lightbox__var-row span{color:var(--muted-2);font-weight:600;overflow-wrap:anywhere}
-.lightbox__var-row b{color:var(--accent);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.lightbox__var-row b{font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* Per-group value color, as specified: speed/attitude=blue, trim
+   target/jib loads=white, port foil=red, stbd foil=green, main/orange
+   group=orange. */
+.lightbox__var-row--blue b{color:var(--var-blue)}
+.lightbox__var-row--white b{color:var(--var-white)}
+.lightbox__var-row--red b{color:var(--var-red)}
+.lightbox__var-row--green b{color:var(--var-green)}
+.lightbox__var-row--orange b{color:var(--var-orange)}
+/* Blank-line gap between the curated groups — on top of the row-to-row
+   flex gap already on .lightbox__vars, this reads as a clear break. */
+.lightbox__var-gap{height:10px}
 .lightbox__comment-label{color:var(--muted);font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em}
 .lightbox__comment{flex:1;min-height:120px;resize:vertical;padding:9px 10px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.03);color:var(--text);font-size:.82rem;line-height:1.5;font-family:inherit}
 .lightbox__comment::placeholder{color:var(--muted)}

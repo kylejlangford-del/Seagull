@@ -415,6 +415,46 @@
     return num.toFixed(1);
   }
 
+  // ---------- lightbox variable display: fixed curated list ----------
+  // Kyle wants one fixed order/grouping/color-coding for the lightbox data
+  // panel, replacing whatever order the manifest's `variables` array (built
+  // from CSV column order) happens to be in. Groups get a visible gap
+  // between them, and each row's value is colored by group. A row is simply
+  // skipped if that CSV column isn't present on this shot (e.g. an older
+  // batch predating a newer column) — nothing renders as blank/zero.
+  // "Mast AOA" isn't a CSV column at all — it's computed on the fly as
+  // AWA_deg - MastRotation_deg.
+  const MAST_AOA_KEY = '__mastAoa';
+  const LIGHTBOX_VAR_GROUPS = [
+    { color: 'blue', vars: ['TWS_kts', 'BSP_kts', 'TWA_deg', 'Heel_deg', 'Leeway_deg', 'AWA_deg'] },
+    { color: 'white', vars: ['TrimTarget_deg'] },
+    { color: 'red', vars: ['FoilCantPort_deg', 'FoilFlapPort_deg', 'FoilSinkPort_target'] },
+    { color: 'green', vars: ['FoilCantStbd_deg', 'FoilFlapStbd_deg', 'FoilSinkStbd_target'] },
+    { color: 'white', vars: ['JibSheetLoad_kgf', 'JibCunninghamLoad_kgf', 'JibTrackLoad_kgf'] },
+    { color: 'orange', vars: ['MainSheetLoad_kgf', 'MainCunninghamLoad_kgf', 'FootCamber_deg', 'Clew_position', MAST_AOA_KEY, 'MastRotation_deg', 'MainTravellerAngle_deg'] },
+  ];
+
+  function computeMastAoa(row) {
+    const awa = Number(row['AWA_deg']);
+    const rot = Number(row['MastRotation_deg']);
+    if (row['AWA_deg'] === undefined || row['MastRotation_deg'] === undefined) return undefined;
+    if (Number.isNaN(awa) || Number.isNaN(rot)) return undefined;
+    return awa - rot;
+  }
+
+  // Resolves one curated-list entry against a shot's matched CSV row —
+  // returns { label, value } to render, or undefined to skip the row
+  // entirely (missing column / not computable).
+  function lightboxVarEntry(key, row) {
+    if (key === MAST_AOA_KEY) {
+      const val = computeMastAoa(row);
+      if (val === undefined) return undefined;
+      return { label: 'Mast AOA', value: formatOverlayValue('MastAOA_deg', val) };
+    }
+    if (row[key] === undefined || row[key] === '') return undefined;
+    return { label: key, value: formatOverlayValue(key, row[key]) };
+  }
+
   function formatShotDate(iso) {
     const d = new Date(iso);
     if (isNaN(d.getTime())) return 'Unknown time';
@@ -579,7 +619,6 @@
   let currentLightboxShotId = null;
 
   function openLightbox(shot) {
-    const vars = existingManifest.variables || [];
     const row = shot.row || {};
     currentLightboxShotId = shot.id;
 
@@ -596,14 +635,26 @@
     el.lightboxDate.textContent = formatShotDate(shot.capturedAt);
 
     el.lightboxVars.innerHTML = '';
-    vars.forEach(v => {
-      if (row[v] === undefined || row[v] === '') return;
-      const item = document.createElement('div');
-      item.className = 'lightbox__var-row';
-      item.innerHTML = `<span></span><b></b>`;
-      item.querySelector('span').textContent = v;
-      item.querySelector('b').textContent = formatOverlayValue(v, row[v]);
-      el.lightboxVars.appendChild(item);
+    LIGHTBOX_VAR_GROUPS.forEach(group => {
+      const rows = group.vars
+        .map(key => lightboxVarEntry(key, row))
+        .filter(Boolean);
+      if (rows.length === 0) return;
+      // A blank-line gap between groups — only once there's already a
+      // group rendered above it, so the panel never starts with one.
+      if (el.lightboxVars.children.length > 0) {
+        const gap = document.createElement('div');
+        gap.className = 'lightbox__var-gap';
+        el.lightboxVars.appendChild(gap);
+      }
+      rows.forEach(({ label, value }) => {
+        const item = document.createElement('div');
+        item.className = `lightbox__var-row lightbox__var-row--${group.color}`;
+        item.innerHTML = `<span></span><b></b>`;
+        item.querySelector('span').textContent = label;
+        item.querySelector('b').textContent = value;
+        el.lightboxVars.appendChild(item);
+      });
     });
 
     el.lightboxComment.value = shot.comment || '';
