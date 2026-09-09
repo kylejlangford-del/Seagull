@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#07111d" />
   <title>Sail Shots · Seagull Lab</title>
-  <link rel="stylesheet" href="./styles.css?v=20260909v" />
+  <link rel="stylesheet" href="./styles.css?v=20260909w" />
 </head>
 <body>
   <div id="app">
@@ -121,6 +121,30 @@
           <select id="lightboxCategory" class="shot-card__category"></select>
           <div id="lightboxDate" class="lightbox__date"></div>
           <div id="lightboxVars" class="lightbox__vars"></div>
+          <div id="frameSection" class="lightbox__frame">
+            <div class="lightbox__frame-head">
+              <span>Framing</span>
+              <div class="lightbox__frame-actions">
+                <button id="frameEditBtn" class="text-link" type="button">Edit</button>
+                <button id="frameResetBtn" class="text-link is-hidden" type="button">Reset</button>
+                <button id="frameSaveBtn" class="text-link is-hidden" type="button">Save</button>
+                <button id="frameCancelBtn" class="text-link is-hidden" type="button">Cancel</button>
+              </div>
+            </div>
+            <div id="frameControls" class="lightbox__frame-controls is-hidden">
+              <label class="lightbox__frame-slider">
+                <span>Rotate</span>
+                <input id="frameRotateRange" type="range" min="-45" max="45" step="0.5" value="0" />
+                <span id="frameRotateValue">0&deg;</span>
+              </label>
+              <label class="lightbox__frame-slider">
+                <span>Zoom</span>
+                <input id="frameZoomRange" type="range" min="100" max="300" step="1" value="100" />
+                <span id="frameZoomValue">100%</span>
+              </label>
+              <div class="lightbox__frame-hint">Drag the photo to reposition it. Use the grid to level the horizon or mast.</div>
+            </div>
+          </div>
           <div id="twistSection" class="lightbox__twist is-hidden">
             <div class="lightbox__twist-head">
               <span>Twist profile</span>
@@ -143,6 +167,7 @@
         </div>
         <div id="lightboxImageWrap" class="lightbox__image-wrap">
           <img id="lightboxImg" alt="" />
+          <div id="frameGrid" class="lightbox__frame-grid is-hidden"></div>
           <svg id="twistOverlay" class="lightbox__twist-overlay is-hidden" viewBox="0 0 1000 1000"></svg>
         </div>
         <div class="lightbox__comment-wrap">
@@ -153,6 +178,6 @@
     </div>
   </div>
 
-  <script src="./app.js?v=20260909v"></script>
+  <script src="./app.js?v=20260909w"></script>
 </body>
 </html>

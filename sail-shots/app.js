@@ -61,6 +61,10 @@
   // reliably a minute-plus apart. 60s sits comfortably between the two.
   const MANOEUVRE_GROUP_GAP_SECONDS = 60;
 
+  // ---------- framing tuning (crop/zoom/straighten, all categories) ----------
+  const FRAME_ROTATE_MIN = -45, FRAME_ROTATE_MAX = 45;
+  const FRAME_ZOOM_MIN = 100, FRAME_ZOOM_MAX = 300; // percent
+
   // ---------- twist profile tuning (Straight Line Upwind only) ----------
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const TWIST_ANALYSIS_MAX_DIM = 1400; // downscale the photo before pixel-scanning it, for speed
@@ -111,6 +115,18 @@
     lightboxDate: document.getElementById('lightboxDate'),
     lightboxComment: document.getElementById('lightboxComment'),
 
+    frameSection: document.getElementById('frameSection'),
+    frameEditBtn: document.getElementById('frameEditBtn'),
+    frameResetBtn: document.getElementById('frameResetBtn'),
+    frameSaveBtn: document.getElementById('frameSaveBtn'),
+    frameCancelBtn: document.getElementById('frameCancelBtn'),
+    frameControls: document.getElementById('frameControls'),
+    frameRotateRange: document.getElementById('frameRotateRange'),
+    frameRotateValue: document.getElementById('frameRotateValue'),
+    frameZoomRange: document.getElementById('frameZoomRange'),
+    frameZoomValue: document.getElementById('frameZoomValue'),
+    frameGrid: document.getElementById('frameGrid'),
+
     twistSection: document.getElementById('twistSection'),
     twistTraceBtn: document.getElementById('twistTraceBtn'),
     twistClearBtn: document.getElementById('twistClearBtn'),
@@ -159,6 +175,13 @@
   let selectedDateKey = null;
   let selectedCategory = 'all';
   let currentGalleryOrder = []; // the shots currently shown in the grid, in their displayed order — lets the lightbox step next/prev
+  // When opening a collapsed manoeuvre-group card, prev/next should stay
+  // scoped to just that group's own shots rather than the whole category —
+  // this overrides currentGalleryOrder for navigation purposes only, so a
+  // renderGallery() triggered from inside the lightbox (e.g. saving a
+  // framing edit) can't silently widen the scope back out.
+  let lightboxScopedOrder = null;
+  function activeGalleryOrder() { return lightboxScopedOrder || currentGalleryOrder; }
 
   // set once a shot is deleted or re-categorized from the gallery (not the
   // import flow) — these edits happen straight against existingManifest so
@@ -658,6 +681,7 @@
     imgWrap.className = 'shot-card__image-wrap';
     const img = document.createElement('img');
     img.src = photoSrc(shot.file);
+    img.dataset.shotId = shot.id;
     img.alt = '';
     img.loading = 'lazy';
     imgWrap.appendChild(img);
@@ -693,9 +717,10 @@
     imgWrap.appendChild(deleteBtn);
 
     imgWrap.classList.add('is-clickable');
-    imgWrap.addEventListener('click', () => openLightbox(shot));
+    imgWrap.addEventListener('click', () => openLightbox(shot, null));
 
     card.appendChild(imgWrap);
+    applyFrameToImg(img, shot);
 
     // The full boat-data readout now only lives in the lightbox (left
     // panel), so it doesn't clash with the photo here — the card stays a
@@ -732,6 +757,7 @@
     imgWrap.className = 'shot-card__image-wrap is-clickable';
     const img = document.createElement('img');
     img.src = photoSrc(repShot.file);
+    img.dataset.shotId = repShot.id;
     img.alt = '';
     img.loading = 'lazy';
     imgWrap.appendChild(img);
@@ -751,9 +777,9 @@
     imgWrap.addEventListener('click', () => {
       // Scope prev/next to just this manoeuvre's own shots, in
       // chronological order, rather than the whole Manoeuvre Sequence list.
-      currentGalleryOrder = group.shots;
-      openLightbox(repShot);
+      openLightbox(repShot, group.shots);
     });
+    applyFrameToImg(img, repShot);
 
     card.appendChild(imgWrap);
     return card;
@@ -768,14 +794,23 @@
   // a comment box in a matching panel on the right, so nothing sits on the
   // photo itself anymore.
   let currentLightboxShotId = null;
+  // Framing edit in progress, or null when idle. See the "framing" block
+  // below for the full state machine.
+  let frameState = null;
   // Twist-profile trace in progress, or null when idle. See the "twist
   // profile" block below for the full state machine.
   let twistState = null;
 
-  function openLightbox(shot) {
+  function openLightbox(shot, scopedOrder) {
     const row = shot.row || {};
     currentLightboxShotId = shot.id;
+    // scopedOrder is only passed explicitly by a direct open (a plain shot
+    // card passes null to clear it, a manoeuvre-group card passes its own
+    // shots) — stepLightbox's internal re-open omits it entirely so an
+    // active scoped session survives stepping through it.
+    if (scopedOrder !== undefined) lightboxScopedOrder = scopedOrder;
     endTwistTrace(); // switching shots (open, or prev/next) abandons any in-progress trace
+    endFrameEdit(); // ditto for an in-progress framing edit
 
     el.lightboxImg.src = photoSrc(shot.file);
     // The twist overlay's viewBox is set to the photo's own natural pixel
@@ -783,6 +818,7 @@
     // between that size's aspect ratio and a generic square viewBox.
     el.lightboxImg.onload = syncTwistOverlayViewBox;
     if (el.lightboxImg.complete) syncTwistOverlayViewBox();
+    updateLightboxFrameDisplay(shot);
 
     el.lightboxCategory.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
     el.lightboxCategory.innerHTML = '';
@@ -822,30 +858,35 @@
     // Prev/next only make sense when there's something to step to — hide
     // them rather than leaving a dead-end arrow when the gallery has just
     // this one shot (or the filtered view has been narrowed to one).
-    const canNavigate = currentGalleryOrder.length > 1;
+    const canNavigate = activeGalleryOrder().length > 1;
     el.lightboxPrev.classList.toggle('is-hidden', !canNavigate);
     el.lightboxNext.classList.toggle('is-hidden', !canNavigate);
 
     renderTwistSection(shot);
+    renderFrameSection(shot);
 
     el.lightbox.classList.remove('is-hidden');
   }
   function closeLightbox() {
     flushPendingPublish(); // don't leave a just-typed comment waiting on the debounce timer
     endTwistTrace();
+    endFrameEdit();
+    lightboxScopedOrder = null;
     el.lightbox.classList.add('is-hidden');
     el.lightboxImg.src = '';
     currentLightboxShotId = null;
   }
   // Steps to the next/previous shot in the currently displayed gallery
-  // order (same date + category filter the grid is showing). Wraps around
-  // at either end so the arrows always do something while more than one
-  // photo is in view.
+  // order (same date + category filter the grid is showing, or — when
+  // opened from a collapsed manoeuvre-group card — just that group's own
+  // shots). Wraps around at either end so the arrows always do something
+  // while more than one photo is in view.
   function stepLightbox(delta) {
-    if (!currentLightboxShotId || currentGalleryOrder.length < 2) return;
-    const idx = currentGalleryOrder.findIndex(s => s.id === currentLightboxShotId);
+    const order = activeGalleryOrder();
+    if (!currentLightboxShotId || order.length < 2) return;
+    const idx = order.findIndex(s => s.id === currentLightboxShotId);
     if (idx === -1) return;
-    const next = currentGalleryOrder[(idx + delta + currentGalleryOrder.length) % currentGalleryOrder.length];
+    const next = order[(idx + delta + order.length) % order.length];
     openLightbox(next);
   }
   el.lightboxClose.addEventListener('click', closeLightbox);
@@ -880,6 +921,190 @@
     if (e.key === 'Escape') closeLightbox();
     else if (!typingComment && e.key === 'ArrowLeft') stepLightbox(-1);
     else if (!typingComment && e.key === 'ArrowRight') stepLightbox(1);
+  });
+
+  // ---------- framing: crop/zoom/straighten, all categories ----------
+  // Non-destructive — the original photo on R2 is never touched. A saved
+  // frame is just { rotationDeg, zoom, posX, posY } on the shot, and every
+  // place the photo is drawn (gallery thumbnail, lightbox) renders it the
+  // same way: object-fit:cover + object-position handle the crop/pan (the
+  // browser's own "which part of the image shows in this box" math, so it
+  // scales correctly whether the box is a small grid tile or the big
+  // lightbox view), and a scale()/rotate() transform layered on top handles
+  // the extra zoom and straightening. posX/posY are the object-position
+  // percentages (50/50 = centered); zoom is a multiplier >=1.
+
+  function frameStyleFor(shot) {
+    const f = shot && shot.frame;
+    if (!f) return null;
+    return {
+      objectPosition: `${f.posX}% ${f.posY}%`,
+      transform: `scale(${f.zoom}) rotate(${f.rotationDeg}deg)`,
+    };
+  }
+
+  // Applies a shot's saved frame (if any) to a plain <img> — used for every
+  // gallery thumbnail, which already sits in a fixed 4:3 box via CSS, so no
+  // extra class is needed there.
+  function applyFrameToImg(img, shot) {
+    const style = frameStyleFor(shot);
+    img.style.objectPosition = style ? style.objectPosition : '';
+    img.style.transform = style ? style.transform : '';
+  }
+
+  // Updates just this shot's own thumbnail(s) already in the grid, without
+  // a full renderGallery() — that would reset currentGalleryOrder and drop
+  // out of a manoeuvre-group-scoped lightbox session for no good reason
+  // when all that actually changed is how one photo is framed.
+  function refreshVisibleShotThumbnail(shot) {
+    document.querySelectorAll(`#shotGrid img[data-shot-id="${CSS.escape(shot.id)}"]`)
+      .forEach(img => applyFrameToImg(img, shot));
+  }
+
+  // The lightbox photo isn't normally boxed to a fixed aspect ratio (it
+  // shows the whole original at its own aspect ratio) — the .is-framed
+  // class switches it to the same 4:3 box the gallery uses, only while a
+  // frame is actually in effect. forceUnframed shows the full original
+  // regardless (used while twist-tracing, which needs the untouched photo).
+  function updateLightboxFrameDisplay(shot, forceUnframed) {
+    const hasFrame = !!(shot && shot.frame) && !forceUnframed;
+    el.lightboxImg.classList.toggle('is-framed', hasFrame);
+    if (hasFrame) applyFrameToImg(el.lightboxImg, shot);
+    else { el.lightboxImg.style.objectPosition = ''; el.lightboxImg.style.transform = ''; }
+  }
+
+  function renderFrameSection(shot) {
+    const hasFrame = !!shot.frame;
+    el.frameEditBtn.textContent = hasFrame ? 'Edit' : 'Add';
+    el.frameEditBtn.classList.remove('is-hidden');
+    el.frameResetBtn.classList.toggle('is-hidden', !hasFrame);
+    el.frameSaveBtn.classList.add('is-hidden');
+    el.frameCancelBtn.classList.add('is-hidden');
+  }
+
+  // Re-applies the live edit state to the photo — called on every slider
+  // move and drag step while editing.
+  function applyFrameEditLive() {
+    el.lightboxImg.classList.add('is-framed');
+    el.lightboxImg.style.objectPosition = `${frameState.posX}% ${frameState.posY}%`;
+    el.lightboxImg.style.transform = `scale(${frameState.zoom}) rotate(${frameState.rotationDeg}deg)`;
+  }
+
+  function startFrameEdit() {
+    const shot = currentLightboxShot();
+    if (!shot) return;
+    endTwistTrace(); // the two tools need conflicting views of the photo (cropped vs. full) — only one at a time
+    const existing = shot.frame;
+    frameState = {
+      rotationDeg: existing ? existing.rotationDeg : 0,
+      zoom: existing ? existing.zoom : 1,
+      posX: existing ? existing.posX : 50,
+      posY: existing ? existing.posY : 50,
+      dragging: null,
+    };
+    el.frameRotateRange.value = String(frameState.rotationDeg);
+    el.frameRotateValue.textContent = `${frameState.rotationDeg}°`;
+    el.frameZoomRange.value = String(Math.round(frameState.zoom * 100));
+    el.frameZoomValue.textContent = `${Math.round(frameState.zoom * 100)}%`;
+    el.frameControls.classList.remove('is-hidden');
+    el.frameGrid.classList.remove('is-hidden');
+    el.lightboxImageWrap.classList.add('is-frame-editing');
+    el.frameEditBtn.classList.add('is-hidden');
+    el.frameResetBtn.classList.add('is-hidden');
+    el.frameSaveBtn.classList.remove('is-hidden');
+    el.frameCancelBtn.classList.remove('is-hidden');
+    applyFrameEditLive();
+  }
+
+  function endFrameEdit() {
+    if (!frameState) return;
+    frameState = null;
+    el.frameControls.classList.add('is-hidden');
+    el.frameGrid.classList.add('is-hidden');
+    el.lightboxImageWrap.classList.remove('is-frame-editing');
+  }
+
+  // Converts a drag delta in screen pixels to a change in object-position
+  // percentage, so dragging feels roughly 1:1 regardless of the photo's
+  // resolution, the box's on-screen size, or the current zoom level.
+  // object-position's 0-100% range spans exactly the "extra" image content
+  // that overflows the box under object-fit:cover — recover that overflow
+  // in pixels from the box size and the image's natural aspect ratio, then
+  // scale it up by the current zoom (the scale() transform enlarges that
+  // overflow by the same factor, since it's applied after cover-fitting).
+  function framePxToPercent() {
+    const rect = el.lightboxImageWrap.getBoundingClientRect();
+    const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
+    if (!iw || !ih || !rect.width || !rect.height) return { x: 0, y: 0 };
+    const coverScale = Math.max(rect.width / iw, rect.height / ih);
+    const overflowX = Math.max(1, (iw * coverScale - rect.width) * frameState.zoom);
+    const overflowY = Math.max(1, (ih * coverScale - rect.height) * frameState.zoom);
+    return { x: 100 / overflowX, y: 100 / overflowY };
+  }
+
+  el.lightboxImageWrap.addEventListener('mousedown', (e) => {
+    if (!frameState) return;
+    e.preventDefault();
+    frameState.dragging = { startX: e.clientX, startY: e.clientY, startPosX: frameState.posX, startPosY: frameState.posY };
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!frameState || !frameState.dragging) return;
+    const pct = framePxToPercent();
+    const dx = e.clientX - frameState.dragging.startX;
+    const dy = e.clientY - frameState.dragging.startY;
+    // Dragging the photo right should reveal more of its left side, like
+    // dragging a canvas — so the focal point moves opposite the cursor.
+    frameState.posX = Math.min(100, Math.max(0, frameState.dragging.startPosX - dx * pct.x));
+    frameState.posY = Math.min(100, Math.max(0, frameState.dragging.startPosY - dy * pct.y));
+    applyFrameEditLive();
+  });
+  window.addEventListener('mouseup', () => {
+    if (frameState) frameState.dragging = null;
+  });
+
+  el.frameRotateRange.addEventListener('input', () => {
+    if (!frameState) return;
+    frameState.rotationDeg = Number(el.frameRotateRange.value);
+    el.frameRotateValue.textContent = `${frameState.rotationDeg}°`;
+    applyFrameEditLive();
+  });
+  el.frameZoomRange.addEventListener('input', () => {
+    if (!frameState) return;
+    frameState.zoom = Number(el.frameZoomRange.value) / 100;
+    el.frameZoomValue.textContent = `${el.frameZoomRange.value}%`;
+    applyFrameEditLive();
+  });
+
+  el.frameEditBtn.addEventListener('click', () => startFrameEdit());
+  el.frameCancelBtn.addEventListener('click', () => {
+    const shot = currentLightboxShot();
+    endFrameEdit();
+    if (shot) { updateLightboxFrameDisplay(shot); renderFrameSection(shot); }
+  });
+  el.frameSaveBtn.addEventListener('click', () => {
+    const shot = currentLightboxShot();
+    if (!shot || !frameState) return;
+    shot.frame = {
+      rotationDeg: frameState.rotationDeg,
+      zoom: frameState.zoom,
+      posX: frameState.posX,
+      posY: frameState.posY,
+    };
+    markManifestDirty();
+    endFrameEdit();
+    updateLightboxFrameDisplay(shot);
+    renderFrameSection(shot);
+    refreshVisibleShotThumbnail(shot);
+  });
+  el.frameResetBtn.addEventListener('click', () => {
+    const shot = currentLightboxShot();
+    if (!shot || !shot.frame) return;
+    if (!confirm('Reset the framing for this photo back to the original?')) return;
+    delete shot.frame;
+    markManifestDirty();
+    updateLightboxFrameDisplay(shot);
+    renderFrameSection(shot);
+    refreshVisibleShotThumbnail(shot);
   });
 
   // ---------- twist profile: trace the mainsail leech and plot its offset from the boom up to the masthead, as a % of mast height ----------
@@ -1083,6 +1308,7 @@
   function startTwistTrace() {
     const shot = currentLightboxShot();
     if (!shot) return;
+    updateLightboxFrameDisplay(shot, true); // tracing needs the full original photo, not a cropped/rotated view
     twistState = { mode: 'await-reference', referenceFrac: null, headFrac: null, points: [], dragIndex: null };
     el.twistOverlay.classList.remove('is-hidden');
     el.twistOverlay.classList.add('is-active');
@@ -1175,7 +1401,7 @@
   el.twistCancelBtn.addEventListener('click', () => {
     endTwistTrace();
     const shot = currentLightboxShot();
-    if (shot) renderTwistSection(shot);
+    if (shot) { renderTwistSection(shot); updateLightboxFrameDisplay(shot); }
   });
   el.twistSaveBtn.addEventListener('click', () => {
     const shot = currentLightboxShot();
@@ -1184,6 +1410,7 @@
     markManifestDirty();
     endTwistTrace();
     renderTwistSection(shot);
+    updateLightboxFrameDisplay(shot);
   });
   el.twistClearBtn.addEventListener('click', () => {
     const shot = currentLightboxShot();
