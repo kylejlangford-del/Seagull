@@ -379,6 +379,15 @@
   const OVERLAY_TOP_PCT = 32;
   const OVERLAY_BOTTOM_PCT = 78;
   const OVERLAY_EDGE_PCT = 3;
+  // Single-column mode stacks every box down one edge instead of splitting
+  // left/right, so it doesn't need the tighter 32-78 band that two-column
+  // mode uses to dodge the gallery card's delete button and category badge
+  // (the lightbox's own delete/category controls sit outside this band, or
+  // off to the opposite side). With up to ~20+ variables all in one column,
+  // it needs the extra room — 32-78 only leaves enough vertical space per
+  // row for roughly a dozen items before rows start overlapping each other.
+  const OVERLAY_SINGLE_TOP_PCT = 6;
+  const OVERLAY_SINGLE_BOTTOM_PCT = 97;
   // A left/right split only makes sense when the photo is wide enough that
   // "3% from the left" and "3% from the right" land nowhere near each other.
   // The gallery card is always cropped to a fixed 4:3 box, so it's always
@@ -387,7 +396,7 @@
   // on-the-water action photo — see DSC01118, 3376x6000 once its EXIF
   // rotation is applied) is narrow enough that both columns collide right
   // over the boat in the middle. singleColumn stacks every box down one
-  // edge instead, using the same top/bottom band, so it never happens.
+  // edge instead, so it never happens.
   const OVERLAY_LANDSCAPE_MIN_RATIO = 1.15;
   function isLandscapeImage(imgEl) {
     if (!imgEl || !imgEl.naturalWidth || !imgEl.naturalHeight) return true; // unknown yet — assume the normal (two-column) case
@@ -395,7 +404,7 @@
   }
   function defaultOverlayPosition(index, total, singleColumn) {
     if (singleColumn) {
-      const yPct = total <= 1 ? OVERLAY_TOP_PCT : OVERLAY_TOP_PCT + (index * (OVERLAY_BOTTOM_PCT - OVERLAY_TOP_PCT)) / (total - 1);
+      const yPct = total <= 1 ? OVERLAY_SINGLE_TOP_PCT : OVERLAY_SINGLE_TOP_PCT + (index * (OVERLAY_SINGLE_BOTTOM_PCT - OVERLAY_SINGLE_TOP_PCT)) / (total - 1);
       return { xPct: OVERLAY_EDGE_PCT, yPct };
     }
     const leftCount = Math.ceil(total / 2);

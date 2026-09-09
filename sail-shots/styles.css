@@ -45,12 +45,23 @@ h1{margin:10px 0 14px;font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:.98;lette
    width) so label and value sit tight together like a HUD readout instead
    of being stretched apart with dead space between them — that only reads
    right when there's a background to frame the row, which we no longer have. */
-.overlay-box{position:absolute;z-index:1;display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:2px 6px;max-width:60%;padding:1px 2px;pointer-events:none;transform:translate(0,0)}
+/* line-height:1.3 (not the inherited "normal") matters most here: the
+   lightbox wrap sets line-height:0 so it shrink-wraps tightly to the photo
+   with no letterboxing gap (see the .shot-card__category comment below for
+   the same trick on a <select>) — without an explicit reset here that
+   collapses this box's own line height too, so consecutive stacked rows'
+   text visually overlaps regardless of how far apart their positions are. */
+.overlay-box{position:absolute;z-index:1;display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:2px 6px;max-width:60%;padding:1px 2px;pointer-events:none;transform:translate(0,0);line-height:1.3}
 .overlay-box span{white-space:normal;overflow-wrap:anywhere}
 .overlay-box b{white-space:nowrap}
 .overlay-box b{color:var(--accent);font-weight:800;font-variant-numeric:tabular-nums;text-shadow:-1px -1px 2px rgba(0,0,0,.9),1px -1px 2px rgba(0,0,0,.9),-1px 1px 2px rgba(0,0,0,.9),1px 1px 2px rgba(0,0,0,.9),0 0 6px rgba(0,0,0,.55)}
 .overlay-box span{color:#fff;font-weight:700;text-shadow:-1px -1px 2px rgba(0,0,0,.9),1px -1px 2px rgba(0,0,0,.9),-1px 1px 2px rgba(0,0,0,.9),1px 1px 2px rgba(0,0,0,.9),0 0 6px rgba(0,0,0,.55)}
 .overlay-box--editable{pointer-events:auto;cursor:grab;touch-action:none;border:1px solid rgba(71,231,219,.6);border-radius:6px;padding:3px 6px;background:rgba(6,16,27,.35);user-select:none}
+/* The lightbox has no card/editor-imposed size limit, so at the browser's
+   default font size a shot with a full 20+ variable set has too little
+   room per row — the smaller size here keeps rows one line each so they
+   can't wrap and crowd into the row below. */
+#lightboxBoxes .overlay-box{font-size:.78rem}
 /* The gallery card is much narrower than the lightbox, so at the shared
    .66rem size a long label like "MainCunninghamLoad_kgf" wraps onto a
    second line and can crowd the row below it — shrink text on the card
