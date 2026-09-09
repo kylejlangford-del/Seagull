@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#07111d" />
+  <title>Sail Shots · Seagull Lab</title>
+  <link rel="stylesheet" href="./styles.css?v=20260909" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <a class="brand" href="../" aria-label="Back to Seagull Lab">
+        <img src="../assets/seagull-lab-logo.png" alt="Seagull Lab" />
+      </a>
+      <div class="title-block"><span>AC40</span><strong>Sail Shots</strong></div>
+      <div class="header-actions">
+        <button id="addBtn" class="ghost-button" type="button" aria-pressed="false" aria-controls="importView">Add Shots</button>
+        <a class="ghost-button" href="../">Home</a>
+      </div>
+    </header>
+
+    <main class="page">
+      <div class="section-kicker">Log</div>
+      <h1>Sail shots</h1>
+      <p class="intro">On-water photos, each tagged with the boat data from the moment it was taken. Sorted newest first. Tap <strong>Add Shots</strong> to bring in a new batch.</p>
+
+      <section id="galleryView">
+        <div id="emptyState" class="empty-state is-hidden">
+          <span>No sail shots yet</span>
+          <strong>Tap &ldquo;Add Shots&rdquo; above to bring in your first batch of photos.</strong>
+        </div>
+        <div id="shotGrid" class="shot-grid"></div>
+      </section>
+
+      <section id="importView" class="import-view is-hidden">
+        <div class="import-step">
+          <div class="import-step__head"><span class="import-step__num">1</span><h2>Boat data file</h2></div>
+          <p class="import-step__hint">Upload the CSV exported from the boat &mdash; a header row plus one row per timestamp. (Not a CSV yet? Send the raw file to Claude in chat first and ask for a CSV conversion, then come back here.)</p>
+          <label class="file-drop" id="csvDrop">
+            <input id="csvInput" type="file" accept=".csv,text/csv" />
+            <span id="csvDropLabel">Choose CSV file&hellip;</span>
+          </label>
+          <div id="csvSummary" class="import-summary is-hidden"></div>
+
+          <div id="csvConfig" class="csv-config is-hidden">
+            <label class="field-inline">
+              <span>Timestamp column</span>
+              <select id="timestampSelect"></select>
+            </label>
+
+            <div class="col-toggle-wrap is-open">
+              <div class="col-toggle-header-static"><span class="col-toggle-label">Variables to show on each photo</span></div>
+              <div id="variablePicker" class="col-toggle-row"></div>
+              <div class="col-toggle-actions">
+                <button id="varsAll" class="text-link" type="button">Select all</button>
+                <span class="dot">&middot;</span>
+                <button id="varsNone" class="text-link" type="button">Clear</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="import-step">
+          <div class="import-step__head"><span class="import-step__num">2</span><h2>Photos</h2></div>
+          <p class="import-step__hint">Select the photos to add. Each is matched to the nearest boat-data row using the time the photo was taken (read from the photo itself).</p>
+          <label class="file-drop" id="photoDrop">
+            <input id="photoInput" type="file" accept="image/*" multiple />
+            <span id="photoDropLabel">Choose photos&hellip;</span>
+          </label>
+        </div>
+
+        <div id="previewStep" class="import-step is-hidden">
+          <div class="import-step__head"><span class="import-step__num">3</span><h2>Preview matches</h2></div>
+          <p class="import-step__hint">Check the matches before publishing. An amber badge means the closest boat-data row was more than 30 minutes away &mdash; check the boat log and camera clocks agree. A red badge means no capture time or no match could be found at all.</p>
+          <div id="previewList" class="preview-list"></div>
+        </div>
+
+        <div id="publishStep" class="import-step is-hidden">
+          <div class="import-step__head"><span class="import-step__num">4</span><h2>Publish</h2></div>
+          <p class="import-step__hint">This page has no upload backend of its own &mdash; every change to the live site goes through a GitHub commit. Download the manifest below, then either upload it plus the photo files yourself using GitHub's <strong>Add file &rarr; Upload files</strong> page inside the <code>sail-shots/</code> folder (replacing <code>manifest.json</code> and adding the photos into a <code>photos/</code> subfolder), or send the manifest and photo files to Claude in chat and ask for them to be published.</p>
+          <button id="downloadManifest" class="ghost-button" type="button" disabled>Download manifest.json</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="./app.js?v=20260909"></script>
+</body>
+</html>
