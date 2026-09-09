@@ -38,6 +38,14 @@
     overlayEditorCancel: document.getElementById('overlayEditorCancel'),
     overlayEditorLock: document.getElementById('overlayEditorLock'),
 
+    lightbox: document.getElementById('lightbox'),
+    lightboxClose: document.getElementById('lightboxClose'),
+    lightboxImageWrap: document.getElementById('lightboxImageWrap'),
+    lightboxImg: document.getElementById('lightboxImg'),
+    lightboxBoxes: document.getElementById('lightboxBoxes'),
+    lightboxCategory: document.getElementById('lightboxCategory'),
+    lightboxDate: document.getElementById('lightboxDate'),
+
     csvInput: document.getElementById('csvInput'),
     csvDropLabel: document.getElementById('csvDropLabel'),
     csvSummary: document.getElementById('csvSummary'),
@@ -343,10 +351,18 @@
   }
 
   // ---------- overlay box positioning (shared by the gallery and the editor) ----------
-  // Vars with no locked position yet stack down the top-left corner, in the
-  // same order both places, so an un-dragged box looks the same wherever it appears.
+  // Vars with no locked position yet stack down the top-left corner in columns
+  // of up to 9, wrapping into a new column rather than piling every box past
+  // the 9th on top of each other — with a large variable count (people do pick
+  // 20+) a single unbounded column ran off the bottom of the photo and every
+  // overflow box landed in the same unreadable spot. This is only ever the
+  // un-arranged starting point; the same order is used in the gallery and the
+  // editor so a box looks the same wherever it appears until it's dragged.
+  const OVERLAY_ROWS_PER_COL = 9;
   function defaultOverlayPosition(index) {
-    return { xPct: 3, yPct: Math.min(88, 6 + index * 10) };
+    const col = Math.floor(index / OVERLAY_ROWS_PER_COL);
+    const row = index % OVERLAY_ROWS_PER_COL;
+    return { xPct: Math.min(70, 3 + col * 32), yPct: 6 + row * 9 };
   }
   function getOverlayPosition(varName, index, positions) {
     const saved = positions && positions[varName];
@@ -475,10 +491,60 @@
         imgWrap.appendChild(box);
       });
 
+      imgWrap.classList.add('is-clickable');
+      imgWrap.addEventListener('click', () => openLightbox(shot));
+
       card.appendChild(imgWrap);
       el.shotGrid.appendChild(card);
     });
   }
+
+  // ---------- lightbox (full-size photo view) ----------
+  // The card thumbnails are cropped to a 4:3 tile; the lightbox shows the
+  // whole, uncropped photo instead — that's the point of "full screen". The
+  // image wrap has no explicit size of its own (see CSS: display:inline-block
+  // around a size-capped <img>), so it shrink-wraps to exactly the image's
+  // rendered box with no letterboxing, and the same percentage-based overlay
+  // positions land correctly on the full photo without any extra math.
+  function openLightbox(shot) {
+    const vars = existingManifest.variables || [];
+    const overlayLayout = existingManifest.overlayLayout || {};
+    const row = shot.row || {};
+
+    el.lightboxImg.src = `./${shot.file}`;
+    el.lightboxBoxes.innerHTML = '';
+    vars.forEach((v, i) => {
+      if (row[v] === undefined || row[v] === '') return;
+      const pos = getOverlayPosition(v, i, overlayLayout);
+      const box = document.createElement('div');
+      box.className = 'overlay-box';
+      box.style.left = `${pos.xPct}%`;
+      box.style.top = `${pos.yPct}%`;
+      box.innerHTML = `<b></b><span></span>`;
+      box.querySelector('b').textContent = row[v];
+      box.querySelector('span').textContent = v;
+      el.lightboxBoxes.appendChild(box);
+    });
+
+    el.lightboxCategory.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
+    el.lightboxCategory.textContent = CATEGORY_LABEL[shot.category] || CATEGORY_LABEL.other;
+    el.lightboxDate.textContent = formatShotDate(shot.capturedAt);
+
+    el.lightbox.classList.remove('is-hidden');
+  }
+  function closeLightbox() {
+    el.lightbox.classList.add('is-hidden');
+    el.lightboxImg.src = '';
+  }
+  el.lightboxClose.addEventListener('click', closeLightbox);
+  el.lightbox.addEventListener('click', (e) => {
+    if (e.target === el.lightbox) closeLightbox(); // click on the backdrop, not the photo itself
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (!el.lightbox.classList.contains('is-hidden')) closeLightbox();
+    else if (!el.overlayEditor.classList.contains('is-hidden')) closeOverlayEditor();
+  });
 
   // ---------- overlay layout editor ----------
   function populateOverlayEditorShotSelect() {

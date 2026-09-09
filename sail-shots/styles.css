@@ -55,7 +55,12 @@ h1{margin:10px 0 14px;font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:.98;lette
 .shot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
 .shot-card{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:linear-gradient(180deg,rgba(12,29,44,.95),rgba(7,18,29,.98))}
 .shot-card__image-wrap{position:relative;aspect-ratio:4/3;background:#04090f;overflow:hidden}
-.shot-card__image-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+/* Action shots are usually tall portraits dominated by mast and sky, with the
+   boat itself in the lower part of the frame — a dead-center 4:3 crop mostly
+   shows sky and crops the hull off. Biasing the crop down keeps the boat in
+   view. The lightbox (click to open) always shows the full, uncropped photo. */
+.shot-card__image-wrap img{width:100%;height:100%;object-fit:cover;object-position:50% 70%;display:block}
+.shot-card__image-wrap.is-clickable{cursor:zoom-in}
 .shot-card__date{position:absolute;left:10px;bottom:10px;padding:4px 9px;border-radius:7px;background:rgba(6,16,27,.72);backdrop-filter:blur(3px);color:var(--text);font-size:.68rem;font-weight:700}
 .shot-card__category{position:absolute;right:10px;top:10px;padding:4px 9px;border-radius:7px;background:rgba(6,16,27,.72);backdrop-filter:blur(3px);font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
 .shot-card__category--manoeuvre{color:var(--cat-manoeuvre)}
@@ -133,6 +138,17 @@ h1{margin:10px 0 14px;font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:.98;lette
 .overlay-editor__actions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:6px}
 .overlay-editor__actions-right{display:flex;gap:8px}
 
+/* Lightbox — full, uncropped photo with the same overlay boxes on top */
+.lightbox{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(2,5,9,.92);backdrop-filter:blur(6px)}
+.lightbox.is-hidden{display:none}
+.lightbox__close{position:fixed;top:18px;right:18px;width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:10px;background:rgba(255,255,255,.04);color:var(--text);font-size:1.4rem;line-height:1;cursor:pointer;z-index:71}
+.lightbox__close:hover{border-color:rgba(255,107,107,.5);color:#fff}
+.lightbox__inner{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:100%}
+.lightbox__image-wrap{position:relative;display:inline-block;line-height:0;border-radius:12px;overflow:hidden;background:#04090f}
+.lightbox__image-wrap img{display:block;max-width:92vw;max-height:80vh;width:auto;height:auto}
+#lightboxBoxes{position:absolute;inset:0}
+.lightbox__date{color:var(--muted-2);font-size:.78rem;font-weight:700}
+
 /* iPhone / small-screen layout */
 html{overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{overflow-x:hidden;padding-bottom:env(safe-area-inset-bottom)}
@@ -190,6 +206,11 @@ button,.ghost-button,.file-drop,.col-chip,.text-link{touch-action:manipulation;-
   .overlay-editor__actions{flex-direction:column;align-items:stretch}
   .overlay-editor__actions-right{flex-direction:column}
   .overlay-editor__actions-right .ghost-button{min-height:44px;justify-content:center}
+
+  .lightbox{padding:14px}
+  .lightbox__close{top:max(12px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));width:44px;height:44px}
+  .lightbox__image-wrap img{max-width:94vw;max-height:74vh}
+  .overlay-box{font-size:.56rem;padding:2px 5px}
 
   .preview-item{grid-template-columns:52px 1fr auto;gap:9px;padding:8px}
   .preview-item__thumb{width:52px;height:52px}
