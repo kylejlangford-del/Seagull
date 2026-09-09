@@ -376,8 +376,8 @@
   // This is only ever the un-arranged starting point; the same order is used
   // in the gallery, the lightbox and the editor so a box looks the same
   // wherever it appears until it's dragged onto a custom saved position.
-  const OVERLAY_TOP_PCT = 6;
-  const OVERLAY_BOTTOM_PCT = 90;
+  const OVERLAY_TOP_PCT = 32;
+  const OVERLAY_BOTTOM_PCT = 78;
   const OVERLAY_EDGE_PCT = 3;
   function defaultOverlayPosition(index, total) {
     const leftCount = Math.ceil(total / 2);
