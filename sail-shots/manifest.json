@@ -509,7 +509,7 @@
       "capturedAt": "2026-09-09T13:54:56.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "gybe-exit",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-09T13:54:56Z",
         "TWS_kts": "8.96",
