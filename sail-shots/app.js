@@ -654,7 +654,7 @@
     });
 
     const filtered = selectedCategory === 'all' ? dayShots : dayShots.filter(s => (s.category || 'other') === selectedCategory);
-    const sorted = [...filtered].sort((a, b) => new Date(b.capturedAt) - new Date(a.capturedAt));
+    const sorted = [...filtered].sort((a, b) => new Date(a.capturedAt) - new Date(b.capturedAt));
     currentGalleryOrder = sorted; // lets the lightbox step to the next/previous photo in this same order
 
     el.shotGrid.innerHTML = '';
