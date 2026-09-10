@@ -242,31 +242,7 @@
         "MainTravellerAngle_deg": "2.69",
         "MainTravellerCarPosition": "0.26"
       },
-      "comment": "Clew position sweep, 50%",
-      "twistProfile": {
-        "points": [
-          {
-            "xFrac": 0.37807622380711053,
-            "yFrac": 0.773011293366927
-          },
-          {
-            "xFrac": 0.3756345177664975,
-            "yFrac": 0.5879615935012129
-          },
-          {
-            "xFrac": 0.3743654822335025,
-            "yFrac": 0.40291189363549895
-          },
-          {
-            "xFrac": 0.3629441624365482,
-            "yFrac": 0.21786219376978497
-          },
-          {
-            "xFrac": 0.3401015228426396,
-            "yFrac": 0.032812493904071
-          }
-        ]
-      }
+      "comment": "Clew position sweep, 50%"
     },
     {
       "id": "2026-09-09T14-08-46-000Z-dsc01239",
