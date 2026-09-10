@@ -724,7 +724,7 @@
     imgWrap.addEventListener('click', () => openLightbox(shot, null));
 
     card.appendChild(imgWrap);
-    applyFrameToImg(img, shot);
+    applyFrameToImg(img, shot, 'grid');
 
     // The full boat-data readout now only lives in the lightbox (left
     // panel), so it doesn't clash with the photo here — the card stays a
@@ -784,7 +784,7 @@
       // chronological order, rather than the whole Manoeuvre Sequence list.
       openLightbox(repShot, group.shots);
     });
-    applyFrameToImg(img, repShot);
+    applyFrameToImg(img, repShot, 'grid');
 
     card.appendChild(imgWrap);
     return card;
@@ -939,20 +939,34 @@
   // the extra zoom and straightening. posX/posY are the object-position
   // percentages (50/50 = centered); zoom is a multiplier >=1.
 
-  function frameStyleFor(shot) {
+  // A frame's crop can be any shape the user drags — there's no longer a
+  // fixed target ratio for it. The gallery TILE is still a fixed 4:3 box
+  // (a uniform-grid layout choice, unrelated to the user's chosen crop),
+  // so a saved frame carries two independently pre-fit renderings —
+  // 'grid' (that free-shaped crop cover-fit into 4:3, same idea as
+  // object-fit:cover treating a differently-shaped photo) and 'lightbox'
+  // (the crop shown at its own exact shape) — plus the crop's own aspect
+  // ratio, used to size the lightbox <img> itself. Pre-fitting both at
+  // Save time (rather than recomputing from a raw box on every render)
+  // means applying a frame never needs to know the image's pixel
+  // dimensions again — only object-position/scale percentages, which work
+  // on any <img> showing that same photo regardless of its on-screen size.
+  const GRID_TARGET_AR = 4 / 3;
+
+  function frameStyleFor(shot, kind) {
     const f = shot && shot.frame;
-    if (!f) return null;
+    const fit = f && f[kind];
+    if (!fit) return null;
     return {
-      objectPosition: `${f.posX}% ${f.posY}%`,
-      transform: `scale(${f.zoom}) rotate(${f.rotationDeg}deg)`,
+      objectPosition: `${fit.posX}% ${fit.posY}%`,
+      transform: `scale(${fit.zoom}) rotate(${f.rotationDeg}deg)`,
     };
   }
 
-  // Applies a shot's saved frame (if any) to a plain <img> — used for every
-  // gallery thumbnail, which already sits in a fixed 4:3 box via CSS, so no
-  // extra class is needed there.
-  function applyFrameToImg(img, shot) {
-    const style = frameStyleFor(shot);
+  // Applies a shot's saved frame (if any) to a plain <img>. kind is 'grid'
+  // (fixed 4:3 tile) or 'lightbox' (the crop's own shape).
+  function applyFrameToImg(img, shot, kind) {
+    const style = frameStyleFor(shot, kind);
     img.style.objectPosition = style ? style.objectPosition : '';
     img.style.transform = style ? style.transform : '';
   }
@@ -963,19 +977,43 @@
   // when all that actually changed is how one photo is framed.
   function refreshVisibleShotThumbnail(shot) {
     document.querySelectorAll(`#shotGrid img[data-shot-id="${CSS.escape(shot.id)}"]`)
-      .forEach(img => applyFrameToImg(img, shot));
+      .forEach(img => applyFrameToImg(img, shot, 'grid'));
+  }
+
+  // A frame's aspect ratio isn't fixed, so the lightbox <img> can't just be
+  // "width:56vw, aspect-ratio:something" in CSS — a very tall/narrow crop
+  // combined with a fixed width could overflow max-height without the
+  // width shrinking to compensate. Instead: read the box CSS already
+  // resolves the <img> to (56vw/88vh on desktop, 100%/50vh on phones —
+  // whatever the current breakpoint says), then fit the crop's own ratio
+  // inside that box in JS and set explicit pixel width/height.
+  function sizeLightboxImgToFrameAR(ar) {
+    const cs = getComputedStyle(el.lightboxImg);
+    const maxW = parseFloat(cs.maxWidth), maxH = parseFloat(cs.maxHeight);
+    if (!maxW || !maxH || !ar) return;
+    let w = maxW, h = w / ar;
+    if (h > maxH) { h = maxH; w = h * ar; }
+    el.lightboxImg.style.width = `${w}px`;
+    el.lightboxImg.style.height = `${h}px`;
   }
 
   // The lightbox photo isn't normally boxed to a fixed aspect ratio (it
   // shows the whole original at its own aspect ratio) — the .is-framed
-  // class switches it to the same 4:3 box the gallery uses, only while a
-  // frame is actually in effect. forceUnframed shows the full original
-  // regardless (used while twist-tracing, which needs the untouched photo).
+  // class switches it to the crop's own shape, only while a frame is
+  // actually in effect. forceUnframed shows the full original regardless
+  // (used while twist-tracing, which needs the untouched photo).
   function updateLightboxFrameDisplay(shot, forceUnframed) {
     const hasFrame = !!(shot && shot.frame) && !forceUnframed;
     el.lightboxImg.classList.toggle('is-framed', hasFrame);
-    if (hasFrame) applyFrameToImg(el.lightboxImg, shot);
-    else { el.lightboxImg.style.objectPosition = ''; el.lightboxImg.style.transform = ''; }
+    if (hasFrame) {
+      applyFrameToImg(el.lightboxImg, shot, 'lightbox');
+      sizeLightboxImgToFrameAR(shot.frame.aspectRatio);
+    } else {
+      el.lightboxImg.style.objectPosition = '';
+      el.lightboxImg.style.transform = '';
+      el.lightboxImg.style.width = '';
+      el.lightboxImg.style.height = '';
+    }
   }
 
   function renderFrameSection(shot) {
@@ -987,33 +1025,43 @@
     el.frameCancelBtn.classList.add('is-hidden');
   }
 
-  // Re-applies the live edit state to the photo — called while straightening
-  // (rotate slider) so the preview always matches frameState.
+  // Re-applies the live edit state to the photo from frameState.cropBox —
+  // called while straightening (rotate slider) so the preview always
+  // matches frameState. The preview is fit to the crop box's OWN aspect
+  // ratio (not a fixed one), matching what Save will actually persist.
   function applyFrameEditLive() {
+    if (!frameState || !frameState.cropBox) return;
+    const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
+    if (!iw || !ih) return;
+    const box = frameState.cropBox;
+    const boxAR = (box.wFrac * iw) / (box.hFrac * ih);
+    const fit = frameZoomPosFromBox(box, iw, ih, boxAR);
     el.lightboxImg.classList.add('is-framed');
-    el.lightboxImg.style.objectPosition = `${frameState.posX}% ${frameState.posY}%`;
-    el.lightboxImg.style.transform = `scale(${frameState.zoom}) rotate(${frameState.rotationDeg}deg)`;
+    sizeLightboxImgToFrameAR(boxAR);
+    el.lightboxImg.style.objectPosition = `${fit.posX}% ${fit.posY}%`;
+    el.lightboxImg.style.transform = `scale(${fit.zoom}) rotate(${frameState.rotationDeg}deg)`;
   }
 
-  const FRAME_TARGET_AR = 4 / 3;
-
-  // The largest 4:3 rectangle that fits inside a natural iw x ih photo —
-  // this is what a zoom=1 frame shows, and it's also the biggest the crop
-  // box is ever allowed to grow to.
-  function frameCoverDims(iw, ih) {
-    return iw / ih > FRAME_TARGET_AR
-      ? { coverW: ih * FRAME_TARGET_AR, coverH: ih }
-      : { coverW: iw, coverH: iw / FRAME_TARGET_AR };
+  // The largest rectangle of the given aspect ratio that fits inside a
+  // natural iw x ih photo.
+  function frameCoverDims(iw, ih, targetAR) {
+    return iw / ih > targetAR
+      ? { coverW: ih * targetAR, coverH: ih }
+      : { coverW: iw, coverH: iw / targetAR };
   }
 
-  // The saved/rendered model (zoom, posX, posY) and the Crop-mode box (a
-  // 4:3 rectangle in natural-image-pixel fractions) describe the same crop
-  // two different ways — these convert between them. At zoom=1 the box is
-  // exactly the cover rect; zooming in shrinks it around its own center,
-  // and posX/posY says where in the photo's leftover margin that center
-  // sits. See frameStyleFor above for how zoom/posX/posY actually render.
-  function frameBoxFromZoomPos(zoom, posX, posY, iw, ih) {
-    const { coverW, coverH } = frameCoverDims(iw, ih);
+  // A {zoom,posX,posY} rendering and a crop box (natural-image-pixel
+  // fractions) describe the same crop two different ways — these convert
+  // between them, for a container of the given targetAR. Correct only
+  // when the box's own shape already matches targetAR (frameZoomPosFromBox
+  // is always called that way below — either the box's own AR for the
+  // lightbox rendering, or a box already cropped to 4:3 via
+  // subRectForTargetAR for the grid rendering). At zoom=1 the box is
+  // exactly the cover rect for targetAR; zooming in shrinks it around its
+  // own center, and posX/posY says where in the photo's leftover margin
+  // that center sits.
+  function frameBoxFromZoomPos(zoom, posX, posY, iw, ih, targetAR) {
+    const { coverW, coverH } = frameCoverDims(iw, ih, targetAR);
     const marginX = iw - coverW, marginY = ih - coverH;
     const cropX0 = marginX > 0 ? (posX / 100) * marginX : 0;
     const cropY0 = marginY > 0 ? (posY / 100) * marginY : 0;
@@ -1021,8 +1069,8 @@
     const centerX = cropX0 + coverW / 2, centerY = cropY0 + coverH / 2;
     return { xFrac: (centerX - bw / 2) / iw, yFrac: (centerY - bh / 2) / ih, wFrac: bw / iw, hFrac: bh / ih };
   }
-  function frameZoomPosFromBox(box, iw, ih) {
-    const { coverW, coverH } = frameCoverDims(iw, ih);
+  function frameZoomPosFromBox(box, iw, ih, targetAR) {
+    const { coverW, coverH } = frameCoverDims(iw, ih, targetAR);
     const bx = box.xFrac * iw, by = box.yFrac * ih, bw = box.wFrac * iw, bh = box.hFrac * ih;
     const centerX = bx + bw / 2, centerY = by + bh / 2;
     const cropX0 = centerX - coverW / 2, cropY0 = centerY - coverH / 2;
@@ -1032,6 +1080,22 @@
       posX: marginX > 0 ? Math.min(100, Math.max(0, (cropX0 / marginX) * 100)) : 50,
       posY: marginY > 0 ? Math.min(100, Math.max(0, (cropY0 / marginY) * 100)) : 50,
     };
+  }
+
+  // Crops an arbitrary box down to a centered sub-rectangle of exactly
+  // targetAR — the same idea as object-fit:cover treating a photo shaped
+  // like the box as it's placed into a targetAR tile: crop the box's
+  // longer axis, keep its shorter axis in full. Used to fit a free-ratio
+  // crop into the gallery's fixed 4:3 tile.
+  function subRectForTargetAR(box, iw, ih, targetAR) {
+    const bw = box.wFrac * iw, bh = box.hFrac * ih;
+    const boxAR = bw / bh;
+    let subW, subH;
+    if (boxAR > targetAR) { subH = bh; subW = bh * targetAR; }
+    else { subW = bw; subH = subW / targetAR; }
+    const subX = box.xFrac * iw + (bw - subW) / 2;
+    const subY = box.yFrac * ih + (bh - subH) / 2;
+    return { xFrac: subX / iw, yFrac: subY / ih, wFrac: subW / iw, hFrac: subH / ih };
   }
 
   // Places the crop-box overlay div to match frameState.cropBox — the box
@@ -1048,16 +1112,20 @@
     el.frameCropBox.style.height = `${box.hFrac * imgRect.height}px`;
   }
 
-  // Crop mode: show the full, untouched photo with a resizable 4:3 box on
-  // top of it (dragging the box or its corners is how the crop is chosen).
+  // Crop mode: show the full, untouched photo with a freely resizable box
+  // on top of it (dragging the box or a corner is how the crop is chosen —
+  // any shape, no locked ratio). frameState.cropBox is the single source
+  // of truth for the crop's geometry throughout the whole edit — Straighten
+  // mode only adds rotation on top of it, so nothing needs converting back
+  // and forth when switching modes.
   function enterFrameCropMode() {
     if (!frameState) return;
-    const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
     frameState.mode = 'crop';
-    frameState.cropBox = frameBoxFromZoomPos(frameState.zoom, frameState.posX, frameState.posY, iw, ih);
     el.lightboxImg.classList.remove('is-framed');
     el.lightboxImg.style.objectPosition = '';
     el.lightboxImg.style.transform = '';
+    el.lightboxImg.style.width = '';
+    el.lightboxImg.style.height = '';
     el.frameGrid.classList.add('is-hidden');
     el.frameCropBox.classList.remove('is-hidden');
     el.frameRotateRow.classList.add('is-hidden');
@@ -1068,15 +1136,10 @@
     positionFrameCropBoxDom();
   }
 
-  // Straighten mode: show the cropped/zoomed result (the box just chosen,
-  // folded back into zoom/posX/posY) with the fixed thirds-grid and the
-  // rotate slider, exactly like before.
+  // Straighten mode: show the cropped result (frameState.cropBox, at its
+  // own shape) with the fixed thirds-grid and the rotate slider.
   function enterFrameStraightenMode() {
     if (!frameState) return;
-    if (frameState.cropBox) {
-      const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
-      Object.assign(frameState, frameZoomPosFromBox(frameState.cropBox, iw, ih));
-    }
     frameState.mode = 'straighten';
     el.frameCropBox.classList.add('is-hidden');
     el.frameGrid.classList.remove('is-hidden');
@@ -1092,14 +1155,17 @@
     const shot = currentLightboxShot();
     if (!shot) return;
     endTwistTrace(); // the two tools need conflicting views of the photo (cropped vs. full) — only one at a time
+    const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
     const existing = shot.frame;
     frameState = {
       rotationDeg: existing ? existing.rotationDeg : 0,
-      zoom: existing ? existing.zoom : 1,
-      posX: existing ? existing.posX : 50,
-      posY: existing ? existing.posY : 50,
+      // Reopening restores the exact saved box; a brand-new frame starts
+      // as the whole photo selected, so "pull the edges in to crop" reads
+      // literally rather than starting from some arbitrary default shape.
+      cropBox: existing
+        ? frameBoxFromZoomPos(existing.lightbox.zoom, existing.lightbox.posX, existing.lightbox.posY, iw, ih, existing.aspectRatio)
+        : { xFrac: 0, yFrac: 0, wFrac: 1, hFrac: 1 },
       mode: 'crop',
-      cropBox: null,
       dragging: null,
     };
     el.frameRotateRange.value = String(frameState.rotationDeg);
@@ -1133,12 +1199,12 @@
   }
 
   // Resizes the crop box from one corner handle, keeping the opposite
-  // corner fixed and the aspect ratio locked to 4:3, clamped so the box
-  // never runs off the photo or shrinks to a sliver.
+  // corner fixed. Width and height move independently — no locked ratio —
+  // clamped so the box never runs off the photo or shrinks to a sliver.
   function frameResizeCropBox(handle, startBox, point, iw, ih) {
     const startBx = startBox.xFrac * iw, startBy = startBox.yFrac * ih;
     const startBw = startBox.wFrac * iw, startBh = startBox.hFrac * ih;
-    const minW = Math.max(40, frameCoverDims(iw, ih).coverW * 0.15);
+    const minW = iw * 0.05, minH = ih * 0.05;
     const growRight = handle === 'se' || handle === 'ne';
     const growDown = handle === 'se' || handle === 'sw';
     const anchorX = growRight ? startBx : startBx + startBw;
@@ -1146,11 +1212,8 @@
 
     let w = Math.max(minW, Math.abs(point.x - anchorX));
     w = Math.min(w, growRight ? iw - anchorX : anchorX);
-    let h = w / FRAME_TARGET_AR;
-    const maxH = growDown ? ih - anchorY : anchorY;
-    if (h > maxH) { h = maxH; w = h * FRAME_TARGET_AR; }
-    w = Math.max(minW, w);
-    h = w / FRAME_TARGET_AR;
+    let h = Math.max(minH, Math.abs(point.y - anchorY));
+    h = Math.min(h, growDown ? ih - anchorY : anchorY);
 
     const bx = growRight ? anchorX : anchorX - w;
     const by = growDown ? anchorY : anchorY - h;
@@ -1209,18 +1272,18 @@
   });
   el.frameSaveBtn.addEventListener('click', () => {
     const shot = currentLightboxShot();
-    if (!shot || !frameState) return;
-    // Fold in whatever crop box is active so Save reflects the latest
-    // drag even if the user saves without switching to Straighten first.
-    if (frameState.mode === 'crop' && frameState.cropBox) {
-      const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
-      Object.assign(frameState, frameZoomPosFromBox(frameState.cropBox, iw, ih));
-    }
+    if (!shot || !frameState || !frameState.cropBox) return;
+    const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
+    const cropBox = frameState.cropBox;
+    const boxAR = (cropBox.wFrac * iw) / (cropBox.hFrac * ih);
+    const lightboxFit = frameZoomPosFromBox(cropBox, iw, ih, boxAR);
+    const gridSub = subRectForTargetAR(cropBox, iw, ih, GRID_TARGET_AR);
+    const gridFit = frameZoomPosFromBox(gridSub, iw, ih, GRID_TARGET_AR);
     shot.frame = {
       rotationDeg: frameState.rotationDeg,
-      zoom: frameState.zoom,
-      posX: frameState.posX,
-      posY: frameState.posY,
+      aspectRatio: boxAR,
+      lightbox: { zoom: lightboxFit.zoom, posX: lightboxFit.posX, posY: lightboxFit.posY },
+      grid: { zoom: gridFit.zoom, posX: gridFit.posX, posY: gridFit.posY },
     };
     markManifestDirty();
     endFrameEdit();
@@ -1317,43 +1380,63 @@
     });
   }
 
+  // Shared pixel-edge helpers, used both by the initial dense trace
+  // (traceLeechEdge) and by the per-point snapping that runs whenever a
+  // point is added or dragged (see snapFracToLeech below). Kept as plain
+  // functions closing over an {imageData,width,height} triple so both call
+  // sites can reuse the identical scoring logic.
+  function twistLuminanceAt(imageData, width, height, x, y) {
+    x = Math.max(0, Math.min(width - 1, Math.round(x)));
+    y = Math.max(0, Math.min(height - 1, Math.round(y)));
+    const data = imageData.data;
+    const i = (y * width + x) * 4;
+    return 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+  }
+  function twistEdgeStrengthAt(imageData, width, height, x, y) {
+    let sum = 0;
+    for (let dy = -1; dy <= 1; dy++) {
+      sum += Math.abs(
+        twistLuminanceAt(imageData, width, height, x + 2, y + dy) -
+        twistLuminanceAt(imageData, width, height, x - 2, y + dy)
+      );
+    }
+    return sum;
+  }
+  // Searches a window around aroundX (at fixed pixel row y) for the
+  // strongest vertical edge (biggest horizontal brightness gradient) —
+  // that's the sail/background boundary. Returns both the best x found and
+  // its score, so callers can decide whether the signal was strong enough
+  // to trust (see TWIST_EDGE_MIN_SCORE).
+  function twistFindEdgeX(imageData, width, height, y, aroundX) {
+    const searchRadius = Math.max(12, Math.round(width * TWIST_SEARCH_RADIUS_FRAC));
+    const lo = Math.max(0, Math.round(aroundX - searchRadius));
+    const hi = Math.min(width - 1, Math.round(aroundX + searchRadius));
+    let bestX = aroundX, bestScore = -1;
+    for (let x = lo; x <= hi; x++) {
+      const score = twistEdgeStrengthAt(imageData, width, height, x, y);
+      if (score > bestScore) { bestScore = score; bestX = x; }
+    }
+    return { x: bestX, score: bestScore };
+  }
+
   // Follows the leech edge from (startX,startY) up to (endX,endY) in image
   // pixel space, sampling TWIST_DENSE_STEPS+1 evenly-spaced heights. At each
   // height it searches a window around the previous point's x for the
-  // strongest vertical edge (biggest horizontal brightness gradient) —
-  // that's the sail/background boundary. A weak/ambiguous local signal
-  // (open sky, low contrast) falls back toward the straight reference line
-  // rather than snapping onto noise. Always traces at the same dense
-  // resolution regardless of how many points the user wants to see — see
-  // resamplePoints() for the step that thins this down.
+  // strongest vertical edge — that's the sail/background boundary. A
+  // weak/ambiguous local signal (open sky, low contrast) falls back toward
+  // the straight reference line rather than snapping onto noise. Always
+  // traces at the same dense resolution regardless of how many points the
+  // user wants to see — see resamplePoints() for the step that thins this
+  // down.
   function traceLeechEdge(imageData, width, height, startX, startY, endX, endY) {
-    const data = imageData.data;
-    const luminance = (x, y) => {
-      x = Math.max(0, Math.min(width - 1, Math.round(x)));
-      y = Math.max(0, Math.min(height - 1, Math.round(y)));
-      const i = (y * width + x) * 4;
-      return 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-    };
-    const edgeStrength = (x, y) => {
-      let sum = 0;
-      for (let dy = -1; dy <= 1; dy++) sum += Math.abs(luminance(x + 2, y + dy) - luminance(x - 2, y + dy));
-      return sum;
-    };
-
-    const searchRadius = Math.max(12, Math.round(width * TWIST_SEARCH_RADIUS_FRAC));
     const points = [{ x: startX, y: startY }];
     let curX = startX;
     for (let s = 1; s <= TWIST_DENSE_STEPS; s++) {
       const y = startY + ((endY - startY) * s) / TWIST_DENSE_STEPS;
       const predictedX = startX + ((endX - startX) * s) / TWIST_DENSE_STEPS;
-      const lo = Math.max(0, Math.round(curX - searchRadius));
-      const hi = Math.min(width - 1, Math.round(curX + searchRadius));
-      let bestX = predictedX, bestScore = -1;
-      for (let x = lo; x <= hi; x++) {
-        const score = edgeStrength(x, y);
-        if (score > bestScore) { bestScore = score; bestX = x; }
-      }
-      if (bestScore < TWIST_EDGE_MIN_SCORE) bestX = curX + (predictedX - curX) * 0.5;
+      const found = twistFindEdgeX(imageData, width, height, y, curX);
+      let bestX = found.x;
+      if (found.score < TWIST_EDGE_MIN_SCORE) bestX = curX + (predictedX - curX) * 0.5;
       points.push({ x: bestX, y });
       curX = bestX;
     }
@@ -1380,13 +1463,29 @@
     return out;
   }
 
+  // Loads (once) and caches the analyzable pixel data for the shot currently
+  // being traced, on twistState itself, so that per-point edge snapping
+  // (snapFracToLeech below) doesn't have to reload/redecode the photo on
+  // every drag — it's the same canvas ImageData the dense trace used.
+  async function getTwistImageAnalysis(shot) {
+    if (twistState && twistState.imageAnalysis && twistState.imageAnalysisFile === shot.file) {
+      return twistState.imageAnalysis;
+    }
+    const analysis = await loadImageDataForAnalysis(shot.file);
+    if (twistState) {
+      twistState.imageAnalysis = analysis;
+      twistState.imageAnalysisFile = shot.file;
+    }
+    return analysis;
+  }
+
   // Traces the leech edge at full (dense) resolution and returns it as
   // image-fraction points. Point-count reduction happens separately, in
   // resamplePoints(), so adjusting the point count later doesn't need to
   // re-scan the photo.
   async function traceDenseFrac(shot, referenceFrac, headFrac) {
     try {
-      const { imageData, width, height } = await loadImageDataForAnalysis(shot.file);
+      const { imageData, width, height } = await getTwistImageAnalysis(shot);
       const startX = referenceFrac.xFrac * width, startY = referenceFrac.yFrac * height;
       const endX = headFrac.xFrac * width, endY = headFrac.yFrac * height;
       const pxPoints = traceLeechEdge(imageData, width, height, startX, startY, endX, endY);
@@ -1405,6 +1504,47 @@
       }
       return pts;
     }
+  }
+
+  // Snaps a single image-fraction point onto the nearest strong leech edge
+  // at that same height, using the cached analysis from the trace already
+  // in progress. Synchronous (no re-decoding), so it's cheap enough to run
+  // on every pointer-move while dragging. If no analysis is cached yet (or
+  // the local signal is too weak/ambiguous to trust), the point is
+  // returned unchanged — same "don't snap onto noise" fallback the dense
+  // trace uses.
+  function snapFracToLeech(frac) {
+    const analysis = twistState && twistState.imageAnalysis;
+    if (!analysis) return frac;
+    const { imageData, width, height } = analysis;
+    const x = frac.xFrac * width, y = frac.yFrac * height;
+    const found = twistFindEdgeX(imageData, width, height, y, x);
+    if (found.score < TWIST_EDGE_MIN_SCORE) return frac;
+    return { xFrac: found.x / width, yFrac: frac.yFrac };
+  }
+
+  // Softens a point list so a single point that snapped to a slightly
+  // different spot on the leech than its neighbors doesn't read as a kink —
+  // one pass blending each interior point toward the average of its two
+  // neighbors. The two endpoints (the user's original boom/masthead
+  // reference clicks) are left alone so the trace still starts and ends
+  // exactly where the user anchored it.
+  function smoothTwistPoints(points) {
+    if (!points || points.length < 3) return points;
+    const out = points.map(p => ({ ...p }));
+    for (let i = 1; i < points.length - 1; i++) {
+      const prev = points[i - 1], cur = points[i], next = points[i + 1];
+      out[i].xFrac = cur.xFrac * 0.5 + (prev.xFrac + next.xFrac) * 0.25;
+    }
+    return out;
+  }
+
+  // The combined "put it on the leech, then smooth it out" pass run
+  // whenever the point set changes shape (a point count change, or a
+  // finished drag): snaps every point to its local edge, then smooths.
+  function refineTwistPoints(points) {
+    const snapped = points.map(p => snapFracToLeech(p));
+    return smoothTwistPoints(snapped);
   }
 
   // ---- overlay: the traced line + draggable points, drawn on the photo itself ----
@@ -1441,7 +1581,7 @@
     const shot = currentLightboxShot();
     if (!shot) return;
     updateLightboxFrameDisplay(shot, true); // tracing needs the full original photo, not a cropped/rotated view
-    twistState = { mode: 'await-reference', referenceFrac: null, headFrac: null, points: [], dragIndex: null };
+    twistState = { mode: 'await-reference', referenceFrac: null, headFrac: null, points: [], dragIndex: null, imageAnalysis: null, imageAnalysisFile: null };
     el.twistOverlay.classList.remove('is-hidden');
     el.twistOverlay.classList.add('is-active');
     el.twistTraceBtn.classList.add('is-hidden');
@@ -1474,7 +1614,7 @@
       const dense = await traceDenseFrac(shot, twistState.referenceFrac, twistState.headFrac);
       if (!twistState || twistState.mode !== 'tracing') return; // trace was cancelled while awaiting
       twistState.densePoints = dense; // kept so the point-count stepper can re-thin without re-scanning the photo
-      twistState.points = resamplePoints(dense, twistPointCount);
+      twistState.points = refineTwistPoints(resamplePoints(dense, twistPointCount));
       twistState.mode = 'editing';
       twistState.dragIndex = null;
       updateTwistHint('Double-click a point to pick it up, double-click again to drop it in place. Then Save.');
@@ -1493,7 +1633,7 @@
     twistPointCount = n;
     el.twistPointCountLabel.textContent = String(twistPointCount);
     if (twistState && twistState.mode === 'editing' && twistState.densePoints) {
-      twistState.points = resamplePoints(twistState.densePoints, twistPointCount);
+      twistState.points = refineTwistPoints(resamplePoints(twistState.densePoints, twistPointCount));
       twistState.dragIndex = null;
       renderTwistOverlay();
     }
@@ -1518,14 +1658,20 @@
       });
       if (bestI >= 0 && bestD < 0.06) twistState.dragIndex = bestI;
     } else {
-      twistState.points[twistState.dragIndex] = frac;
+      // Dropping a point: snap it onto the nearest leech edge at that
+      // height, then smooth the whole line so the newly-placed point
+      // doesn't read as a kink against its neighbors.
+      twistState.points[twistState.dragIndex] = snapFracToLeech(frac);
       twistState.dragIndex = null;
+      twistState.points = smoothTwistPoints(twistState.points);
     }
     renderTwistOverlay();
   });
   el.twistOverlay.addEventListener('mousemove', (e) => {
     if (!twistState || twistState.dragIndex === null) return;
-    twistState.points[twistState.dragIndex] = twistFracFromEvent(e);
+    // Snap live while dragging too, so the line visibly follows the leech
+    // as the point moves, not just once it's dropped.
+    twistState.points[twistState.dragIndex] = snapFracToLeech(twistFracFromEvent(e));
     renderTwistOverlay();
   });
 
