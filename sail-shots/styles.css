@@ -214,17 +214,18 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
 .lightbox__frame-actions{display:flex;align-items:center;gap:10px}
 .lightbox__frame-actions .text-link{padding:0}
 .lightbox__frame-controls{display:flex;flex-direction:column;gap:8px}
+.lightbox__frame-modes{display:flex;gap:6px}
+.lightbox__frame-mode-btn{flex:1;padding:5px 0;border:1px solid var(--line);border-radius:7px;background:rgba(255,255,255,.03);color:var(--muted);font-size:.66rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;cursor:pointer}
+.lightbox__frame-mode-btn.is-active{border-color:var(--accent);color:var(--text);background:rgba(71,231,219,.1)}
 .lightbox__frame-slider{display:flex;align-items:center;gap:8px;font-size:.68rem;color:var(--muted);font-weight:700}
 .lightbox__frame-slider span:first-child{width:38px;flex:0 0 38px}
 .lightbox__frame-slider input[type=range]{flex:1;accent-color:var(--accent)}
 .lightbox__frame-slider span:last-child{width:36px;flex:0 0 36px;text-align:right;color:var(--text)}
 .lightbox__frame-hint{font-size:.68rem;color:var(--accent);line-height:1.4}
-/* Fixed rule-of-thirds guide shown only while editing, for leveling a
+/* Fixed rule-of-thirds guide shown only in Straighten mode, for leveling a
    tilted horizon or mast against the rotate slider — the grid itself
    never rotates; the photo underneath does. */
 .lightbox__frame-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(to right, rgba(255,255,255,.55) 1px, transparent 1px),linear-gradient(to bottom, rgba(255,255,255,.55) 1px, transparent 1px);background-size:33.333% 33.333%}
-.lightbox__image-wrap.is-frame-editing{cursor:grab}
-.lightbox__image-wrap.is-frame-editing:active{cursor:grabbing}
 /* When a shot has a saved (or in-progress) frame, the lightbox photo is
    boxed to the same 4:3 shape as the gallery thumbnail and shows the
    cropped/zoomed/rotated view instead of the full original — object-fit
@@ -232,8 +233,22 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
    transform layers zoom and straightening on top of that. */
 .lightbox__image-wrap img.is-framed{aspect-ratio:4/3;width:56vw;max-width:56vw;height:auto;max-height:88vh;object-fit:cover}
 
+/* Crop mode: the photo is shown in full (unframed, natural aspect ratio)
+   with a fixed-4:3 box drawn on top that the user resizes/repositions —
+   the box-shadow trick dims everything outside the box without needing a
+   separate overlay element. A small thirds-grid rides along inside the
+   box itself (it resizes with the box, unlike the straighten grid, which
+   stays fixed while the photo rotates beneath it). */
+.lightbox__frame-cropbox{position:absolute;box-shadow:0 0 0 9999px rgba(4,9,15,.72);border:1.5px solid #fff;cursor:move;touch-action:none}
+.lightbox__frame-cropbox-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(to right, rgba(255,255,255,.5) 1px, transparent 1px),linear-gradient(to bottom, rgba(255,255,255,.5) 1px, transparent 1px);background-size:33.333% 33.333%}
+.lightbox__frame-handle{position:absolute;width:16px;height:16px;margin:-8px;border-radius:50%;background:#fff;border:1.5px solid rgba(4,9,15,.6);touch-action:none}
+.lightbox__frame-handle[data-handle="nw"]{left:0;top:0;cursor:nwse-resize}
+.lightbox__frame-handle[data-handle="ne"]{right:0;top:0;left:auto;cursor:nesw-resize}
+.lightbox__frame-handle[data-handle="sw"]{left:0;bottom:0;top:auto;cursor:nesw-resize}
+.lightbox__frame-handle[data-handle="se"]{right:0;bottom:0;left:auto;top:auto;cursor:nwse-resize}
+
 /* ---------- twist profile (Straight Line Upwind only) ---------- */
-.lightbox__twist{display:flex;flex-direction:column;gap:8px;padding-top:10px;border-top:1px solid var(--line)}
+.lightbox__twist{display:flex;flex-direction:column;gap:8px;padding-bottom:10px;border-bottom:1px solid var(--line)}
 .lightbox__twist-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .lightbox__twist-head>span{color:var(--muted);font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em}
 .lightbox__twist-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;row-gap:6px}

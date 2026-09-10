@@ -121,11 +121,15 @@
     frameSaveBtn: document.getElementById('frameSaveBtn'),
     frameCancelBtn: document.getElementById('frameCancelBtn'),
     frameControls: document.getElementById('frameControls'),
+    frameCropModeBtn: document.getElementById('frameCropModeBtn'),
+    frameStraightenModeBtn: document.getElementById('frameStraightenModeBtn'),
+    frameRotateRow: document.getElementById('frameRotateRow'),
     frameRotateRange: document.getElementById('frameRotateRange'),
     frameRotateValue: document.getElementById('frameRotateValue'),
-    frameZoomRange: document.getElementById('frameZoomRange'),
-    frameZoomValue: document.getElementById('frameZoomValue'),
+    frameCropHint: document.getElementById('frameCropHint'),
+    frameStraightenHint: document.getElementById('frameStraightenHint'),
     frameGrid: document.getElementById('frameGrid'),
+    frameCropBox: document.getElementById('frameCropBox'),
 
     twistSection: document.getElementById('twistSection'),
     twistTraceBtn: document.getElementById('twistTraceBtn'),
@@ -731,6 +735,7 @@
     commentWrap.className = 'shot-card__comment-wrap';
     const commentInput = document.createElement('textarea');
     commentInput.className = 'shot-card__comment';
+    commentInput.dataset.shotId = shot.id;
     commentInput.rows = 2;
     commentInput.placeholder = 'Add a comment…';
     commentInput.value = shot.comment || '';
@@ -982,12 +987,105 @@
     el.frameCancelBtn.classList.add('is-hidden');
   }
 
-  // Re-applies the live edit state to the photo — called on every slider
-  // move and drag step while editing.
+  // Re-applies the live edit state to the photo — called while straightening
+  // (rotate slider) so the preview always matches frameState.
   function applyFrameEditLive() {
     el.lightboxImg.classList.add('is-framed');
     el.lightboxImg.style.objectPosition = `${frameState.posX}% ${frameState.posY}%`;
     el.lightboxImg.style.transform = `scale(${frameState.zoom}) rotate(${frameState.rotationDeg}deg)`;
+  }
+
+  const FRAME_TARGET_AR = 4 / 3;
+
+  // The largest 4:3 rectangle that fits inside a natural iw x ih photo —
+  // this is what a zoom=1 frame shows, and it's also the biggest the crop
+  // box is ever allowed to grow to.
+  function frameCoverDims(iw, ih) {
+    return iw / ih > FRAME_TARGET_AR
+      ? { coverW: ih * FRAME_TARGET_AR, coverH: ih }
+      : { coverW: iw, coverH: iw / FRAME_TARGET_AR };
+  }
+
+  // The saved/rendered model (zoom, posX, posY) and the Crop-mode box (a
+  // 4:3 rectangle in natural-image-pixel fractions) describe the same crop
+  // two different ways — these convert between them. At zoom=1 the box is
+  // exactly the cover rect; zooming in shrinks it around its own center,
+  // and posX/posY says where in the photo's leftover margin that center
+  // sits. See frameStyleFor above for how zoom/posX/posY actually render.
+  function frameBoxFromZoomPos(zoom, posX, posY, iw, ih) {
+    const { coverW, coverH } = frameCoverDims(iw, ih);
+    const marginX = iw - coverW, marginY = ih - coverH;
+    const cropX0 = marginX > 0 ? (posX / 100) * marginX : 0;
+    const cropY0 = marginY > 0 ? (posY / 100) * marginY : 0;
+    const bw = coverW / zoom, bh = coverH / zoom;
+    const centerX = cropX0 + coverW / 2, centerY = cropY0 + coverH / 2;
+    return { xFrac: (centerX - bw / 2) / iw, yFrac: (centerY - bh / 2) / ih, wFrac: bw / iw, hFrac: bh / ih };
+  }
+  function frameZoomPosFromBox(box, iw, ih) {
+    const { coverW, coverH } = frameCoverDims(iw, ih);
+    const bx = box.xFrac * iw, by = box.yFrac * ih, bw = box.wFrac * iw, bh = box.hFrac * ih;
+    const centerX = bx + bw / 2, centerY = by + bh / 2;
+    const cropX0 = centerX - coverW / 2, cropY0 = centerY - coverH / 2;
+    const marginX = iw - coverW, marginY = ih - coverH;
+    return {
+      zoom: coverW / bw,
+      posX: marginX > 0 ? Math.min(100, Math.max(0, (cropX0 / marginX) * 100)) : 50,
+      posY: marginY > 0 ? Math.min(100, Math.max(0, (cropY0 / marginY) * 100)) : 50,
+    };
+  }
+
+  // Places the crop-box overlay div to match frameState.cropBox — the box
+  // lives in image-fraction coordinates so this is the only place that
+  // needs to know the image's current on-screen size.
+  function positionFrameCropBoxDom() {
+    if (!frameState || !frameState.cropBox) return;
+    const wrapRect = el.lightboxImageWrap.getBoundingClientRect();
+    const imgRect = el.lightboxImg.getBoundingClientRect();
+    const box = frameState.cropBox;
+    el.frameCropBox.style.left = `${imgRect.left - wrapRect.left + box.xFrac * imgRect.width}px`;
+    el.frameCropBox.style.top = `${imgRect.top - wrapRect.top + box.yFrac * imgRect.height}px`;
+    el.frameCropBox.style.width = `${box.wFrac * imgRect.width}px`;
+    el.frameCropBox.style.height = `${box.hFrac * imgRect.height}px`;
+  }
+
+  // Crop mode: show the full, untouched photo with a resizable 4:3 box on
+  // top of it (dragging the box or its corners is how the crop is chosen).
+  function enterFrameCropMode() {
+    if (!frameState) return;
+    const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
+    frameState.mode = 'crop';
+    frameState.cropBox = frameBoxFromZoomPos(frameState.zoom, frameState.posX, frameState.posY, iw, ih);
+    el.lightboxImg.classList.remove('is-framed');
+    el.lightboxImg.style.objectPosition = '';
+    el.lightboxImg.style.transform = '';
+    el.frameGrid.classList.add('is-hidden');
+    el.frameCropBox.classList.remove('is-hidden');
+    el.frameRotateRow.classList.add('is-hidden');
+    el.frameCropHint.classList.remove('is-hidden');
+    el.frameStraightenHint.classList.add('is-hidden');
+    el.frameCropModeBtn.classList.add('is-active');
+    el.frameStraightenModeBtn.classList.remove('is-active');
+    positionFrameCropBoxDom();
+  }
+
+  // Straighten mode: show the cropped/zoomed result (the box just chosen,
+  // folded back into zoom/posX/posY) with the fixed thirds-grid and the
+  // rotate slider, exactly like before.
+  function enterFrameStraightenMode() {
+    if (!frameState) return;
+    if (frameState.cropBox) {
+      const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
+      Object.assign(frameState, frameZoomPosFromBox(frameState.cropBox, iw, ih));
+    }
+    frameState.mode = 'straighten';
+    el.frameCropBox.classList.add('is-hidden');
+    el.frameGrid.classList.remove('is-hidden');
+    el.frameRotateRow.classList.remove('is-hidden');
+    el.frameCropHint.classList.add('is-hidden');
+    el.frameStraightenHint.classList.remove('is-hidden');
+    el.frameStraightenModeBtn.classList.add('is-active');
+    el.frameCropModeBtn.classList.remove('is-active');
+    applyFrameEditLive();
   }
 
   function startFrameEdit() {
@@ -1000,20 +1098,18 @@
       zoom: existing ? existing.zoom : 1,
       posX: existing ? existing.posX : 50,
       posY: existing ? existing.posY : 50,
+      mode: 'crop',
+      cropBox: null,
       dragging: null,
     };
     el.frameRotateRange.value = String(frameState.rotationDeg);
     el.frameRotateValue.textContent = `${frameState.rotationDeg}°`;
-    el.frameZoomRange.value = String(Math.round(frameState.zoom * 100));
-    el.frameZoomValue.textContent = `${Math.round(frameState.zoom * 100)}%`;
     el.frameControls.classList.remove('is-hidden');
-    el.frameGrid.classList.remove('is-hidden');
-    el.lightboxImageWrap.classList.add('is-frame-editing');
     el.frameEditBtn.classList.add('is-hidden');
     el.frameResetBtn.classList.add('is-hidden');
     el.frameSaveBtn.classList.remove('is-hidden');
     el.frameCancelBtn.classList.remove('is-hidden');
-    applyFrameEditLive();
+    enterFrameCropMode();
   }
 
   function endFrameEdit() {
@@ -1021,57 +1117,87 @@
     frameState = null;
     el.frameControls.classList.add('is-hidden');
     el.frameGrid.classList.add('is-hidden');
-    el.lightboxImageWrap.classList.remove('is-frame-editing');
+    el.frameCropBox.classList.add('is-hidden');
   }
 
-  // Converts a drag delta in screen pixels to a change in object-position
-  // percentage, so dragging feels roughly 1:1 regardless of the photo's
-  // resolution, the box's on-screen size, or the current zoom level.
-  // object-position's 0-100% range spans exactly the "extra" image content
-  // that overflows the box under object-fit:cover — recover that overflow
-  // in pixels from the box size and the image's natural aspect ratio, then
-  // scale it up by the current zoom (the scale() transform enlarges that
-  // overflow by the same factor, since it's applied after cover-fitting).
-  function framePxToPercent() {
-    const rect = el.lightboxImageWrap.getBoundingClientRect();
+  // Converts a mouse event to a point in natural-image-pixel coordinates —
+  // the crop box's own math (and its stored fractions) all live there, so
+  // this is the one place that needs to know the image's on-screen rect.
+  function frameNaturalPointFromEvent(e) {
+    const imgRect = el.lightboxImg.getBoundingClientRect();
     const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
-    if (!iw || !ih || !rect.width || !rect.height) return { x: 0, y: 0 };
-    const coverScale = Math.max(rect.width / iw, rect.height / ih);
-    const overflowX = Math.max(1, (iw * coverScale - rect.width) * frameState.zoom);
-    const overflowY = Math.max(1, (ih * coverScale - rect.height) * frameState.zoom);
-    return { x: 100 / overflowX, y: 100 / overflowY };
+    return {
+      x: (e.clientX - imgRect.left) * (iw / imgRect.width),
+      y: (e.clientY - imgRect.top) * (ih / imgRect.height),
+    };
   }
 
-  el.lightboxImageWrap.addEventListener('mousedown', (e) => {
-    if (!frameState) return;
+  // Resizes the crop box from one corner handle, keeping the opposite
+  // corner fixed and the aspect ratio locked to 4:3, clamped so the box
+  // never runs off the photo or shrinks to a sliver.
+  function frameResizeCropBox(handle, startBox, point, iw, ih) {
+    const startBx = startBox.xFrac * iw, startBy = startBox.yFrac * ih;
+    const startBw = startBox.wFrac * iw, startBh = startBox.hFrac * ih;
+    const minW = Math.max(40, frameCoverDims(iw, ih).coverW * 0.15);
+    const growRight = handle === 'se' || handle === 'ne';
+    const growDown = handle === 'se' || handle === 'sw';
+    const anchorX = growRight ? startBx : startBx + startBw;
+    const anchorY = growDown ? startBy : startBy + startBh;
+
+    let w = Math.max(minW, Math.abs(point.x - anchorX));
+    w = Math.min(w, growRight ? iw - anchorX : anchorX);
+    let h = w / FRAME_TARGET_AR;
+    const maxH = growDown ? ih - anchorY : anchorY;
+    if (h > maxH) { h = maxH; w = h * FRAME_TARGET_AR; }
+    w = Math.max(minW, w);
+    h = w / FRAME_TARGET_AR;
+
+    const bx = growRight ? anchorX : anchorX - w;
+    const by = growDown ? anchorY : anchorY - h;
+    return { xFrac: bx / iw, yFrac: by / ih, wFrac: w / iw, hFrac: h / ih };
+  }
+
+  el.frameCropBox.addEventListener('mousedown', (e) => {
+    if (!frameState || frameState.mode !== 'crop' || e.target.classList.contains('lightbox__frame-handle')) return;
     e.preventDefault();
-    frameState.dragging = { startX: e.clientX, startY: e.clientY, startPosX: frameState.posX, startPosY: frameState.posY };
+    frameState.dragging = { type: 'move', startPoint: frameNaturalPointFromEvent(e), startBox: { ...frameState.cropBox } };
+  });
+  el.frameCropBox.querySelectorAll('.lightbox__frame-handle').forEach(handle => {
+    handle.addEventListener('mousedown', (e) => {
+      if (!frameState || frameState.mode !== 'crop') return;
+      e.preventDefault();
+      e.stopPropagation();
+      frameState.dragging = { type: 'resize', handle: handle.dataset.handle, startBox: { ...frameState.cropBox } };
+    });
   });
   window.addEventListener('mousemove', (e) => {
-    if (!frameState || !frameState.dragging) return;
-    const pct = framePxToPercent();
-    const dx = e.clientX - frameState.dragging.startX;
-    const dy = e.clientY - frameState.dragging.startY;
-    // Dragging the photo right should reveal more of its left side, like
-    // dragging a canvas — so the focal point moves opposite the cursor.
-    frameState.posX = Math.min(100, Math.max(0, frameState.dragging.startPosX - dx * pct.x));
-    frameState.posY = Math.min(100, Math.max(0, frameState.dragging.startPosY - dy * pct.y));
-    applyFrameEditLive();
+    if (!frameState || !frameState.dragging || frameState.mode !== 'crop') return;
+    const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
+    if (!iw || !ih) return;
+    const point = frameNaturalPointFromEvent(e);
+    if (frameState.dragging.type === 'move') {
+      const { startPoint, startBox } = frameState.dragging;
+      const dxFrac = (point.x - startPoint.x) / iw, dyFrac = (point.y - startPoint.y) / ih;
+      frameState.cropBox = {
+        ...startBox,
+        xFrac: Math.min(1 - startBox.wFrac, Math.max(0, startBox.xFrac + dxFrac)),
+        yFrac: Math.min(1 - startBox.hFrac, Math.max(0, startBox.yFrac + dyFrac)),
+      };
+    } else {
+      frameState.cropBox = frameResizeCropBox(frameState.dragging.handle, frameState.dragging.startBox, point, iw, ih);
+    }
+    positionFrameCropBoxDom();
   });
   window.addEventListener('mouseup', () => {
     if (frameState) frameState.dragging = null;
   });
 
+  el.frameCropModeBtn.addEventListener('click', () => enterFrameCropMode());
+  el.frameStraightenModeBtn.addEventListener('click', () => enterFrameStraightenMode());
   el.frameRotateRange.addEventListener('input', () => {
     if (!frameState) return;
     frameState.rotationDeg = Number(el.frameRotateRange.value);
     el.frameRotateValue.textContent = `${frameState.rotationDeg}°`;
-    applyFrameEditLive();
-  });
-  el.frameZoomRange.addEventListener('input', () => {
-    if (!frameState) return;
-    frameState.zoom = Number(el.frameZoomRange.value) / 100;
-    el.frameZoomValue.textContent = `${el.frameZoomRange.value}%`;
     applyFrameEditLive();
   });
 
@@ -1084,6 +1210,12 @@
   el.frameSaveBtn.addEventListener('click', () => {
     const shot = currentLightboxShot();
     if (!shot || !frameState) return;
+    // Fold in whatever crop box is active so Save reflects the latest
+    // drag even if the user saves without switching to Straighten first.
+    if (frameState.mode === 'crop' && frameState.cropBox) {
+      const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
+      Object.assign(frameState, frameZoomPosFromBox(frameState.cropBox, iw, ih));
+    }
     shot.frame = {
       rotationDeg: frameState.rotationDeg,
       zoom: frameState.zoom,
@@ -1680,7 +1812,23 @@
     const shot = existingManifest.shots.find(s => s.id === shotId);
     if (!shot || (shot.comment || '') === comment) return;
     shot.comment = comment;
+    syncShotCommentDom(shotId, comment);
     markManifestDirty({ debounceMs: 1500 });
+  }
+
+  // Whichever box the comment was just typed into updates existingManifest
+  // above, but the *other* box (grid card vs. lightbox) still shows
+  // whatever it had at its own last render — so mirror the new value into
+  // it here. Skips the currently-focused element so this never clobbers an
+  // in-progress keystroke or cursor position in the box the user is
+  // actually typing in.
+  function syncShotCommentDom(shotId, comment) {
+    document.querySelectorAll(`.shot-card__comment[data-shot-id="${CSS.escape(shotId)}"]`).forEach(box => {
+      if (box !== document.activeElement && box.value !== comment) box.value = comment;
+    });
+    if (currentLightboxShotId === shotId && el.lightboxComment !== document.activeElement && el.lightboxComment.value !== comment) {
+      el.lightboxComment.value = comment;
+    }
   }
 
   el.galleryDownloadChanges.addEventListener('click', () => {
