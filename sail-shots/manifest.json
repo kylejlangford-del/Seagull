@@ -3464,7 +3464,7 @@
       "capturedAt": "2026-09-10T10:49:52.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:49:52.000Z",
         "BSP_kts": "0.0196705106580594",
@@ -3498,7 +3498,7 @@
       "capturedAt": "2026-09-10T10:50:29.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:50:29.000Z",
         "BSP_kts": "0.026875116253313",
@@ -3532,7 +3532,7 @@
       "capturedAt": "2026-09-10T10:50:56.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:50:56.000Z",
         "BSP_kts": "0.0197805729077144",
@@ -3566,7 +3566,7 @@
       "capturedAt": "2026-09-10T10:51:05.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:51:05.000Z",
         "BSP_kts": "0.0427374815982795",
@@ -3600,7 +3600,7 @@
       "capturedAt": "2026-09-10T10:52:32.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T10:52:32.000Z",
         "BSP_kts": "0.0252643645831306",
@@ -3634,7 +3634,7 @@
       "capturedAt": "2026-09-10T10:56:03.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:03.000Z",
         "BSP_kts": "0.0295395492198301",
@@ -3668,7 +3668,7 @@
       "capturedAt": "2026-09-10T10:56:04.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:04.000Z",
         "BSP_kts": "0.005876567017564",
@@ -3702,7 +3702,7 @@
       "capturedAt": "2026-09-10T10:56:04.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:04.000Z",
         "BSP_kts": "0.005876567017564",
@@ -3736,7 +3736,7 @@
       "capturedAt": "2026-09-10T10:56:04.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:04.000Z",
         "BSP_kts": "0.005876567017564",
@@ -3770,7 +3770,7 @@
       "capturedAt": "2026-09-10T10:56:05.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:05.000Z",
         "BSP_kts": "0.0258906650797365",
@@ -3804,7 +3804,7 @@
       "capturedAt": "2026-09-10T10:56:05.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:05.000Z",
         "BSP_kts": "0.0258906650797365",
@@ -3838,7 +3838,7 @@
       "capturedAt": "2026-09-10T10:56:05.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:05.000Z",
         "BSP_kts": "0.0258906650797365",
@@ -3872,7 +3872,7 @@
       "capturedAt": "2026-09-10T10:56:05.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:05.000Z",
         "BSP_kts": "0.0258906650797365",
@@ -3906,7 +3906,7 @@
       "capturedAt": "2026-09-10T10:56:06.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:06.000Z",
         "BSP_kts": "0.0291991701278174",
@@ -3940,7 +3940,7 @@
       "capturedAt": "2026-09-10T10:56:06.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:06.000Z",
         "BSP_kts": "0.0291991701278174",
@@ -3974,7 +3974,7 @@
       "capturedAt": "2026-09-10T10:56:06.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:06.000Z",
         "BSP_kts": "0.0291991701278174",
@@ -4008,7 +4008,7 @@
       "capturedAt": "2026-09-10T10:56:07.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:07.000Z",
         "BSP_kts": "0.0466340855918389",
@@ -4042,7 +4042,7 @@
       "capturedAt": "2026-09-10T10:56:07.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:07.000Z",
         "BSP_kts": "0.0466340855918389",
@@ -4076,7 +4076,7 @@
       "capturedAt": "2026-09-10T10:56:07.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:07.000Z",
         "BSP_kts": "0.0466340855918389",
@@ -4110,7 +4110,7 @@
       "capturedAt": "2026-09-10T10:56:07.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:07.000Z",
         "BSP_kts": "0.0466340855918389",
@@ -4144,7 +4144,7 @@
       "capturedAt": "2026-09-10T10:56:08.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:08.000Z",
         "BSP_kts": "0.0554075183141147",
@@ -4178,7 +4178,7 @@
       "capturedAt": "2026-09-10T10:56:08.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:08.000Z",
         "BSP_kts": "0.0554075183141147",
@@ -4212,7 +4212,7 @@
       "capturedAt": "2026-09-10T10:56:08.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:08.000Z",
         "BSP_kts": "0.0554075183141147",
@@ -4246,7 +4246,7 @@
       "capturedAt": "2026-09-10T10:56:09.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:09.000Z",
         "BSP_kts": "0.0247072716710752",
@@ -4280,7 +4280,7 @@
       "capturedAt": "2026-09-10T10:56:09.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:09.000Z",
         "BSP_kts": "0.0247072716710752",
@@ -4314,7 +4314,7 @@
       "capturedAt": "2026-09-10T10:56:09.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:09.000Z",
         "BSP_kts": "0.0247072716710752",
@@ -4348,7 +4348,7 @@
       "capturedAt": "2026-09-10T10:56:10.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:10.000Z",
         "BSP_kts": "0.0556862848793315",
@@ -4382,7 +4382,7 @@
       "capturedAt": "2026-09-10T10:56:11.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:11.000Z",
         "BSP_kts": "0.0079836386825439",
@@ -4416,7 +4416,7 @@
       "capturedAt": "2026-09-10T10:56:11.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:11.000Z",
         "BSP_kts": "0.0079836386825439",
@@ -4450,7 +4450,7 @@
       "capturedAt": "2026-09-10T10:56:11.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:11.000Z",
         "BSP_kts": "0.0079836386825439",
@@ -4484,7 +4484,7 @@
       "capturedAt": "2026-09-10T10:56:15.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:56:15.000Z",
         "BSP_kts": "0.0471487920161375",
@@ -4518,7 +4518,7 @@
       "capturedAt": "2026-09-10T10:57:56.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:57:56.000Z",
         "BSP_kts": "0.077165866810867",
@@ -4552,7 +4552,7 @@
       "capturedAt": "2026-09-10T10:57:56.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:57:56.000Z",
         "BSP_kts": "0.077165866810867",
@@ -4586,7 +4586,7 @@
       "capturedAt": "2026-09-10T10:57:56.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:57:56.000Z",
         "BSP_kts": "0.077165866810867",
@@ -4620,7 +4620,7 @@
       "capturedAt": "2026-09-10T10:57:57.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:57:57.000Z",
         "BSP_kts": "0.0600792675349864",
@@ -4654,7 +4654,7 @@
       "capturedAt": "2026-09-10T10:57:57.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:57:57.000Z",
         "BSP_kts": "0.0600792675349864",
@@ -4688,7 +4688,7 @@
       "capturedAt": "2026-09-10T10:57:57.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:57:57.000Z",
         "BSP_kts": "0.0600792675349864",
@@ -4722,7 +4722,7 @@
       "capturedAt": "2026-09-10T10:57:58.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:57:58.000Z",
         "BSP_kts": "0.0540108246417583",
@@ -4756,7 +4756,7 @@
       "capturedAt": "2026-09-10T10:57:58.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:57:58.000Z",
         "BSP_kts": "0.0540108246417583",
@@ -4790,7 +4790,7 @@
       "capturedAt": "2026-09-10T10:57:58.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:57:58.000Z",
         "BSP_kts": "0.0540108246417583",
@@ -4824,7 +4824,7 @@
       "capturedAt": "2026-09-10T10:57:59.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:57:59.000Z",
         "BSP_kts": "0.0553959281094004",
@@ -4858,7 +4858,7 @@
       "capturedAt": "2026-09-10T10:57:59.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:57:59.000Z",
         "BSP_kts": "0.0553959281094004",
@@ -4892,7 +4892,7 @@
       "capturedAt": "2026-09-10T10:57:59.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:57:59.000Z",
         "BSP_kts": "0.0553959281094004",
@@ -4926,7 +4926,7 @@
       "capturedAt": "2026-09-10T10:58:00.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:58:00.000Z",
         "BSP_kts": "0.0698984907088669",
@@ -4960,7 +4960,7 @@
       "capturedAt": "2026-09-10T10:58:00.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:58:00.000Z",
         "BSP_kts": "0.0698984907088669",
@@ -4994,7 +4994,7 @@
       "capturedAt": "2026-09-10T10:58:00.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:58:00.000Z",
         "BSP_kts": "0.0698984907088669",
@@ -5028,7 +5028,7 @@
       "capturedAt": "2026-09-10T10:58:00.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:58:00.000Z",
         "BSP_kts": "0.0698984907088669",
@@ -5062,7 +5062,7 @@
       "capturedAt": "2026-09-10T10:58:01.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:58:01.000Z",
         "BSP_kts": "0.0348752203955805",
@@ -5096,7 +5096,7 @@
       "capturedAt": "2026-09-10T10:58:01.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:58:01.000Z",
         "BSP_kts": "0.0348752203955805",
@@ -5130,7 +5130,7 @@
       "capturedAt": "2026-09-10T10:58:01.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:58:01.000Z",
         "BSP_kts": "0.0348752203955805",
@@ -5164,7 +5164,7 @@
       "capturedAt": "2026-09-10T10:58:02.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:58:02.000Z",
         "BSP_kts": "0.0428876307668038",
@@ -5198,7 +5198,7 @@
       "capturedAt": "2026-09-10T10:58:02.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:58:02.000Z",
         "BSP_kts": "0.0428876307668038",
@@ -5232,7 +5232,7 @@
       "capturedAt": "2026-09-10T10:58:02.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:58:02.000Z",
         "BSP_kts": "0.0428876307668038",
@@ -5266,7 +5266,7 @@
       "capturedAt": "2026-09-10T10:58:02.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:58:02.000Z",
         "BSP_kts": "0.0428876307668038",
@@ -5300,7 +5300,7 @@
       "capturedAt": "2026-09-10T10:58:03.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:58:03.000Z",
         "BSP_kts": "0.0436485680781999",
@@ -5334,7 +5334,7 @@
       "capturedAt": "2026-09-10T10:58:03.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:58:03.000Z",
         "BSP_kts": "0.0436485680781999",
@@ -5368,7 +5368,7 @@
       "capturedAt": "2026-09-10T10:58:03.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T10:58:03.000Z",
         "BSP_kts": "0.0436485680781999",
@@ -5402,7 +5402,7 @@
       "capturedAt": "2026-09-10T11:18:51.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Timestamp": "2026-09-10T11:18:51.000Z",
         "BSP_kts": "0.062844967883675",
@@ -5436,7 +5436,7 @@
       "capturedAt": "2026-09-10T12:36:20.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:20.000Z",
         "BSP_kts": "23.833993437916988",
@@ -5470,7 +5470,7 @@
       "capturedAt": "2026-09-10T12:36:20.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:20.000Z",
         "BSP_kts": "23.833993437916988",
@@ -5504,7 +5504,7 @@
       "capturedAt": "2026-09-10T12:36:20.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:20.000Z",
         "BSP_kts": "23.833993437916988",
@@ -5538,7 +5538,7 @@
       "capturedAt": "2026-09-10T12:36:20.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:20.000Z",
         "BSP_kts": "23.833993437916988",
@@ -5572,7 +5572,7 @@
       "capturedAt": "2026-09-10T12:36:21.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:21.000Z",
         "BSP_kts": "23.96332015452572",
@@ -5606,7 +5606,7 @@
       "capturedAt": "2026-09-10T12:36:21.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:21.000Z",
         "BSP_kts": "23.96332015452572",
@@ -5640,7 +5640,7 @@
       "capturedAt": "2026-09-10T12:36:21.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:21.000Z",
         "BSP_kts": "23.96332015452572",
@@ -5674,7 +5674,7 @@
       "capturedAt": "2026-09-10T12:36:21.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:21.000Z",
         "BSP_kts": "23.96332015452572",
@@ -5708,7 +5708,7 @@
       "capturedAt": "2026-09-10T12:36:22.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:22.000Z",
         "BSP_kts": "24.02670891656438",
@@ -5742,7 +5742,7 @@
       "capturedAt": "2026-09-10T12:36:22.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:22.000Z",
         "BSP_kts": "24.02670891656438",
@@ -5776,7 +5776,7 @@
       "capturedAt": "2026-09-10T12:36:22.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:22.000Z",
         "BSP_kts": "24.02670891656438",
@@ -5810,7 +5810,7 @@
       "capturedAt": "2026-09-10T12:36:22.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:22.000Z",
         "BSP_kts": "24.02670891656438",
@@ -5844,7 +5844,7 @@
       "capturedAt": "2026-09-10T12:36:23.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:23.000Z",
         "BSP_kts": "24.19261948291205",
@@ -5878,7 +5878,7 @@
       "capturedAt": "2026-09-10T12:36:23.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:23.000Z",
         "BSP_kts": "24.19261948291205",
@@ -5912,7 +5912,7 @@
       "capturedAt": "2026-09-10T12:36:23.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:23.000Z",
         "BSP_kts": "24.19261948291205",
@@ -5946,7 +5946,7 @@
       "capturedAt": "2026-09-10T12:36:23.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:23.000Z",
         "BSP_kts": "24.19261948291205",
@@ -5980,7 +5980,7 @@
       "capturedAt": "2026-09-10T12:36:24.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:24.000Z",
         "BSP_kts": "24.28152892143315",
@@ -6014,7 +6014,7 @@
       "capturedAt": "2026-09-10T12:36:24.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:24.000Z",
         "BSP_kts": "24.28152892143315",
@@ -6048,7 +6048,7 @@
       "capturedAt": "2026-09-10T12:36:24.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:24.000Z",
         "BSP_kts": "24.28152892143315",
@@ -6082,7 +6082,7 @@
       "capturedAt": "2026-09-10T12:36:24.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:24.000Z",
         "BSP_kts": "24.28152892143315",
@@ -6116,7 +6116,7 @@
       "capturedAt": "2026-09-10T12:36:25.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:25.000Z",
         "BSP_kts": "24.439428393080888",
@@ -6150,7 +6150,7 @@
       "capturedAt": "2026-09-10T12:36:25.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:25.000Z",
         "BSP_kts": "24.439428393080888",
@@ -6184,7 +6184,7 @@
       "capturedAt": "2026-09-10T12:36:25.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:25.000Z",
         "BSP_kts": "24.439428393080888",
@@ -6218,7 +6218,7 @@
       "capturedAt": "2026-09-10T12:36:25.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:25.000Z",
         "BSP_kts": "24.439428393080888",
@@ -6252,7 +6252,7 @@
       "capturedAt": "2026-09-10T12:36:26.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:26.000Z",
         "BSP_kts": "24.816983945717077",
@@ -6286,7 +6286,7 @@
       "capturedAt": "2026-09-10T12:36:26.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:26.000Z",
         "BSP_kts": "24.816983945717077",
@@ -6320,7 +6320,7 @@
       "capturedAt": "2026-09-10T12:36:26.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:26.000Z",
         "BSP_kts": "24.816983945717077",
@@ -6354,7 +6354,7 @@
       "capturedAt": "2026-09-10T12:36:26.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:26.000Z",
         "BSP_kts": "24.816983945717077",
@@ -6388,7 +6388,7 @@
       "capturedAt": "2026-09-10T12:36:27.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:27.000Z",
         "BSP_kts": "24.858155806755025",
@@ -6422,7 +6422,7 @@
       "capturedAt": "2026-09-10T12:36:27.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:27.000Z",
         "BSP_kts": "24.858155806755025",
@@ -6456,7 +6456,7 @@
       "capturedAt": "2026-09-10T12:36:27.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:27.000Z",
         "BSP_kts": "24.858155806755025",
@@ -6490,7 +6490,7 @@
       "capturedAt": "2026-09-10T12:36:27.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:27.000Z",
         "BSP_kts": "24.858155806755025",
@@ -6524,7 +6524,7 @@
       "capturedAt": "2026-09-10T12:36:28.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:28.000Z",
         "BSP_kts": "24.76000663609922",
@@ -6558,7 +6558,7 @@
       "capturedAt": "2026-09-10T12:36:28.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:28.000Z",
         "BSP_kts": "24.76000663609922",
@@ -6592,7 +6592,7 @@
       "capturedAt": "2026-09-10T12:36:28.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:28.000Z",
         "BSP_kts": "24.76000663609922",
@@ -6626,7 +6626,7 @@
       "capturedAt": "2026-09-10T12:36:28.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:28.000Z",
         "BSP_kts": "24.76000663609922",
@@ -6660,7 +6660,7 @@
       "capturedAt": "2026-09-10T12:36:29.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:29.000Z",
         "BSP_kts": "24.711801382672476",
@@ -6694,7 +6694,7 @@
       "capturedAt": "2026-09-10T12:36:29.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:29.000Z",
         "BSP_kts": "24.711801382672476",
@@ -6728,7 +6728,7 @@
       "capturedAt": "2026-09-10T12:36:29.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:29.000Z",
         "BSP_kts": "24.711801382672476",
@@ -6762,7 +6762,7 @@
       "capturedAt": "2026-09-10T12:36:30.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:30.000Z",
         "BSP_kts": "24.61935007581913",
@@ -6796,7 +6796,7 @@
       "capturedAt": "2026-09-10T12:36:30.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:30.000Z",
         "BSP_kts": "24.61935007581913",
@@ -6830,7 +6830,7 @@
       "capturedAt": "2026-09-10T12:36:30.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:30.000Z",
         "BSP_kts": "24.61935007581913",
@@ -6864,7 +6864,7 @@
       "capturedAt": "2026-09-10T12:36:30.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:30.000Z",
         "BSP_kts": "24.61935007581913",
@@ -6898,7 +6898,7 @@
       "capturedAt": "2026-09-10T12:36:31.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:31.000Z",
         "BSP_kts": "24.71529428949612",
@@ -6932,7 +6932,7 @@
       "capturedAt": "2026-09-10T12:36:31.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:31.000Z",
         "BSP_kts": "24.71529428949612",
@@ -6966,7 +6966,7 @@
       "capturedAt": "2026-09-10T12:36:31.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:31.000Z",
         "BSP_kts": "24.71529428949612",
@@ -7000,7 +7000,7 @@
       "capturedAt": "2026-09-10T12:36:31.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:31.000Z",
         "BSP_kts": "24.71529428949612",
@@ -7034,7 +7034,7 @@
       "capturedAt": "2026-09-10T12:36:33.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T12:36:33.000Z",
         "BSP_kts": "24.512179336983277",
@@ -7068,7 +7068,7 @@
       "capturedAt": "2026-09-10T13:12:24.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T13:12:24.000Z",
         "BSP_kts": "0.8937075398089076",
@@ -7102,7 +7102,7 @@
       "capturedAt": "2026-09-10T13:13:09.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T13:13:09.000Z",
         "BSP_kts": "0.579133251710148",
@@ -7136,7 +7136,7 @@
       "capturedAt": "2026-09-10T13:13:16.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T13:13:16.000Z",
         "BSP_kts": "0.4503743266668504",
@@ -7170,7 +7170,7 @@
       "capturedAt": "2026-09-10T13:15:37.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T13:15:37.000Z",
         "BSP_kts": "8.658363535639008",
@@ -7204,7 +7204,7 @@
       "capturedAt": "2026-09-10T13:15:46.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T13:15:46.000Z",
         "BSP_kts": "13.147197091855835",
@@ -7238,7 +7238,7 @@
       "capturedAt": "2026-09-10T13:15:48.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T13:15:48.000Z",
         "BSP_kts": "14.316534767579698",
@@ -7272,7 +7272,7 @@
       "capturedAt": "2026-09-10T13:16:14.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T13:16:14.000Z",
         "BSP_kts": "21.100922223877767",
@@ -7306,7 +7306,7 @@
       "capturedAt": "2026-09-10T13:16:16.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T13:16:16.000Z",
         "BSP_kts": "21.25688634967274",
@@ -7340,7 +7340,7 @@
       "capturedAt": "2026-09-10T13:16:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-10T13:16:47.000Z",
         "BSP_kts": "23.314289498003117",
