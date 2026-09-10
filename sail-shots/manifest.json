@@ -1034,6 +1034,20 @@
         "FootCamber_deg": "-27.54",
         "MainTravellerAngle_deg": "-0.39",
         "MainTravellerCarPosition": "-0.04"
+      },
+      "frame": {
+        "rotationDeg": 0,
+        "aspectRatio": 0.7080222611109829,
+        "lightbox": {
+          "zoom": 1.2669162575873878,
+          "posX": 50,
+          "posY": 0
+        },
+        "grid": {
+          "zoom": 1.2669162575873878,
+          "posX": 50,
+          "posY": 17.757151352810467
+        }
       }
     },
     {
