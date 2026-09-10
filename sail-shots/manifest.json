@@ -1167,7 +1167,7 @@
       "capturedAt": "2026-09-09T13:46:53.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "manoeuvre",
+      "category": "upwind",
       "row": {
         "Timestamp": "2026-09-09T13:46:53Z",
         "TWS_kts": "10.81",
