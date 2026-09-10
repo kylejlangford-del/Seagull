@@ -7366,7 +7366,27 @@
         "AC40_Leeway": "0.8069126168503544",
         "AC40_TWS": "4.2422269379244"
       },
-      "comment": ""
+      "comment": "",
+      "frame": {
+        "rotationDeg": 0,
+        "lightbox": {
+          "widthPct": 172.22578197129056,
+          "heightPct": 105.21638196852692,
+          "leftPct": 0,
+          "topPct": 0,
+          "originXPct": 29.031657994350013,
+          "originYPct": 47.52111702050006,
+          "aspectRatio": 0.3437449970807886
+        },
+        "grid": {
+          "widthPct": 172.22578197129056,
+          "heightPct": 408.11796675661265,
+          "leftPct": 0,
+          "topPct": -143.94221656409542,
+          "originXPct": 29.031657994350013,
+          "originYPct": 47.52111702050006
+        }
+      }
     }
   ],
   "dayNotes": {
