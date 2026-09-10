@@ -17,7 +17,7 @@
     "Clew_position",
     "MainCunninghamLoad_kgf",
     "TrimTarget_deg",
-    "FoilSinkStbd_m",
+    "FoilSinkStbd_target",
     "FoilSinkPort_target",
     "MastRotation_deg",
     "FootCamber_deg",
@@ -3478,7 +3478,6 @@
         "Mast_aoa_n_deg": "-175.75555814266204",
         "MastRotation_deg": "-1.0044418573379517",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.614346366440688",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.3573455810547",
         "MainCunninghamLoad_kgf": "19.394529342651367",
@@ -3488,7 +3487,8 @@
         "JibSheetLoad_kgf": "-68.60608291625977",
         "Heel_deg": "-0.144066758914379",
         "Leeway_deg": "-76.12351129207877",
-        "TWS_kts": "2.237197975744627"
+        "TWS_kts": "2.237197975744627",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3512,7 +3512,6 @@
         "Mast_aoa_n_deg": "-135.15650532007226",
         "MastRotation_deg": "-1.003494679927826",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.631123733134295",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-205.36924743652344",
         "MainCunninghamLoad_kgf": "20.11550521850586",
@@ -3522,7 +3521,8 @@
         "JibSheetLoad_kgf": "-68.55087661743164",
         "Heel_deg": "-0.2583436344235342",
         "Leeway_deg": "-142.53935737372962",
-        "TWS_kts": "1.7073693717855218"
+        "TWS_kts": "1.7073693717855218",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3546,7 +3546,6 @@
         "Mast_aoa_n_deg": "-138.37285799264907",
         "MastRotation_deg": "-1.0071420073509216",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6092292006689286",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.7803726196289",
         "MainCunninghamLoad_kgf": "20.88225555419922",
@@ -3556,7 +3555,8 @@
         "JibSheetLoad_kgf": "-68.55087661743164",
         "Heel_deg": "0.2534721620805813",
         "Leeway_deg": "147.57631602158034",
-        "TWS_kts": "3.1989576413389926"
+        "TWS_kts": "3.1989576413389926",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3580,7 +3580,6 @@
         "Mast_aoa_n_deg": "-115.45086469411854",
         "MastRotation_deg": "-1.0091353058815002",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6149788428720564",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.7803726196289",
         "MainCunninghamLoad_kgf": "21.265628814697266",
@@ -3590,7 +3589,8 @@
         "JibSheetLoad_kgf": "-69.01461410522461",
         "Heel_deg": "0.0025781701491571",
         "Leeway_deg": "-77.52946831019915",
-        "TWS_kts": "2.325782680800523"
+        "TWS_kts": "2.325782680800523",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3614,7 +3614,6 @@
         "Mast_aoa_n_deg": "-116.17951274156576",
         "MastRotation_deg": "-1.0104872584342957",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.661179601857798",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.27442169189453",
         "MainCunninghamLoad_kgf": "20.90514373779297",
@@ -3624,7 +3623,8 @@
         "JibSheetLoad_kgf": "-69.04221725463867",
         "Heel_deg": "-0.4019999483275844",
         "Leeway_deg": "-7.194078066231896",
-        "TWS_kts": "1.3290069647804457"
+        "TWS_kts": "1.3290069647804457",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3648,7 +3648,6 @@
         "Mast_aoa_n_deg": "-141.43780669808393",
         "MastRotation_deg": "-1.0021933019161224",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.5942218821775653",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.86329650878903",
         "MainCunninghamLoad_kgf": "23.972145080566406",
@@ -3658,7 +3657,8 @@
         "JibSheetLoad_kgf": "-68.81034851074219",
         "Heel_deg": "0.4203817216118076",
         "Leeway_deg": "22.141291606473036",
-        "TWS_kts": "1.4389544512990649"
+        "TWS_kts": "1.4389544512990649",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3682,7 +3682,6 @@
         "Mast_aoa_n_deg": "-165.21840396642688",
         "MastRotation_deg": "-1.0015960335731506",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6098443234874225",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.86329650878903",
         "MainCunninghamLoad_kgf": "25.122270584106445",
@@ -3692,7 +3691,8 @@
         "JibSheetLoad_kgf": "-68.81034851074219",
         "Heel_deg": "0.3743726068672498",
         "Leeway_deg": "-166.12401560025822",
-        "TWS_kts": "1.6105984479943274"
+        "TWS_kts": "1.6105984479943274",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3716,7 +3716,6 @@
         "Mast_aoa_n_deg": "-165.21840396642688",
         "MastRotation_deg": "-1.0015960335731506",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6098443234874225",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.86329650878903",
         "MainCunninghamLoad_kgf": "25.122270584106445",
@@ -3726,7 +3725,8 @@
         "JibSheetLoad_kgf": "-68.81034851074219",
         "Heel_deg": "0.3743726068672498",
         "Leeway_deg": "-166.12401560025822",
-        "TWS_kts": "1.6105984479943274"
+        "TWS_kts": "1.6105984479943274",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3750,7 +3750,6 @@
         "Mast_aoa_n_deg": "-165.21840396642688",
         "MastRotation_deg": "-1.0015960335731506",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6098443234874225",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.86329650878903",
         "MainCunninghamLoad_kgf": "25.122270584106445",
@@ -3760,7 +3759,8 @@
         "JibSheetLoad_kgf": "-68.81034851074219",
         "Heel_deg": "0.3743726068672498",
         "Leeway_deg": "-166.12401560025822",
-        "TWS_kts": "1.6105984479943274"
+        "TWS_kts": "1.6105984479943274",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3784,7 +3784,6 @@
         "Mast_aoa_n_deg": "-145.38125975370411",
         "MastRotation_deg": "-1.008740246295929",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6176889738831965",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.3573455810547",
         "MainCunninghamLoad_kgf": "23.99503326416016",
@@ -3794,7 +3793,8 @@
         "JibSheetLoad_kgf": "-68.37421417236328",
         "Heel_deg": "0.2507297477473287",
         "Leeway_deg": "12.579228492475352",
-        "TWS_kts": "1.8040902354541688"
+        "TWS_kts": "1.8040902354541688",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3818,7 +3818,6 @@
         "Mast_aoa_n_deg": "-145.38125975370411",
         "MastRotation_deg": "-1.008740246295929",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6176889738831965",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.3573455810547",
         "MainCunninghamLoad_kgf": "23.99503326416016",
@@ -3828,7 +3827,8 @@
         "JibSheetLoad_kgf": "-68.37421417236328",
         "Heel_deg": "0.2507297477473287",
         "Leeway_deg": "12.579228492475352",
-        "TWS_kts": "1.8040902354541688"
+        "TWS_kts": "1.8040902354541688",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3852,7 +3852,6 @@
         "Mast_aoa_n_deg": "-145.38125975370411",
         "MastRotation_deg": "-1.008740246295929",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6176889738831965",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.3573455810547",
         "MainCunninghamLoad_kgf": "23.99503326416016",
@@ -3862,7 +3861,8 @@
         "JibSheetLoad_kgf": "-68.37421417236328",
         "Heel_deg": "0.2507297477473287",
         "Leeway_deg": "12.579228492475352",
-        "TWS_kts": "1.8040902354541688"
+        "TWS_kts": "1.8040902354541688",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3886,7 +3886,6 @@
         "Mast_aoa_n_deg": "-145.38125975370411",
         "MastRotation_deg": "-1.008740246295929",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6176889738831965",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.3573455810547",
         "MainCunninghamLoad_kgf": "23.99503326416016",
@@ -3896,7 +3895,8 @@
         "JibSheetLoad_kgf": "-68.37421417236328",
         "Heel_deg": "0.2507297477473287",
         "Leeway_deg": "12.579228492475352",
-        "TWS_kts": "1.8040902354541688"
+        "TWS_kts": "1.8040902354541688",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3920,7 +3920,6 @@
         "Mast_aoa_n_deg": "-146.9300508522988",
         "MastRotation_deg": "-1.0099491477012634",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.616799867630382",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.6974334716797",
         "MainCunninghamLoad_kgf": "24.309743881225582",
@@ -3930,7 +3929,8 @@
         "JibSheetLoad_kgf": "-68.7551383972168",
         "Heel_deg": "0.1363603912100072",
         "Leeway_deg": "67.86882425217914",
-        "TWS_kts": "1.9252878885541291"
+        "TWS_kts": "1.9252878885541291",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3954,7 +3954,6 @@
         "Mast_aoa_n_deg": "-146.9300508522988",
         "MastRotation_deg": "-1.0099491477012634",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.616799867630382",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.6974334716797",
         "MainCunninghamLoad_kgf": "24.309743881225582",
@@ -3964,7 +3963,8 @@
         "JibSheetLoad_kgf": "-68.7551383972168",
         "Heel_deg": "0.1363603912100072",
         "Leeway_deg": "67.86882425217914",
-        "TWS_kts": "1.9252878885541291"
+        "TWS_kts": "1.9252878885541291",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -3988,7 +3988,6 @@
         "Mast_aoa_n_deg": "-146.9300508522988",
         "MastRotation_deg": "-1.0099491477012634",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.616799867630382",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.6974334716797",
         "MainCunninghamLoad_kgf": "24.309743881225582",
@@ -3998,7 +3997,8 @@
         "JibSheetLoad_kgf": "-68.7551383972168",
         "Heel_deg": "0.1363603912100072",
         "Leeway_deg": "67.86882425217914",
-        "TWS_kts": "1.9252878885541291"
+        "TWS_kts": "1.9252878885541291",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4022,7 +4022,6 @@
         "Mast_aoa_n_deg": "-156.85548852443696",
         "MastRotation_deg": "-1.004511475563049",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.602776094127933",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.3573455810547",
         "MainCunninghamLoad_kgf": "25.145158767700195",
@@ -4032,7 +4031,8 @@
         "JibSheetLoad_kgf": "-69.06982040405273",
         "Heel_deg": "0.2808708522862793",
         "Leeway_deg": "20.45830941544034",
-        "TWS_kts": "2.026423920615062"
+        "TWS_kts": "2.026423920615062",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4056,7 +4056,6 @@
         "Mast_aoa_n_deg": "-156.85548852443696",
         "MastRotation_deg": "-1.004511475563049",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.602776094127933",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.3573455810547",
         "MainCunninghamLoad_kgf": "25.145158767700195",
@@ -4066,7 +4065,8 @@
         "JibSheetLoad_kgf": "-69.06982040405273",
         "Heel_deg": "0.2808708522862793",
         "Leeway_deg": "20.45830941544034",
-        "TWS_kts": "2.026423920615062"
+        "TWS_kts": "2.026423920615062",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4090,7 +4090,6 @@
         "Mast_aoa_n_deg": "-156.85548852443696",
         "MastRotation_deg": "-1.004511475563049",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.602776094127933",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.3573455810547",
         "MainCunninghamLoad_kgf": "25.145158767700195",
@@ -4100,7 +4099,8 @@
         "JibSheetLoad_kgf": "-69.06982040405273",
         "Heel_deg": "0.2808708522862793",
         "Leeway_deg": "20.45830941544034",
-        "TWS_kts": "2.026423920615062"
+        "TWS_kts": "2.026423920615062",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4124,7 +4124,6 @@
         "Mast_aoa_n_deg": "-156.85548852443696",
         "MastRotation_deg": "-1.004511475563049",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.602776094127933",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.3573455810547",
         "MainCunninghamLoad_kgf": "25.145158767700195",
@@ -4134,7 +4133,8 @@
         "JibSheetLoad_kgf": "-69.06982040405273",
         "Heel_deg": "0.2808708522862793",
         "Leeway_deg": "20.45830941544034",
-        "TWS_kts": "2.026423920615062"
+        "TWS_kts": "2.026423920615062",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4158,7 +4158,6 @@
         "Mast_aoa_n_deg": "-148.23065411090852",
         "MastRotation_deg": "-1.0093458890914917",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.600377868445606",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.61450958251956",
         "MainCunninghamLoad_kgf": "24.67023086547852",
@@ -4168,7 +4167,8 @@
         "JibSheetLoad_kgf": "-68.26379776000977",
         "Heel_deg": "0.2031150516300351",
         "Leeway_deg": "-0.6834232459597729",
-        "TWS_kts": "2.14845753380943"
+        "TWS_kts": "2.14845753380943",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4192,7 +4192,6 @@
         "Mast_aoa_n_deg": "-148.23065411090852",
         "MastRotation_deg": "-1.0093458890914917",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.600377868445606",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.61450958251956",
         "MainCunninghamLoad_kgf": "24.67023086547852",
@@ -4202,7 +4201,8 @@
         "JibSheetLoad_kgf": "-68.26379776000977",
         "Heel_deg": "0.2031150516300351",
         "Leeway_deg": "-0.6834232459597729",
-        "TWS_kts": "2.14845753380943"
+        "TWS_kts": "2.14845753380943",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4226,7 +4226,6 @@
         "Mast_aoa_n_deg": "-148.23065411090852",
         "MastRotation_deg": "-1.0093458890914917",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.600377868445606",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.61450958251956",
         "MainCunninghamLoad_kgf": "24.67023086547852",
@@ -4236,7 +4235,8 @@
         "JibSheetLoad_kgf": "-68.26379776000977",
         "Heel_deg": "0.2031150516300351",
         "Leeway_deg": "-0.6834232459597729",
-        "TWS_kts": "2.14845753380943"
+        "TWS_kts": "2.14845753380943",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4260,7 +4260,6 @@
         "Mast_aoa_n_deg": "-155.66866968870164",
         "MastRotation_deg": "-1.0063303112983704",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.611490272783655",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-205.87518310546875",
         "MainCunninghamLoad_kgf": "23.926368713378903",
@@ -4270,7 +4269,8 @@
         "JibSheetLoad_kgf": "-68.98700714111328",
         "Heel_deg": "0.0257723806429042",
         "Leeway_deg": "72.26606406719583",
-        "TWS_kts": "2.404845370114722"
+        "TWS_kts": "2.404845370114722",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4294,7 +4294,6 @@
         "Mast_aoa_n_deg": "-155.66866968870164",
         "MastRotation_deg": "-1.0063303112983704",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.611490272783655",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-205.87518310546875",
         "MainCunninghamLoad_kgf": "23.926368713378903",
@@ -4304,7 +4303,8 @@
         "JibSheetLoad_kgf": "-68.98700714111328",
         "Heel_deg": "0.0257723806429042",
         "Leeway_deg": "72.26606406719583",
-        "TWS_kts": "2.404845370114722"
+        "TWS_kts": "2.404845370114722",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4328,7 +4328,6 @@
         "Mast_aoa_n_deg": "-155.66866968870164",
         "MastRotation_deg": "-1.0063303112983704",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.611490272783655",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-205.87518310546875",
         "MainCunninghamLoad_kgf": "23.926368713378903",
@@ -4338,7 +4337,8 @@
         "JibSheetLoad_kgf": "-68.98700714111328",
         "Heel_deg": "0.0257723806429042",
         "Leeway_deg": "72.26606406719583",
-        "TWS_kts": "2.404845370114722"
+        "TWS_kts": "2.404845370114722",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4362,7 +4362,6 @@
         "Mast_aoa_n_deg": "-161.41121505022056",
         "MastRotation_deg": "-1.0087849497795105",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6171697669138814",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-205.28632354736328",
         "MainCunninghamLoad_kgf": "24.693119049072266",
@@ -4372,7 +4371,8 @@
         "JibSheetLoad_kgf": "-68.75514221191406",
         "Heel_deg": "0.1347533023931774",
         "Leeway_deg": "136.73443061915248",
-        "TWS_kts": "2.679465843914497"
+        "TWS_kts": "2.679465843914497",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4396,7 +4396,6 @@
         "Mast_aoa_n_deg": "-158.9231474876404",
         "MastRotation_deg": "-1.0018525123596191",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6168362197779107",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.86329650878903",
         "MainCunninghamLoad_kgf": "25.122270584106445",
@@ -4406,7 +4405,8 @@
         "JibSheetLoad_kgf": "-68.5784797668457",
         "Heel_deg": "0.2154954565216641",
         "Leeway_deg": "72.68834755611408",
-        "TWS_kts": "2.8580954988613723"
+        "TWS_kts": "2.8580954988613723",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4430,7 +4430,6 @@
         "Mast_aoa_n_deg": "-158.9231474876404",
         "MastRotation_deg": "-1.0018525123596191",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6168362197779107",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.86329650878903",
         "MainCunninghamLoad_kgf": "25.122270584106445",
@@ -4440,7 +4439,8 @@
         "JibSheetLoad_kgf": "-68.5784797668457",
         "Heel_deg": "0.2154954565216641",
         "Leeway_deg": "72.68834755611408",
-        "TWS_kts": "2.8580954988613723"
+        "TWS_kts": "2.8580954988613723",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4464,7 +4464,6 @@
         "Mast_aoa_n_deg": "-158.9231474876404",
         "MastRotation_deg": "-1.0018525123596191",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6168362197779107",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.86329650878903",
         "MainCunninghamLoad_kgf": "25.122270584106445",
@@ -4474,7 +4473,8 @@
         "JibSheetLoad_kgf": "-68.5784797668457",
         "Heel_deg": "0.2154954565216641",
         "Leeway_deg": "72.68834755611408",
-        "TWS_kts": "2.8580954988613723"
+        "TWS_kts": "2.8580954988613723",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4498,7 +4498,6 @@
         "Mast_aoa_n_deg": "-155.93576544761663",
         "MastRotation_deg": "-1.0042345523834229",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6103796444375904",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.3573455810547",
         "MainCunninghamLoad_kgf": "24.37840843200684",
@@ -4508,7 +4507,8 @@
         "JibSheetLoad_kgf": "-68.83795166015625",
         "Heel_deg": "0.2232307791588358",
         "Leeway_deg": "110.23211945941313",
-        "TWS_kts": "2.6435004238845634"
+        "TWS_kts": "2.6435004238845634",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4532,7 +4532,6 @@
         "Mast_aoa_n_deg": "-142.95599695205692",
         "MastRotation_deg": "-1.0040030479431152",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.583668439365472",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.7803726196289",
         "MainCunninghamLoad_kgf": "25.09938240051269",
@@ -4542,7 +4541,8 @@
         "JibSheetLoad_kgf": "-68.31900405883789",
         "Heel_deg": "0.6229045011252888",
         "Leeway_deg": "-114.93080733582484",
-        "TWS_kts": "2.1291446079211536"
+        "TWS_kts": "2.1291446079211536",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4566,7 +4566,6 @@
         "Mast_aoa_n_deg": "-142.95599695205692",
         "MastRotation_deg": "-1.0040030479431152",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.583668439365472",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.7803726196289",
         "MainCunninghamLoad_kgf": "25.09938240051269",
@@ -4576,7 +4575,8 @@
         "JibSheetLoad_kgf": "-68.31900405883789",
         "Heel_deg": "0.6229045011252888",
         "Leeway_deg": "-114.93080733582484",
-        "TWS_kts": "2.1291446079211536"
+        "TWS_kts": "2.1291446079211536",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4600,7 +4600,6 @@
         "Mast_aoa_n_deg": "-142.95599695205692",
         "MastRotation_deg": "-1.0040030479431152",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.583668439365472",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.7803726196289",
         "MainCunninghamLoad_kgf": "25.09938240051269",
@@ -4610,7 +4609,8 @@
         "JibSheetLoad_kgf": "-68.31900405883789",
         "Heel_deg": "0.6229045011252888",
         "Leeway_deg": "-114.93080733582484",
-        "TWS_kts": "2.1291446079211536"
+        "TWS_kts": "2.1291446079211536",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4634,7 +4634,6 @@
         "Mast_aoa_n_deg": "-149.3891994094849",
         "MastRotation_deg": "-1.0208005905151367",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6230388558073514",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.1914978027344",
         "MainCunninghamLoad_kgf": "25.09938240051269",
@@ -4644,7 +4643,8 @@
         "JibSheetLoad_kgf": "-69.01461410522461",
         "Heel_deg": "0.0703050347722721",
         "Leeway_deg": "-58.46348800822898",
-        "TWS_kts": "2.191065862547277"
+        "TWS_kts": "2.191065862547277",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4668,7 +4668,6 @@
         "Mast_aoa_n_deg": "-149.3891994094849",
         "MastRotation_deg": "-1.0208005905151367",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6230388558073514",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.1914978027344",
         "MainCunninghamLoad_kgf": "25.09938240051269",
@@ -4678,7 +4677,8 @@
         "JibSheetLoad_kgf": "-69.01461410522461",
         "Heel_deg": "0.0703050347722721",
         "Leeway_deg": "-58.46348800822898",
-        "TWS_kts": "2.191065862547277"
+        "TWS_kts": "2.191065862547277",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4702,7 +4702,6 @@
         "Mast_aoa_n_deg": "-149.3891994094849",
         "MastRotation_deg": "-1.0208005905151367",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6230388558073514",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.1914978027344",
         "MainCunninghamLoad_kgf": "25.09938240051269",
@@ -4712,7 +4711,8 @@
         "JibSheetLoad_kgf": "-69.01461410522461",
         "Heel_deg": "0.0703050347722721",
         "Leeway_deg": "-58.46348800822898",
-        "TWS_kts": "2.191065862547277"
+        "TWS_kts": "2.191065862547277",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4736,7 +4736,6 @@
         "Mast_aoa_n_deg": "-150.19275493621825",
         "MastRotation_deg": "-1.0072450637817385",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6176703617565744",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.1914978027344",
         "MainCunninghamLoad_kgf": "25.48275852203369",
@@ -4746,7 +4745,8 @@
         "JibSheetLoad_kgf": "-68.55087661743164",
         "Heel_deg": "0.2844834754084738",
         "Leeway_deg": "27.85247256459877",
-        "TWS_kts": "2.2209184601064376"
+        "TWS_kts": "2.2209184601064376",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4770,7 +4770,6 @@
         "Mast_aoa_n_deg": "-150.19275493621825",
         "MastRotation_deg": "-1.0072450637817385",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6176703617565744",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.1914978027344",
         "MainCunninghamLoad_kgf": "25.48275852203369",
@@ -4780,7 +4779,8 @@
         "JibSheetLoad_kgf": "-68.55087661743164",
         "Heel_deg": "0.2844834754084738",
         "Leeway_deg": "27.85247256459877",
-        "TWS_kts": "2.2209184601064376"
+        "TWS_kts": "2.2209184601064376",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4804,7 +4804,6 @@
         "Mast_aoa_n_deg": "-150.19275493621825",
         "MastRotation_deg": "-1.0072450637817385",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6176703617565744",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.1914978027344",
         "MainCunninghamLoad_kgf": "25.48275852203369",
@@ -4814,7 +4813,8 @@
         "JibSheetLoad_kgf": "-68.55087661743164",
         "Heel_deg": "0.2844834754084738",
         "Leeway_deg": "27.85247256459877",
-        "TWS_kts": "2.2209184601064376"
+        "TWS_kts": "2.2209184601064376",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4838,7 +4838,6 @@
         "Mast_aoa_n_deg": "-146.67293678998954",
         "MastRotation_deg": "-1.0070632100105286",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.5881665471107524",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-205.369255065918",
         "MainCunninghamLoad_kgf": "25.09938240051269",
@@ -4848,7 +4847,8 @@
         "JibSheetLoad_kgf": "-69.01461410522461",
         "Heel_deg": "1.0724934323091802",
         "Leeway_deg": "108.71463714483592",
-        "TWS_kts": "2.251368089112691"
+        "TWS_kts": "2.251368089112691",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4872,7 +4872,6 @@
         "Mast_aoa_n_deg": "-146.67293678998954",
         "MastRotation_deg": "-1.0070632100105286",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.5881665471107524",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-205.369255065918",
         "MainCunninghamLoad_kgf": "25.09938240051269",
@@ -4882,7 +4881,8 @@
         "JibSheetLoad_kgf": "-69.01461410522461",
         "Heel_deg": "1.0724934323091802",
         "Leeway_deg": "108.71463714483592",
-        "TWS_kts": "2.251368089112691"
+        "TWS_kts": "2.251368089112691",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4906,7 +4906,6 @@
         "Mast_aoa_n_deg": "-146.67293678998954",
         "MastRotation_deg": "-1.0070632100105286",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.5881665471107524",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-205.369255065918",
         "MainCunninghamLoad_kgf": "25.09938240051269",
@@ -4916,7 +4915,8 @@
         "JibSheetLoad_kgf": "-69.01461410522461",
         "Heel_deg": "1.0724934323091802",
         "Leeway_deg": "108.71463714483592",
-        "TWS_kts": "2.251368089112691"
+        "TWS_kts": "2.251368089112691",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4940,7 +4940,6 @@
         "Mast_aoa_n_deg": "-131.8523297762871",
         "MastRotation_deg": "-1.0076702237129211",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.560868288786778",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.6145248413086",
         "MainCunninghamLoad_kgf": "25.053606033325195",
@@ -4950,7 +4949,8 @@
         "JibSheetLoad_kgf": "-68.26380157470703",
         "Heel_deg": "1.5553412759653609",
         "Leeway_deg": "-177.39522836819816",
-        "TWS_kts": "2.34283708027026"
+        "TWS_kts": "2.34283708027026",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -4974,7 +4974,6 @@
         "Mast_aoa_n_deg": "-131.8523297762871",
         "MastRotation_deg": "-1.0076702237129211",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.560868288786778",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.6145248413086",
         "MainCunninghamLoad_kgf": "25.053606033325195",
@@ -4984,7 +4983,8 @@
         "JibSheetLoad_kgf": "-68.26380157470703",
         "Heel_deg": "1.5553412759653609",
         "Leeway_deg": "-177.39522836819816",
-        "TWS_kts": "2.34283708027026"
+        "TWS_kts": "2.34283708027026",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -5008,7 +5008,6 @@
         "Mast_aoa_n_deg": "-131.8523297762871",
         "MastRotation_deg": "-1.0076702237129211",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.560868288786778",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.6145248413086",
         "MainCunninghamLoad_kgf": "25.053606033325195",
@@ -5018,7 +5017,8 @@
         "JibSheetLoad_kgf": "-68.26380157470703",
         "Heel_deg": "1.5553412759653609",
         "Leeway_deg": "-177.39522836819816",
-        "TWS_kts": "2.34283708027026"
+        "TWS_kts": "2.34283708027026",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -5042,7 +5042,6 @@
         "Mast_aoa_n_deg": "-131.8523297762871",
         "MastRotation_deg": "-1.0076702237129211",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.560868288786778",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.6145248413086",
         "MainCunninghamLoad_kgf": "25.053606033325195",
@@ -5052,7 +5051,8 @@
         "JibSheetLoad_kgf": "-68.26380157470703",
         "Heel_deg": "1.5553412759653609",
         "Leeway_deg": "-177.39522836819816",
-        "TWS_kts": "2.34283708027026"
+        "TWS_kts": "2.34283708027026",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -5076,7 +5076,6 @@
         "Mast_aoa_n_deg": "-143.11555015563965",
         "MastRotation_deg": "-1.0044498443603516",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.5873372454462515",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.1914978027344",
         "MainCunninghamLoad_kgf": "25.09938240051269",
@@ -5086,7 +5085,8 @@
         "JibSheetLoad_kgf": "-68.55087661743164",
         "Heel_deg": "0.975874376722973",
         "Leeway_deg": "-113.4886598765618",
-        "TWS_kts": "2.4085464059843087"
+        "TWS_kts": "2.4085464059843087",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -5110,7 +5110,6 @@
         "Mast_aoa_n_deg": "-143.11555015563965",
         "MastRotation_deg": "-1.0044498443603516",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.5873372454462515",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.1914978027344",
         "MainCunninghamLoad_kgf": "25.09938240051269",
@@ -5120,7 +5119,8 @@
         "JibSheetLoad_kgf": "-68.55087661743164",
         "Heel_deg": "0.975874376722973",
         "Leeway_deg": "-113.4886598765618",
-        "TWS_kts": "2.4085464059843087"
+        "TWS_kts": "2.4085464059843087",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -5144,7 +5144,6 @@
         "Mast_aoa_n_deg": "-143.11555015563965",
         "MastRotation_deg": "-1.0044498443603516",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.5873372454462515",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.1914978027344",
         "MainCunninghamLoad_kgf": "25.09938240051269",
@@ -5154,7 +5153,8 @@
         "JibSheetLoad_kgf": "-68.55087661743164",
         "Heel_deg": "0.975874376722973",
         "Leeway_deg": "-113.4886598765618",
-        "TWS_kts": "2.4085464059843087"
+        "TWS_kts": "2.4085464059843087",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -5178,7 +5178,6 @@
         "Mast_aoa_n_deg": "-163.66041336774833",
         "MastRotation_deg": "-1.0095866322517395",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6023835396758845",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.3573455810547",
         "MainCunninghamLoad_kgf": "25.145158767700195",
@@ -5188,7 +5187,8 @@
         "JibSheetLoad_kgf": "-68.83795166015625",
         "Heel_deg": "0.443814152982991",
         "Leeway_deg": "-112.77885335735434",
-        "TWS_kts": "2.4707969281173887"
+        "TWS_kts": "2.4707969281173887",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -5212,7 +5212,6 @@
         "Mast_aoa_n_deg": "-163.66041336774833",
         "MastRotation_deg": "-1.0095866322517395",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6023835396758845",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.3573455810547",
         "MainCunninghamLoad_kgf": "25.145158767700195",
@@ -5222,7 +5221,8 @@
         "JibSheetLoad_kgf": "-68.83795166015625",
         "Heel_deg": "0.443814152982991",
         "Leeway_deg": "-112.77885335735434",
-        "TWS_kts": "2.4707969281173887"
+        "TWS_kts": "2.4707969281173887",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -5246,7 +5246,6 @@
         "Mast_aoa_n_deg": "-163.66041336774833",
         "MastRotation_deg": "-1.0095866322517395",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6023835396758845",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.3573455810547",
         "MainCunninghamLoad_kgf": "25.145158767700195",
@@ -5256,7 +5255,8 @@
         "JibSheetLoad_kgf": "-68.83795166015625",
         "Heel_deg": "0.443814152982991",
         "Leeway_deg": "-112.77885335735434",
-        "TWS_kts": "2.4707969281173887"
+        "TWS_kts": "2.4707969281173887",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -5280,7 +5280,6 @@
         "Mast_aoa_n_deg": "-163.66041336774833",
         "MastRotation_deg": "-1.0095866322517395",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6023835396758845",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.3573455810547",
         "MainCunninghamLoad_kgf": "25.145158767700195",
@@ -5290,7 +5289,8 @@
         "JibSheetLoad_kgf": "-68.83795166015625",
         "Heel_deg": "0.443814152982991",
         "Leeway_deg": "-112.77885335735434",
-        "TWS_kts": "2.4707969281173887"
+        "TWS_kts": "2.4707969281173887",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -5314,7 +5314,6 @@
         "Mast_aoa_n_deg": "-169.4053284859657",
         "MastRotation_deg": "-1.0046715140342712",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6019087473386486",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.9462203979492",
         "MainCunninghamLoad_kgf": "25.145158767700195",
@@ -5324,7 +5323,8 @@
         "JibSheetLoad_kgf": "-68.83795166015625",
         "Heel_deg": "0.5200264309384114",
         "Leeway_deg": "153.83243890173424",
-        "TWS_kts": "2.522226113133145"
+        "TWS_kts": "2.522226113133145",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -5348,7 +5348,6 @@
         "Mast_aoa_n_deg": "-169.4053284859657",
         "MastRotation_deg": "-1.0046715140342712",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6019087473386486",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.9462203979492",
         "MainCunninghamLoad_kgf": "25.145158767700195",
@@ -5358,7 +5357,8 @@
         "JibSheetLoad_kgf": "-68.83795166015625",
         "Heel_deg": "0.5200264309384114",
         "Leeway_deg": "153.83243890173424",
-        "TWS_kts": "2.522226113133145"
+        "TWS_kts": "2.522226113133145",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -5382,7 +5382,6 @@
         "Mast_aoa_n_deg": "-169.4053284859657",
         "MastRotation_deg": "-1.0046715140342712",
         "FoilSinkPort_target": "-0.95",
-        "FoilSinkStbd_m": "-2.6019087473386486",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.9462203979492",
         "MainCunninghamLoad_kgf": "25.145158767700195",
@@ -5392,7 +5391,8 @@
         "JibSheetLoad_kgf": "-68.83795166015625",
         "Heel_deg": "0.5200264309384114",
         "Leeway_deg": "153.83243890173424",
-        "TWS_kts": "2.522226113133145"
+        "TWS_kts": "2.522226113133145",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -5416,7 +5416,6 @@
         "Mast_aoa_n_deg": "-136.16528974294664",
         "MastRotation_deg": "-1.0047102570533752",
         "FoilSinkPort_target": "-0.8499999999999999",
-        "FoilSinkStbd_m": "-2.468741739997502",
         "TrimTarget_deg": "0.5",
         "MainSheetLoad_kgf": "-204.69744873046875",
         "MainCunninghamLoad_kgf": "26.609996795654297",
@@ -5426,7 +5425,8 @@
         "JibSheetLoad_kgf": "-68.2914047241211",
         "Heel_deg": "4.577797260530823",
         "Leeway_deg": "-4.684045552265502",
-        "TWS_kts": "2.5006122578714725"
+        "TWS_kts": "2.5006122578714725",
+        "FoilSinkStbd_target": "-1.1"
       },
       "comment": ""
     },
@@ -5450,7 +5450,6 @@
         "Mast_aoa_n_deg": "14.249611849069083",
         "MastRotation_deg": "26.319880485534668",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.0981881607985984",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3355.419311523437",
         "MainCunninghamLoad_kgf": "-421.4921722412109",
@@ -5460,7 +5459,8 @@
         "JibSheetLoad_kgf": "1157.8191528320312",
         "Heel_deg": "-4.722356933653673",
         "Leeway_deg": "-0.843415564791826",
-        "TWS_kts": "3.641643251334252"
+        "TWS_kts": "3.641643251334252",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5484,7 +5484,6 @@
         "Mast_aoa_n_deg": "14.249611849069083",
         "MastRotation_deg": "26.319880485534668",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.0981881607985984",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3355.419311523437",
         "MainCunninghamLoad_kgf": "-421.4921722412109",
@@ -5494,7 +5493,8 @@
         "JibSheetLoad_kgf": "1157.8191528320312",
         "Heel_deg": "-4.722356933653673",
         "Leeway_deg": "-0.843415564791826",
-        "TWS_kts": "3.641643251334252"
+        "TWS_kts": "3.641643251334252",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5518,7 +5518,6 @@
         "Mast_aoa_n_deg": "14.249611849069083",
         "MastRotation_deg": "26.319880485534668",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.0981881607985984",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3355.419311523437",
         "MainCunninghamLoad_kgf": "-421.4921722412109",
@@ -5528,7 +5527,8 @@
         "JibSheetLoad_kgf": "1157.8191528320312",
         "Heel_deg": "-4.722356933653673",
         "Leeway_deg": "-0.843415564791826",
-        "TWS_kts": "3.641643251334252"
+        "TWS_kts": "3.641643251334252",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5552,7 +5552,6 @@
         "Mast_aoa_n_deg": "14.249611849069083",
         "MastRotation_deg": "26.319880485534668",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.0981881607985984",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3355.419311523437",
         "MainCunninghamLoad_kgf": "-421.4921722412109",
@@ -5562,7 +5561,8 @@
         "JibSheetLoad_kgf": "1157.8191528320312",
         "Heel_deg": "-4.722356933653673",
         "Leeway_deg": "-0.843415564791826",
-        "TWS_kts": "3.641643251334252"
+        "TWS_kts": "3.641643251334252",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5586,7 +5586,6 @@
         "Mast_aoa_n_deg": "8.365373505217008",
         "MastRotation_deg": "20.864688873291016",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.1180757477665866",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3226.540283203125",
         "MainCunninghamLoad_kgf": "-390.0787658691406",
@@ -5596,7 +5595,8 @@
         "JibSheetLoad_kgf": "1156.2236328125",
         "Heel_deg": "-4.769318112735507",
         "Leeway_deg": "-0.4155605457950173",
-        "TWS_kts": "3.698671045941551"
+        "TWS_kts": "3.698671045941551",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5620,7 +5620,6 @@
         "Mast_aoa_n_deg": "8.365373505217008",
         "MastRotation_deg": "20.864688873291016",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.1180757477665866",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3226.540283203125",
         "MainCunninghamLoad_kgf": "-390.0787658691406",
@@ -5630,7 +5629,8 @@
         "JibSheetLoad_kgf": "1156.2236328125",
         "Heel_deg": "-4.769318112735507",
         "Leeway_deg": "-0.4155605457950173",
-        "TWS_kts": "3.698671045941551"
+        "TWS_kts": "3.698671045941551",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5654,7 +5654,6 @@
         "Mast_aoa_n_deg": "8.365373505217008",
         "MastRotation_deg": "20.864688873291016",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.1180757477665866",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3226.540283203125",
         "MainCunninghamLoad_kgf": "-390.0787658691406",
@@ -5664,7 +5663,8 @@
         "JibSheetLoad_kgf": "1156.2236328125",
         "Heel_deg": "-4.769318112735507",
         "Leeway_deg": "-0.4155605457950173",
-        "TWS_kts": "3.698671045941551"
+        "TWS_kts": "3.698671045941551",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5688,7 +5688,6 @@
         "Mast_aoa_n_deg": "8.365373505217008",
         "MastRotation_deg": "20.864688873291016",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.1180757477665866",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3226.540283203125",
         "MainCunninghamLoad_kgf": "-390.0787658691406",
@@ -5698,7 +5697,8 @@
         "JibSheetLoad_kgf": "1156.2236328125",
         "Heel_deg": "-4.769318112735507",
         "Leeway_deg": "-0.4155605457950173",
-        "TWS_kts": "3.698671045941551"
+        "TWS_kts": "3.698671045941551",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5722,7 +5722,6 @@
         "Mast_aoa_n_deg": "7.699439962101138",
         "MastRotation_deg": "19.105034828186035",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.202699796385608",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3110.53369140625",
         "MainCunninghamLoad_kgf": "-375.8940887451172",
@@ -5732,7 +5731,8 @@
         "JibSheetLoad_kgf": "1155.064453125",
         "Heel_deg": "-4.445415387811282",
         "Leeway_deg": "0.0120973986138324",
-        "TWS_kts": "3.674626454131526"
+        "TWS_kts": "3.674626454131526",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5756,7 +5756,6 @@
         "Mast_aoa_n_deg": "7.699439962101138",
         "MastRotation_deg": "19.105034828186035",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.202699796385608",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3110.53369140625",
         "MainCunninghamLoad_kgf": "-375.8940887451172",
@@ -5766,7 +5765,8 @@
         "JibSheetLoad_kgf": "1155.064453125",
         "Heel_deg": "-4.445415387811282",
         "Leeway_deg": "0.0120973986138324",
-        "TWS_kts": "3.674626454131526"
+        "TWS_kts": "3.674626454131526",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5790,7 +5790,6 @@
         "Mast_aoa_n_deg": "7.699439962101138",
         "MastRotation_deg": "19.105034828186035",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.202699796385608",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3110.53369140625",
         "MainCunninghamLoad_kgf": "-375.8940887451172",
@@ -5800,7 +5799,8 @@
         "JibSheetLoad_kgf": "1155.064453125",
         "Heel_deg": "-4.445415387811282",
         "Leeway_deg": "0.0120973986138324",
-        "TWS_kts": "3.674626454131526"
+        "TWS_kts": "3.674626454131526",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5824,7 +5824,6 @@
         "Mast_aoa_n_deg": "7.699439962101138",
         "MastRotation_deg": "19.105034828186035",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.202699796385608",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3110.53369140625",
         "MainCunninghamLoad_kgf": "-375.8940887451172",
@@ -5834,7 +5833,8 @@
         "JibSheetLoad_kgf": "1155.064453125",
         "Heel_deg": "-4.445415387811282",
         "Leeway_deg": "0.0120973986138324",
-        "TWS_kts": "3.674626454131526"
+        "TWS_kts": "3.674626454131526",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5858,7 +5858,6 @@
         "Mast_aoa_n_deg": "6.321727792713261",
         "MastRotation_deg": "19.051008224487305",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.2486562925649136",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3116.3388671875",
         "MainCunninghamLoad_kgf": "-375.8712158203125",
@@ -5868,7 +5867,8 @@
         "JibSheetLoad_kgf": "1152.4862060546875",
         "Heel_deg": "-3.9200722415733975",
         "Leeway_deg": "-0.493444804500541",
-        "TWS_kts": "3.70885831521908"
+        "TWS_kts": "3.70885831521908",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5892,7 +5892,6 @@
         "Mast_aoa_n_deg": "6.321727792713261",
         "MastRotation_deg": "19.051008224487305",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.2486562925649136",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3116.3388671875",
         "MainCunninghamLoad_kgf": "-375.8712158203125",
@@ -5902,7 +5901,8 @@
         "JibSheetLoad_kgf": "1152.4862060546875",
         "Heel_deg": "-3.9200722415733975",
         "Leeway_deg": "-0.493444804500541",
-        "TWS_kts": "3.70885831521908"
+        "TWS_kts": "3.70885831521908",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5926,7 +5926,6 @@
         "Mast_aoa_n_deg": "6.321727792713261",
         "MastRotation_deg": "19.051008224487305",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.2486562925649136",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3116.3388671875",
         "MainCunninghamLoad_kgf": "-375.8712158203125",
@@ -5936,7 +5935,8 @@
         "JibSheetLoad_kgf": "1152.4862060546875",
         "Heel_deg": "-3.9200722415733975",
         "Leeway_deg": "-0.493444804500541",
-        "TWS_kts": "3.70885831521908"
+        "TWS_kts": "3.70885831521908",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5960,7 +5960,6 @@
         "Mast_aoa_n_deg": "6.321727792713261",
         "MastRotation_deg": "19.051008224487305",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.2486562925649136",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3116.3388671875",
         "MainCunninghamLoad_kgf": "-375.8712158203125",
@@ -5970,7 +5969,8 @@
         "JibSheetLoad_kgf": "1152.4862060546875",
         "Heel_deg": "-3.9200722415733975",
         "Leeway_deg": "-0.493444804500541",
-        "TWS_kts": "3.70885831521908"
+        "TWS_kts": "3.70885831521908",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -5994,7 +5994,6 @@
         "Mast_aoa_n_deg": "7.100723117531686",
         "MastRotation_deg": "19.199951171875",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.279096313679207",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3098.3328857421875",
         "MainCunninghamLoad_kgf": "-373.2562561035156",
@@ -6004,7 +6003,8 @@
         "JibSheetLoad_kgf": "1150.2504272460938",
         "Heel_deg": "-3.970673271152614",
         "Leeway_deg": "-0.3001001998982247",
-        "TWS_kts": "3.7231677977885376"
+        "TWS_kts": "3.7231677977885376",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6028,7 +6028,6 @@
         "Mast_aoa_n_deg": "7.100723117531686",
         "MastRotation_deg": "19.199951171875",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.279096313679207",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3098.3328857421875",
         "MainCunninghamLoad_kgf": "-373.2562561035156",
@@ -6038,7 +6037,8 @@
         "JibSheetLoad_kgf": "1150.2504272460938",
         "Heel_deg": "-3.970673271152614",
         "Leeway_deg": "-0.3001001998982247",
-        "TWS_kts": "3.7231677977885376"
+        "TWS_kts": "3.7231677977885376",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6062,7 +6062,6 @@
         "Mast_aoa_n_deg": "7.100723117531686",
         "MastRotation_deg": "19.199951171875",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.279096313679207",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3098.3328857421875",
         "MainCunninghamLoad_kgf": "-373.2562561035156",
@@ -6072,7 +6071,8 @@
         "JibSheetLoad_kgf": "1150.2504272460938",
         "Heel_deg": "-3.970673271152614",
         "Leeway_deg": "-0.3001001998982247",
-        "TWS_kts": "3.7231677977885376"
+        "TWS_kts": "3.7231677977885376",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6096,7 +6096,6 @@
         "Mast_aoa_n_deg": "7.100723117531686",
         "MastRotation_deg": "19.199951171875",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.279096313679207",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3098.3328857421875",
         "MainCunninghamLoad_kgf": "-373.2562561035156",
@@ -6106,7 +6105,8 @@
         "JibSheetLoad_kgf": "1150.2504272460938",
         "Heel_deg": "-3.970673271152614",
         "Leeway_deg": "-0.3001001998982247",
-        "TWS_kts": "3.7231677977885376"
+        "TWS_kts": "3.7231677977885376",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6130,7 +6130,6 @@
         "Mast_aoa_n_deg": "7.3325629905713186",
         "MastRotation_deg": "19.54917526245117",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.131268793240709",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3098.25",
         "MainCunninghamLoad_kgf": "-371.3165130615234",
@@ -6140,7 +6139,8 @@
         "JibSheetLoad_kgf": "1147.9041748046875",
         "Heel_deg": "-5.431620212210488",
         "Leeway_deg": "-0.608572729346065",
-        "TWS_kts": "3.731967710018744"
+        "TWS_kts": "3.731967710018744",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6164,7 +6164,6 @@
         "Mast_aoa_n_deg": "7.3325629905713186",
         "MastRotation_deg": "19.54917526245117",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.131268793240709",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3098.25",
         "MainCunninghamLoad_kgf": "-371.3165130615234",
@@ -6174,7 +6173,8 @@
         "JibSheetLoad_kgf": "1147.9041748046875",
         "Heel_deg": "-5.431620212210488",
         "Leeway_deg": "-0.608572729346065",
-        "TWS_kts": "3.731967710018744"
+        "TWS_kts": "3.731967710018744",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6198,7 +6198,6 @@
         "Mast_aoa_n_deg": "7.3325629905713186",
         "MastRotation_deg": "19.54917526245117",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.131268793240709",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3098.25",
         "MainCunninghamLoad_kgf": "-371.3165130615234",
@@ -6208,7 +6207,8 @@
         "JibSheetLoad_kgf": "1147.9041748046875",
         "Heel_deg": "-5.431620212210488",
         "Leeway_deg": "-0.608572729346065",
-        "TWS_kts": "3.731967710018744"
+        "TWS_kts": "3.731967710018744",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6232,7 +6232,6 @@
         "Mast_aoa_n_deg": "7.3325629905713186",
         "MastRotation_deg": "19.54917526245117",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.131268793240709",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3098.25",
         "MainCunninghamLoad_kgf": "-371.3165130615234",
@@ -6242,7 +6241,8 @@
         "JibSheetLoad_kgf": "1147.9041748046875",
         "Heel_deg": "-5.431620212210488",
         "Leeway_deg": "-0.608572729346065",
-        "TWS_kts": "3.731967710018744"
+        "TWS_kts": "3.731967710018744",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6266,7 +6266,6 @@
         "Mast_aoa_n_deg": "5.636312505124437",
         "MastRotation_deg": "18.235133171081543",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.0415223380092637",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3190.196655273437",
         "MainCunninghamLoad_kgf": "-371.3394012451172",
@@ -6276,7 +6275,8 @@
         "JibSheetLoad_kgf": "1145.8449096679688",
         "Heel_deg": "-5.459730069183086",
         "Leeway_deg": "-0.4634323184036475",
-        "TWS_kts": "3.711158809300661"
+        "TWS_kts": "3.711158809300661",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6300,7 +6300,6 @@
         "Mast_aoa_n_deg": "5.636312505124437",
         "MastRotation_deg": "18.235133171081543",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.0415223380092637",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3190.196655273437",
         "MainCunninghamLoad_kgf": "-371.3394012451172",
@@ -6310,7 +6309,8 @@
         "JibSheetLoad_kgf": "1145.8449096679688",
         "Heel_deg": "-5.459730069183086",
         "Leeway_deg": "-0.4634323184036475",
-        "TWS_kts": "3.711158809300661"
+        "TWS_kts": "3.711158809300661",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6334,7 +6334,6 @@
         "Mast_aoa_n_deg": "5.636312505124437",
         "MastRotation_deg": "18.235133171081543",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.0415223380092637",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3190.196655273437",
         "MainCunninghamLoad_kgf": "-371.3394012451172",
@@ -6344,7 +6343,8 @@
         "JibSheetLoad_kgf": "1145.8449096679688",
         "Heel_deg": "-5.459730069183086",
         "Leeway_deg": "-0.4634323184036475",
-        "TWS_kts": "3.711158809300661"
+        "TWS_kts": "3.711158809300661",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6368,7 +6368,6 @@
         "Mast_aoa_n_deg": "5.636312505124437",
         "MastRotation_deg": "18.235133171081543",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.0415223380092637",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3190.196655273437",
         "MainCunninghamLoad_kgf": "-371.3394012451172",
@@ -6378,7 +6377,8 @@
         "JibSheetLoad_kgf": "1145.8449096679688",
         "Heel_deg": "-5.459730069183086",
         "Leeway_deg": "-0.4634323184036475",
-        "TWS_kts": "3.711158809300661"
+        "TWS_kts": "3.711158809300661",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6402,7 +6402,6 @@
         "Mast_aoa_n_deg": "6.03564739895549",
         "MastRotation_deg": "18.635496139526367",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.2325871980866365",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "2980.5595703125",
         "MainCunninghamLoad_kgf": "-370.5726623535156",
@@ -6412,7 +6411,8 @@
         "JibSheetLoad_kgf": "1144.2218627929688",
         "Heel_deg": "-3.4072841569687595",
         "Leeway_deg": "0.352923843937674",
-        "TWS_kts": "3.693276182946239"
+        "TWS_kts": "3.693276182946239",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6436,7 +6436,6 @@
         "Mast_aoa_n_deg": "6.03564739895549",
         "MastRotation_deg": "18.635496139526367",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.2325871980866365",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "2980.5595703125",
         "MainCunninghamLoad_kgf": "-370.5726623535156",
@@ -6446,7 +6445,8 @@
         "JibSheetLoad_kgf": "1144.2218627929688",
         "Heel_deg": "-3.4072841569687595",
         "Leeway_deg": "0.352923843937674",
-        "TWS_kts": "3.693276182946239"
+        "TWS_kts": "3.693276182946239",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6470,7 +6470,6 @@
         "Mast_aoa_n_deg": "6.03564739895549",
         "MastRotation_deg": "18.635496139526367",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.2325871980866365",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "2980.5595703125",
         "MainCunninghamLoad_kgf": "-370.5726623535156",
@@ -6480,7 +6479,8 @@
         "JibSheetLoad_kgf": "1144.2218627929688",
         "Heel_deg": "-3.4072841569687595",
         "Leeway_deg": "0.352923843937674",
-        "TWS_kts": "3.693276182946239"
+        "TWS_kts": "3.693276182946239",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6504,7 +6504,6 @@
         "Mast_aoa_n_deg": "6.03564739895549",
         "MastRotation_deg": "18.635496139526367",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.2325871980866365",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "2980.5595703125",
         "MainCunninghamLoad_kgf": "-370.5726623535156",
@@ -6514,7 +6513,8 @@
         "JibSheetLoad_kgf": "1144.2218627929688",
         "Heel_deg": "-3.4072841569687595",
         "Leeway_deg": "0.352923843937674",
-        "TWS_kts": "3.693276182946239"
+        "TWS_kts": "3.693276182946239",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6538,7 +6538,6 @@
         "Mast_aoa_n_deg": "6.074581268288085",
         "MastRotation_deg": "19.39261531829834",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.291963398715086",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3026.068359375",
         "MainCunninghamLoad_kgf": "-369.08497619628906",
@@ -6548,7 +6547,8 @@
         "JibSheetLoad_kgf": "1142.885986328125",
         "Heel_deg": "-3.736223185910518",
         "Leeway_deg": "0.3510043852189142",
-        "TWS_kts": "3.659507926309413"
+        "TWS_kts": "3.659507926309413",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6572,7 +6572,6 @@
         "Mast_aoa_n_deg": "6.074581268288085",
         "MastRotation_deg": "19.39261531829834",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.291963398715086",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3026.068359375",
         "MainCunninghamLoad_kgf": "-369.08497619628906",
@@ -6582,7 +6581,8 @@
         "JibSheetLoad_kgf": "1142.885986328125",
         "Heel_deg": "-3.736223185910518",
         "Leeway_deg": "0.3510043852189142",
-        "TWS_kts": "3.659507926309413"
+        "TWS_kts": "3.659507926309413",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6606,7 +6606,6 @@
         "Mast_aoa_n_deg": "6.074581268288085",
         "MastRotation_deg": "19.39261531829834",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.291963398715086",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3026.068359375",
         "MainCunninghamLoad_kgf": "-369.08497619628906",
@@ -6616,7 +6615,8 @@
         "JibSheetLoad_kgf": "1142.885986328125",
         "Heel_deg": "-3.736223185910518",
         "Leeway_deg": "0.3510043852189142",
-        "TWS_kts": "3.659507926309413"
+        "TWS_kts": "3.659507926309413",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6640,7 +6640,6 @@
         "Mast_aoa_n_deg": "6.074581268288085",
         "MastRotation_deg": "19.39261531829834",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.291963398715086",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3026.068359375",
         "MainCunninghamLoad_kgf": "-369.08497619628906",
@@ -6650,7 +6649,8 @@
         "JibSheetLoad_kgf": "1142.885986328125",
         "Heel_deg": "-3.736223185910518",
         "Leeway_deg": "0.3510043852189142",
-        "TWS_kts": "3.659507926309413"
+        "TWS_kts": "3.659507926309413",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6674,7 +6674,6 @@
         "Mast_aoa_n_deg": "7.7935923935419",
         "MastRotation_deg": "19.416688919067383",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.2298042121304817",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3200.8790283203125",
         "MainCunninghamLoad_kgf": "-369.8287658691406",
@@ -6684,7 +6683,8 @@
         "JibSheetLoad_kgf": "1140.3077392578125",
         "Heel_deg": "-3.901305443055141",
         "Leeway_deg": "-0.1971872751512364",
-        "TWS_kts": "3.68351911601322"
+        "TWS_kts": "3.68351911601322",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6708,7 +6708,6 @@
         "Mast_aoa_n_deg": "7.7935923935419",
         "MastRotation_deg": "19.416688919067383",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.2298042121304817",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3200.8790283203125",
         "MainCunninghamLoad_kgf": "-369.8287658691406",
@@ -6718,7 +6717,8 @@
         "JibSheetLoad_kgf": "1140.3077392578125",
         "Heel_deg": "-3.901305443055141",
         "Leeway_deg": "-0.1971872751512364",
-        "TWS_kts": "3.68351911601322"
+        "TWS_kts": "3.68351911601322",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6742,7 +6742,6 @@
         "Mast_aoa_n_deg": "7.7935923935419",
         "MastRotation_deg": "19.416688919067383",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.2298042121304817",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3200.8790283203125",
         "MainCunninghamLoad_kgf": "-369.8287658691406",
@@ -6752,7 +6751,8 @@
         "JibSheetLoad_kgf": "1140.3077392578125",
         "Heel_deg": "-3.901305443055141",
         "Leeway_deg": "-0.1971872751512364",
-        "TWS_kts": "3.68351911601322"
+        "TWS_kts": "3.68351911601322",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6776,7 +6776,6 @@
         "Mast_aoa_n_deg": "6.844169401973602",
         "MastRotation_deg": "18.63997459411621",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.342233178187768",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3135.5977783203125",
         "MainCunninghamLoad_kgf": "-367.1681365966797",
@@ -6786,7 +6785,8 @@
         "JibSheetLoad_kgf": "1139.1760864257812",
         "Heel_deg": "-3.694357327949513",
         "Leeway_deg": "0.4565493281847352",
-        "TWS_kts": "3.714769122748631"
+        "TWS_kts": "3.714769122748631",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6810,7 +6810,6 @@
         "Mast_aoa_n_deg": "6.844169401973602",
         "MastRotation_deg": "18.63997459411621",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.342233178187768",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3135.5977783203125",
         "MainCunninghamLoad_kgf": "-367.1681365966797",
@@ -6820,7 +6819,8 @@
         "JibSheetLoad_kgf": "1139.1760864257812",
         "Heel_deg": "-3.694357327949513",
         "Leeway_deg": "0.4565493281847352",
-        "TWS_kts": "3.714769122748631"
+        "TWS_kts": "3.714769122748631",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6844,7 +6844,6 @@
         "Mast_aoa_n_deg": "6.844169401973602",
         "MastRotation_deg": "18.63997459411621",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.342233178187768",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3135.5977783203125",
         "MainCunninghamLoad_kgf": "-367.1681365966797",
@@ -6854,7 +6853,8 @@
         "JibSheetLoad_kgf": "1139.1760864257812",
         "Heel_deg": "-3.694357327949513",
         "Leeway_deg": "0.4565493281847352",
-        "TWS_kts": "3.714769122748631"
+        "TWS_kts": "3.714769122748631",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6878,7 +6878,6 @@
         "Mast_aoa_n_deg": "6.844169401973602",
         "MastRotation_deg": "18.63997459411621",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.342233178187768",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3135.5977783203125",
         "MainCunninghamLoad_kgf": "-367.1681365966797",
@@ -6888,7 +6887,8 @@
         "JibSheetLoad_kgf": "1139.1760864257812",
         "Heel_deg": "-3.694357327949513",
         "Leeway_deg": "0.4565493281847352",
-        "TWS_kts": "3.714769122748631"
+        "TWS_kts": "3.714769122748631",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6912,7 +6912,6 @@
         "Mast_aoa_n_deg": "7.978689992909295",
         "MastRotation_deg": "18.679588317871094",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.353456820214638",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3140.98046875",
         "MainCunninghamLoad_kgf": "-369.4911804199219",
@@ -6922,7 +6921,8 @@
         "JibSheetLoad_kgf": "1136.6531982421875",
         "Heel_deg": "-2.9330537708893143",
         "Leeway_deg": "0.2752088653700184",
-        "TWS_kts": "3.7844513273338567"
+        "TWS_kts": "3.7844513273338567",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6946,7 +6946,6 @@
         "Mast_aoa_n_deg": "7.978689992909295",
         "MastRotation_deg": "18.679588317871094",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.353456820214638",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3140.98046875",
         "MainCunninghamLoad_kgf": "-369.4911804199219",
@@ -6956,7 +6955,8 @@
         "JibSheetLoad_kgf": "1136.6531982421875",
         "Heel_deg": "-2.9330537708893143",
         "Leeway_deg": "0.2752088653700184",
-        "TWS_kts": "3.7844513273338567"
+        "TWS_kts": "3.7844513273338567",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -6980,7 +6980,6 @@
         "Mast_aoa_n_deg": "7.978689992909295",
         "MastRotation_deg": "18.679588317871094",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.353456820214638",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3140.98046875",
         "MainCunninghamLoad_kgf": "-369.4911804199219",
@@ -6990,7 +6989,8 @@
         "JibSheetLoad_kgf": "1136.6531982421875",
         "Heel_deg": "-2.9330537708893143",
         "Leeway_deg": "0.2752088653700184",
-        "TWS_kts": "3.7844513273338567"
+        "TWS_kts": "3.7844513273338567",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -7014,7 +7014,6 @@
         "Mast_aoa_n_deg": "7.978689992909295",
         "MastRotation_deg": "18.679588317871094",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.353456820214638",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3140.98046875",
         "MainCunninghamLoad_kgf": "-369.4911804199219",
@@ -7024,7 +7023,8 @@
         "JibSheetLoad_kgf": "1136.6531982421875",
         "Heel_deg": "-2.9330537708893143",
         "Leeway_deg": "0.2752088653700184",
-        "TWS_kts": "3.7844513273338567"
+        "TWS_kts": "3.7844513273338567",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -7048,7 +7048,6 @@
         "Mast_aoa_n_deg": "8.821015041928007",
         "MastRotation_deg": "19.117222785949707",
         "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd_m": "2.3751980486712063",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3106.743530273437",
         "MainCunninghamLoad_kgf": "-367.55152893066406",
@@ -7058,7 +7057,8 @@
         "JibSheetLoad_kgf": "1131.9882202148438",
         "Heel_deg": "-3.07901736805172",
         "Leeway_deg": "-0.3708890309551407",
-        "TWS_kts": "3.704220904320872"
+        "TWS_kts": "3.704220904320872",
+        "FoilSinkStbd_target": "-0.8500000000000001"
       },
       "comment": ""
     },
@@ -7082,7 +7082,6 @@
         "Mast_aoa_n_deg": "-1.055113897323622",
         "MastRotation_deg": "-6.804886102676392",
         "FoilSinkPort_target": "-0.8000000000000003",
-        "FoilSinkStbd_m": "-2.7797061446304587",
         "TrimTarget_deg": "-2.75",
         "MainSheetLoad_kgf": "44.98484420776367",
         "MainCunninghamLoad_kgf": "-158.86668395996094",
@@ -7092,7 +7091,8 @@
         "JibSheetLoad_kgf": "-47.25226593017578",
         "Heel_deg": "-3.035551965164462",
         "Leeway_deg": "178.11176802035624",
-        "TWS_kts": "3.5275020624410027"
+        "TWS_kts": "3.5275020624410027",
+        "FoilSinkStbd_target": "-0.8000000000000003"
       },
       "comment": ""
     },
@@ -7116,7 +7116,6 @@
         "Mast_aoa_n_deg": "4.654377727508518",
         "MastRotation_deg": "-6.624377727508545",
         "FoilSinkPort_target": "-0.8000000000000003",
-        "FoilSinkStbd_m": "-2.8215104828766404",
         "TrimTarget_deg": "-2.75",
         "MainSheetLoad_kgf": "44.90190505981445",
         "MainCunninghamLoad_kgf": "-156.54354858398438",
@@ -7126,7 +7125,8 @@
         "JibSheetLoad_kgf": "-48.43922424316406",
         "Heel_deg": "-5.141290641821226",
         "Leeway_deg": "-171.00846131548855",
-        "TWS_kts": "3.687415253372767"
+        "TWS_kts": "3.687415253372767",
+        "FoilSinkStbd_target": "-0.8000000000000003"
       },
       "comment": ""
     },
@@ -7150,7 +7150,6 @@
         "Mast_aoa_n_deg": "0.9273958492279348",
         "MastRotation_deg": "-6.772395849227905",
         "FoilSinkPort_target": "-0.8000000000000003",
-        "FoilSinkStbd_m": "-2.840978325156802",
         "TrimTarget_deg": "-2.75",
         "MainSheetLoad_kgf": "44.3131160736084",
         "MainCunninghamLoad_kgf": "-156.16017150878906",
@@ -7160,7 +7159,8 @@
         "JibSheetLoad_kgf": "-48.43922424316406",
         "Heel_deg": "-3.789501009314145",
         "Leeway_deg": "-174.81645706460876",
-        "TWS_kts": "4.373338659753369"
+        "TWS_kts": "4.373338659753369",
+        "FoilSinkStbd_target": "-0.8000000000000003"
       },
       "comment": ""
     },
@@ -7184,7 +7184,6 @@
         "Mast_aoa_n_deg": "5.189653472567869",
         "MastRotation_deg": "40.386993408203125",
         "FoilSinkPort_target": "-1.5",
-        "FoilSinkStbd_m": "1.1023090442342465",
         "TrimTarget_deg": "-1.75",
         "MainSheetLoad_kgf": "384.0891723632813",
         "MainCunninghamLoad_kgf": "-0.9869133830070496",
@@ -7194,7 +7193,8 @@
         "JibSheetLoad_kgf": "25.863009452819824",
         "Heel_deg": "-9.803316301092766",
         "Leeway_deg": "1.7069322180376505",
-        "TWS_kts": "4.907176538561497"
+        "TWS_kts": "4.907176538561497",
+        "FoilSinkStbd_target": "-1.3"
       },
       "comment": ""
     },
@@ -7218,7 +7218,6 @@
         "Mast_aoa_n_deg": "3.272529987240688",
         "MastRotation_deg": "34.13455772399902",
         "FoilSinkPort_target": "-1.5",
-        "FoilSinkStbd_m": "1.2280408792488515",
         "TrimTarget_deg": "-2.0",
         "MainSheetLoad_kgf": "1170.5602416992188",
         "MainCunninghamLoad_kgf": "-0.511933758854866",
@@ -7228,7 +7227,8 @@
         "JibSheetLoad_kgf": "175.78131866455078",
         "Heel_deg": "-6.367256450429036",
         "Leeway_deg": "1.4737715916924117",
-        "TWS_kts": "5.015760663617193"
+        "TWS_kts": "5.015760663617193",
+        "FoilSinkStbd_target": "-1.3"
       },
       "comment": ""
     },
@@ -7252,7 +7252,6 @@
         "Mast_aoa_n_deg": "0.1442001136267094",
         "MastRotation_deg": "30.726572036743164",
         "FoilSinkPort_target": "-1.5",
-        "FoilSinkStbd_m": "1.3996906901660235",
         "TrimTarget_deg": "-2.625",
         "MainSheetLoad_kgf": "1299.9534912109375",
         "MainCunninghamLoad_kgf": "-121.06750106811523",
@@ -7262,7 +7261,8 @@
         "JibSheetLoad_kgf": "170.4317855834961",
         "Heel_deg": "-5.098301858071988",
         "Leeway_deg": "0.5415831909767803",
-        "TWS_kts": "5.026896454607073"
+        "TWS_kts": "5.026896454607073",
+        "FoilSinkStbd_target": "-1.3"
       },
       "comment": ""
     },
@@ -7286,7 +7286,6 @@
         "Mast_aoa_n_deg": "7.438168031059547",
         "MastRotation_deg": "18.678702354431152",
         "FoilSinkPort_target": "-0.7999999999999994",
-        "FoilSinkStbd_m": "2.0808327960158643",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3372.9195556640625",
         "MainCunninghamLoad_kgf": "-266.1815490722656",
@@ -7296,7 +7295,8 @@
         "JibSheetLoad_kgf": "841.7298889160156",
         "Heel_deg": "-2.7358875538922023",
         "Leeway_deg": "-1.0327646477440453",
-        "TWS_kts": "4.46641690089131"
+        "TWS_kts": "4.46641690089131",
+        "FoilSinkStbd_target": "-0.9999999999999992"
       },
       "comment": ""
     },
@@ -7320,7 +7320,6 @@
         "Mast_aoa_n_deg": "8.825958488765366",
         "MastRotation_deg": "20.388532638549805",
         "FoilSinkPort_target": "-0.7999999999999994",
-        "FoilSinkStbd_m": "2.1890744007743987",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "3336.990234375",
         "MainCunninghamLoad_kgf": "-260.5912475585937",
@@ -7330,7 +7329,8 @@
         "JibSheetLoad_kgf": "867.1964721679688",
         "Heel_deg": "-2.990737599916128",
         "Leeway_deg": "-0.7404327150965173",
-        "TWS_kts": "4.477971218522322"
+        "TWS_kts": "4.477971218522322",
+        "FoilSinkStbd_target": "-0.9999999999999992"
       },
       "comment": ""
     },
@@ -7354,7 +7354,6 @@
         "Mast_aoa_n_deg": "5.605136923526345",
         "MastRotation_deg": "16.782821655273438",
         "FoilSinkPort_target": "-0.6999999999999993",
-        "FoilSinkStbd_m": "2.4025592727124665",
         "TrimTarget_deg": "-3.0",
         "MainSheetLoad_kgf": "2950.1705322265625",
         "MainCunninghamLoad_kgf": "-630.5032958984375",
@@ -7364,7 +7363,8 @@
         "JibSheetLoad_kgf": "1131.7066650390625",
         "Heel_deg": "-3.592509709192808",
         "Leeway_deg": "0.8069126168503544",
-        "TWS_kts": "4.2422269379244"
+        "TWS_kts": "4.2422269379244",
+        "FoilSinkStbd_target": "-0.8999999999999992"
       },
       "comment": "",
       "frame": {
