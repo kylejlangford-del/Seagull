@@ -3498,7 +3498,7 @@
       "capturedAt": "2026-09-10T10:50:29.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T10:50:29.000Z",
         "BSP_kts": "0.026875116253313",
@@ -5572,7 +5572,7 @@
       "capturedAt": "2026-09-10T12:36:21.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:21.000Z",
         "BSP_kts": "23.96332015452572",
@@ -5606,7 +5606,7 @@
       "capturedAt": "2026-09-10T12:36:21.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:21.000Z",
         "BSP_kts": "23.96332015452572",
@@ -5640,7 +5640,7 @@
       "capturedAt": "2026-09-10T12:36:21.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:21.000Z",
         "BSP_kts": "23.96332015452572",
@@ -5674,7 +5674,7 @@
       "capturedAt": "2026-09-10T12:36:21.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:21.000Z",
         "BSP_kts": "23.96332015452572",
@@ -5708,7 +5708,7 @@
       "capturedAt": "2026-09-10T12:36:22.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:22.000Z",
         "BSP_kts": "24.02670891656438",
@@ -5742,7 +5742,7 @@
       "capturedAt": "2026-09-10T12:36:22.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:22.000Z",
         "BSP_kts": "24.02670891656438",
@@ -5776,7 +5776,7 @@
       "capturedAt": "2026-09-10T12:36:22.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:22.000Z",
         "BSP_kts": "24.02670891656438",
@@ -5810,7 +5810,7 @@
       "capturedAt": "2026-09-10T12:36:22.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:22.000Z",
         "BSP_kts": "24.02670891656438",
@@ -5844,7 +5844,7 @@
       "capturedAt": "2026-09-10T12:36:23.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:23.000Z",
         "BSP_kts": "24.19261948291205",
@@ -5878,7 +5878,7 @@
       "capturedAt": "2026-09-10T12:36:23.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:23.000Z",
         "BSP_kts": "24.19261948291205",
@@ -5912,7 +5912,7 @@
       "capturedAt": "2026-09-10T12:36:23.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:23.000Z",
         "BSP_kts": "24.19261948291205",
@@ -5946,7 +5946,7 @@
       "capturedAt": "2026-09-10T12:36:23.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:23.000Z",
         "BSP_kts": "24.19261948291205",
@@ -5980,7 +5980,7 @@
       "capturedAt": "2026-09-10T12:36:24.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:24.000Z",
         "BSP_kts": "24.28152892143315",
@@ -6014,7 +6014,7 @@
       "capturedAt": "2026-09-10T12:36:24.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:24.000Z",
         "BSP_kts": "24.28152892143315",
@@ -6048,7 +6048,7 @@
       "capturedAt": "2026-09-10T12:36:24.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:24.000Z",
         "BSP_kts": "24.28152892143315",
@@ -6082,7 +6082,7 @@
       "capturedAt": "2026-09-10T12:36:24.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:24.000Z",
         "BSP_kts": "24.28152892143315",
@@ -6116,7 +6116,7 @@
       "capturedAt": "2026-09-10T12:36:25.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:25.000Z",
         "BSP_kts": "24.439428393080888",
@@ -6150,7 +6150,7 @@
       "capturedAt": "2026-09-10T12:36:25.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:25.000Z",
         "BSP_kts": "24.439428393080888",
@@ -6184,7 +6184,7 @@
       "capturedAt": "2026-09-10T12:36:25.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:25.000Z",
         "BSP_kts": "24.439428393080888",
@@ -6218,7 +6218,7 @@
       "capturedAt": "2026-09-10T12:36:25.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:25.000Z",
         "BSP_kts": "24.439428393080888",
@@ -6252,7 +6252,7 @@
       "capturedAt": "2026-09-10T12:36:26.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:26.000Z",
         "BSP_kts": "24.816983945717077",
@@ -6286,7 +6286,7 @@
       "capturedAt": "2026-09-10T12:36:26.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:26.000Z",
         "BSP_kts": "24.816983945717077",
@@ -6320,7 +6320,7 @@
       "capturedAt": "2026-09-10T12:36:26.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:26.000Z",
         "BSP_kts": "24.816983945717077",
@@ -6354,7 +6354,7 @@
       "capturedAt": "2026-09-10T12:36:26.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:26.000Z",
         "BSP_kts": "24.816983945717077",
