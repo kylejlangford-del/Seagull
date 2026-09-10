@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#07111d" />
   <title>Sail Shots · Seagull Lab</title>
-  <link rel="stylesheet" href="./styles.css?v=20260910a" />
+  <link rel="stylesheet" href="./styles.css?v=20260910c" />
 </head>
 <body>
   <div id="app">
@@ -125,12 +125,15 @@
             <div class="lightbox__frame-head">
               <span>Framing</span>
               <div class="lightbox__frame-actions">
+                <button id="frameCenterBtn" class="text-link is-hidden" type="button">Center</button>
+                <button id="frameCenterCancelBtn" class="text-link is-hidden" type="button">Cancel</button>
                 <button id="frameEditBtn" class="text-link" type="button">Edit</button>
                 <button id="frameResetBtn" class="text-link is-hidden" type="button">Reset</button>
                 <button id="frameSaveBtn" class="text-link is-hidden" type="button">Save</button>
                 <button id="frameCancelBtn" class="text-link is-hidden" type="button">Cancel</button>
               </div>
             </div>
+            <div id="frameCenterHint" class="lightbox__frame-hint is-hidden">Click on the boat in the photo to center it there — the same spot on the next photo in this sequence too.</div>
             <div id="frameControls" class="lightbox__frame-controls is-hidden">
               <div class="lightbox__frame-modes">
                 <button id="frameCropModeBtn" class="lightbox__frame-mode-btn is-active" type="button">Crop</button>
@@ -185,6 +188,6 @@
     </div>
   </div>
 
-  <script src="./app.js?v=20260910a"></script>
+  <script src="./app.js?v=20260910c"></script>
 </body>
 </html>

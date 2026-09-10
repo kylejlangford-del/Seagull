@@ -116,6 +116,9 @@
     lightboxComment: document.getElementById('lightboxComment'),
 
     frameSection: document.getElementById('frameSection'),
+    frameCenterBtn: document.getElementById('frameCenterBtn'),
+    frameCenterCancelBtn: document.getElementById('frameCenterCancelBtn'),
+    frameCenterHint: document.getElementById('frameCenterHint'),
     frameEditBtn: document.getElementById('frameEditBtn'),
     frameResetBtn: document.getElementById('frameResetBtn'),
     frameSaveBtn: document.getElementById('frameSaveBtn'),
@@ -816,14 +819,19 @@
     if (scopedOrder !== undefined) lightboxScopedOrder = scopedOrder;
     endTwistTrace(); // switching shots (open, or prev/next) abandons any in-progress trace
     endFrameEdit(); // ditto for an in-progress framing edit
+    endCenterPick(); // ditto for an in-progress boat-centering click
 
     el.lightboxImg.src = photoSrc(shot.file);
+    // updateLightboxFrameDisplay must run before the syncTwistOverlayViewBox
+    // below can fire synchronously (a cached image completes immediately) —
+    // it reads the .is-framed class that call sets, to know whether the
+    // overlay should track the crop or the full photo.
+    updateLightboxFrameDisplay(shot);
     // The twist overlay's viewBox is set to the photo's own natural pixel
     // size (once known) so its circles/lines aren't stretched by a mismatch
     // between that size's aspect ratio and a generic square viewBox.
     el.lightboxImg.onload = syncTwistOverlayViewBox;
     if (el.lightboxImg.complete) syncTwistOverlayViewBox();
-    updateLightboxFrameDisplay(shot);
 
     el.lightboxCategory.className = `shot-card__category shot-card__category--${shot.category || 'other'}`;
     el.lightboxCategory.innerHTML = '';
@@ -876,6 +884,7 @@
     flushPendingPublish(); // don't leave a just-typed comment waiting on the debounce timer
     endTwistTrace();
     endFrameEdit();
+    endCenterPick();
     lightboxScopedOrder = null;
     el.lightbox.classList.add('is-hidden');
     el.lightboxImg.src = '';
@@ -953,22 +962,40 @@
   // on any <img> showing that same photo regardless of its on-screen size.
   const GRID_TARGET_AR = 4 / 3;
 
-  function frameStyleFor(shot, kind) {
-    const f = shot && shot.frame;
-    const fit = f && f[kind];
-    if (!fit) return null;
-    return {
-      objectPosition: `${fit.posX}% ${fit.posY}%`,
-      transform: `scale(${fit.zoom}) rotate(${f.rotationDeg}deg)`,
-    };
+  // Puts an <img> in "render fit" mode: absolutely positioned, sized and
+  // panned via percentages (relative to its containing block, which is
+  // always sized/clipped to exactly the visible crop — see
+  // sizeLightboxWrapToFrameAR and the fixed-AR grid tiles), rotated around
+  // the crop's own center. See frameRenderFit below for why this replaced
+  // object-fit:cover + object-position + scale().
+  function setImgRenderFit(img, fit, rotationDeg) {
+    img.classList.add('is-framed');
+    img.style.position = 'absolute';
+    img.style.width = `${fit.widthPct}%`;
+    img.style.height = `${fit.heightPct}%`;
+    img.style.left = `${fit.leftPct}%`;
+    img.style.top = `${fit.topPct}%`;
+    img.style.transformOrigin = `${fit.originXPct}% ${fit.originYPct}%`;
+    img.style.transform = `rotate(${rotationDeg}deg)`;
+  }
+  function clearImgRenderFit(img) {
+    img.classList.remove('is-framed');
+    img.style.position = '';
+    img.style.width = '';
+    img.style.height = '';
+    img.style.left = '';
+    img.style.top = '';
+    img.style.transformOrigin = '';
+    img.style.transform = '';
   }
 
   // Applies a shot's saved frame (if any) to a plain <img>. kind is 'grid'
   // (fixed 4:3 tile) or 'lightbox' (the crop's own shape).
   function applyFrameToImg(img, shot, kind) {
-    const style = frameStyleFor(shot, kind);
-    img.style.objectPosition = style ? style.objectPosition : '';
-    img.style.transform = style ? style.transform : '';
+    const f = shot && shot.frame;
+    const fit = f && f[kind];
+    if (fit) setImgRenderFit(img, fit, f.rotationDeg);
+    else clearImgRenderFit(img);
   }
 
   // Updates just this shot's own thumbnail(s) already in the grid, without
@@ -980,40 +1007,43 @@
       .forEach(img => applyFrameToImg(img, shot, 'grid'));
   }
 
-  // A frame's aspect ratio isn't fixed, so the lightbox <img> can't just be
+  // A frame's aspect ratio isn't fixed, so the lightbox wrap can't just be
   // "width:56vw, aspect-ratio:something" in CSS — a very tall/narrow crop
   // combined with a fixed width could overflow max-height without the
-  // width shrinking to compensate. Instead: read the box CSS already
-  // resolves the <img> to (56vw/88vh on desktop, 100%/50vh on phones —
-  // whatever the current breakpoint says), then fit the crop's own ratio
-  // inside that box in JS and set explicit pixel width/height.
-  function sizeLightboxImgToFrameAR(ar) {
-    const cs = getComputedStyle(el.lightboxImg);
+  // width shrinking to compensate. Instead: the .is-framed rule on the wrap
+  // gives it the same max-width/max-height the plain (unframed) <img> rule
+  // resolves to at the current breakpoint (56vw/88vh on desktop, 100%/50vh
+  // on phones), then this fits the crop's own ratio inside that box in JS
+  // and sets an explicit pixel width/height on the WRAP — the <img> inside
+  // it is absolutely positioned and sized in percentages of that, per
+  // frameRenderFit, and the wrap's overflow:hidden clips it to the crop.
+  function sizeLightboxWrapToFrameAR(ar) {
+    const cs = getComputedStyle(el.lightboxImageWrap);
     const maxW = parseFloat(cs.maxWidth), maxH = parseFloat(cs.maxHeight);
     if (!maxW || !maxH || !ar) return;
     let w = maxW, h = w / ar;
     if (h > maxH) { h = maxH; w = h * ar; }
-    el.lightboxImg.style.width = `${w}px`;
-    el.lightboxImg.style.height = `${h}px`;
+    el.lightboxImageWrap.style.width = `${w}px`;
+    el.lightboxImageWrap.style.height = `${h}px`;
   }
 
   // The lightbox photo isn't normally boxed to a fixed aspect ratio (it
   // shows the whole original at its own aspect ratio) — the .is-framed
   // class switches it to the crop's own shape, only while a frame is
   // actually in effect. forceUnframed shows the full original regardless
-  // (used while twist-tracing, which needs the untouched photo).
+  // (used by the Center-boat tool, which needs to click anywhere on the
+  // untouched photo).
   function updateLightboxFrameDisplay(shot, forceUnframed) {
     const hasFrame = !!(shot && shot.frame) && !forceUnframed;
-    el.lightboxImg.classList.toggle('is-framed', hasFrame);
+    applyFrameToImg(el.lightboxImg, hasFrame ? shot : null, 'lightbox');
+    el.lightboxImageWrap.classList.toggle('is-framed', hasFrame);
     if (hasFrame) {
-      applyFrameToImg(el.lightboxImg, shot, 'lightbox');
-      sizeLightboxImgToFrameAR(shot.frame.aspectRatio);
+      sizeLightboxWrapToFrameAR(shot.frame.lightbox.aspectRatio);
     } else {
-      el.lightboxImg.style.objectPosition = '';
-      el.lightboxImg.style.transform = '';
-      el.lightboxImg.style.width = '';
-      el.lightboxImg.style.height = '';
+      el.lightboxImageWrap.style.width = '';
+      el.lightboxImageWrap.style.height = '';
     }
+    syncTwistOverlayViewBox();
   }
 
   function renderFrameSection(shot) {
@@ -1023,6 +1053,12 @@
     el.frameResetBtn.classList.toggle('is-hidden', !hasFrame);
     el.frameSaveBtn.classList.add('is-hidden');
     el.frameCancelBtn.classList.add('is-hidden');
+    // The one-click "center the boat" shortcut only makes sense for
+    // Manoeuvre Sequence bursts — that's the case it was built for (keeping
+    // the boat in the same screen position while stepping through a tack
+    // or gybe for side-by-side comparison).
+    el.frameCenterBtn.classList.toggle('is-hidden', shot.category !== 'manoeuvre');
+    el.frameCenterCancelBtn.classList.add('is-hidden');
   }
 
   // Re-applies the live edit state to the photo from frameState.cropBox —
@@ -1035,51 +1071,46 @@
     if (!iw || !ih) return;
     const box = frameState.cropBox;
     const boxAR = (box.wFrac * iw) / (box.hFrac * ih);
-    const fit = frameZoomPosFromBox(box, iw, ih, boxAR);
-    el.lightboxImg.classList.add('is-framed');
-    sizeLightboxImgToFrameAR(boxAR);
-    el.lightboxImg.style.objectPosition = `${fit.posX}% ${fit.posY}%`;
-    el.lightboxImg.style.transform = `scale(${fit.zoom}) rotate(${frameState.rotationDeg}deg)`;
+    const fit = frameRenderFit(box, iw, ih);
+    el.lightboxImageWrap.classList.add('is-framed');
+    sizeLightboxWrapToFrameAR(boxAR);
+    setImgRenderFit(el.lightboxImg, fit, frameState.rotationDeg);
   }
 
-  // The largest rectangle of the given aspect ratio that fits inside a
-  // natural iw x ih photo.
-  function frameCoverDims(iw, ih, targetAR) {
-    return iw / ih > targetAR
-      ? { coverW: ih * targetAR, coverH: ih }
-      : { coverW: iw, coverH: iw / targetAR };
-  }
-
-  // A {zoom,posX,posY} rendering and a crop box (natural-image-pixel
-  // fractions) describe the same crop two different ways — these convert
-  // between them, for a container of the given targetAR. Correct only
-  // when the box's own shape already matches targetAR (frameZoomPosFromBox
-  // is always called that way below — either the box's own AR for the
-  // lightbox rendering, or a box already cropped to 4:3 via
-  // subRectForTargetAR for the grid rendering). At zoom=1 the box is
-  // exactly the cover rect for targetAR; zooming in shrinks it around its
-  // own center, and posX/posY says where in the photo's leftover margin
-  // that center sits.
-  function frameBoxFromZoomPos(zoom, posX, posY, iw, ih, targetAR) {
-    const { coverW, coverH } = frameCoverDims(iw, ih, targetAR);
-    const marginX = iw - coverW, marginY = ih - coverH;
-    const cropX0 = marginX > 0 ? (posX / 100) * marginX : 0;
-    const cropY0 = marginY > 0 ? (posY / 100) * marginY : 0;
-    const bw = coverW / zoom, bh = coverH / zoom;
-    const centerX = cropX0 + coverW / 2, centerY = cropY0 + coverH / 2;
-    return { xFrac: (centerX - bw / 2) / iw, yFrac: (centerY - bh / 2) / ih, wFrac: bw / iw, hFrac: bh / ih };
-  }
-  function frameZoomPosFromBox(box, iw, ih, targetAR) {
-    const { coverW, coverH } = frameCoverDims(iw, ih, targetAR);
-    const bx = box.xFrac * iw, by = box.yFrac * ih, bw = box.wFrac * iw, bh = box.hFrac * ih;
-    const centerX = bx + bw / 2, centerY = by + bh / 2;
-    const cropX0 = centerX - coverW / 2, cropY0 = centerY - coverH / 2;
-    const marginX = iw - coverW, marginY = ih - coverH;
+  // Converts a crop box (natural-image-pixel fractions) into the CSS
+  // percentages that render it filling its container exactly:
+  // position:absolute + percentage width/height/left/top, rotated around
+  // the crop's own center via transform-origin. Unlike the old
+  // object-fit:cover + object-position + scale() approach, this can place
+  // the crop's pan on BOTH axes independently and exactly, because nothing
+  // is first clamped to a "cover" rectangle (that clamping is what silently
+  // pinned one axis to dead-center once zoomed in — see the diagnostic
+  // writeup in git history for the full derivation).
+  //
+  // The container this is rendered into must itself be sized to exactly
+  // the crop box's own aspect ratio (sizeLightboxWrapToFrameAR does that
+  // for the lightbox wrap; the grid tiles are a fixed 4:3 by CSS, matching
+  // GRID_TARGET_AR) — that's what keeps the <img>'s resulting pixel
+  // width:height ratio equal to the photo's own natural ratio, undistorted.
+  function frameRenderFit(box, iw, ih) {
+    const bw = box.wFrac * iw, bh = box.hFrac * ih;
+    const centerX = box.xFrac * iw + bw / 2, centerY = box.yFrac * ih + bh / 2;
     return {
-      zoom: coverW / bw,
-      posX: marginX > 0 ? Math.min(100, Math.max(0, (cropX0 / marginX) * 100)) : 50,
-      posY: marginY > 0 ? Math.min(100, Math.max(0, (cropY0 / marginY) * 100)) : 50,
+      widthPct: (iw / bw) * 100,
+      heightPct: (ih / bh) * 100,
+      leftPct: 50 - (centerX / bw) * 100,
+      topPct: 50 - (centerY / bh) * 100,
+      originXPct: (centerX / iw) * 100,
+      originYPct: (centerY / ih) * 100,
     };
+  }
+  // Inverse of frameRenderFit — reconstructs the natural-image-fraction
+  // crop box from a saved render fit, so reopening the crop editor (or
+  // re-centering) starts from exactly the saved crop.
+  function frameBoxFromRenderFit(fit, iw, ih) {
+    const bw = iw * 100 / fit.widthPct, bh = ih * 100 / fit.heightPct;
+    const centerX = bw * (50 - fit.leftPct) / 100, centerY = bh * (50 - fit.topPct) / 100;
+    return { xFrac: (centerX - bw / 2) / iw, yFrac: (centerY - bh / 2) / ih, wFrac: bw / iw, hFrac: bh / ih };
   }
 
   // Crops an arbitrary box down to a centered sub-rectangle of exactly
@@ -1121,11 +1152,10 @@
   function enterFrameCropMode() {
     if (!frameState) return;
     frameState.mode = 'crop';
-    el.lightboxImg.classList.remove('is-framed');
-    el.lightboxImg.style.objectPosition = '';
-    el.lightboxImg.style.transform = '';
-    el.lightboxImg.style.width = '';
-    el.lightboxImg.style.height = '';
+    clearImgRenderFit(el.lightboxImg);
+    el.lightboxImageWrap.classList.remove('is-framed');
+    el.lightboxImageWrap.style.width = '';
+    el.lightboxImageWrap.style.height = '';
     el.frameGrid.classList.add('is-hidden');
     el.frameCropBox.classList.remove('is-hidden');
     el.frameRotateRow.classList.add('is-hidden');
@@ -1155,6 +1185,7 @@
     const shot = currentLightboxShot();
     if (!shot) return;
     endTwistTrace(); // the two tools need conflicting views of the photo (cropped vs. full) — only one at a time
+    endCenterPick();
     const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
     const existing = shot.frame;
     frameState = {
@@ -1163,7 +1194,7 @@
       // as the whole photo selected, so "pull the edges in to crop" reads
       // literally rather than starting from some arbitrary default shape.
       cropBox: existing
-        ? frameBoxFromZoomPos(existing.lightbox.zoom, existing.lightbox.posX, existing.lightbox.posY, iw, ih, existing.aspectRatio)
+        ? frameBoxFromRenderFit(existing.lightbox, iw, ih)
         : { xFrac: 0, yFrac: 0, wFrac: 1, hFrac: 1 },
       mode: 'crop',
       dragging: null,
@@ -1276,14 +1307,13 @@
     const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
     const cropBox = frameState.cropBox;
     const boxAR = (cropBox.wFrac * iw) / (cropBox.hFrac * ih);
-    const lightboxFit = frameZoomPosFromBox(cropBox, iw, ih, boxAR);
+    const lightboxFit = frameRenderFit(cropBox, iw, ih);
     const gridSub = subRectForTargetAR(cropBox, iw, ih, GRID_TARGET_AR);
-    const gridFit = frameZoomPosFromBox(gridSub, iw, ih, GRID_TARGET_AR);
+    const gridFit = frameRenderFit(gridSub, iw, ih);
     shot.frame = {
       rotationDeg: frameState.rotationDeg,
-      aspectRatio: boxAR,
-      lightbox: { zoom: lightboxFit.zoom, posX: lightboxFit.posX, posY: lightboxFit.posY },
-      grid: { zoom: gridFit.zoom, posX: gridFit.posX, posY: gridFit.posY },
+      lightbox: { ...lightboxFit, aspectRatio: boxAR },
+      grid: gridFit,
     };
     markManifestDirty();
     endFrameEdit();
@@ -1300,6 +1330,85 @@
     updateLightboxFrameDisplay(shot);
     renderFrameSection(shot);
     refreshVisibleShotThumbnail(shot);
+  });
+
+  // ---------- "Center" — one-click boat-centering for Manoeuvre Sequence bursts ----------
+  // Dragging a crop box by hand for every photo in a 10+ shot burst is slow.
+  // This is a fast alternative for that specific case: click once where the
+  // boat is, and the photo is framed (reusing the exact same shot.frame
+  // model Framing saves) so that point sits centered. Re-clicking on an
+  // already-framed shot re-centers on the new point but keeps the same zoom
+  // level, so stepping through the burst afterwards holds a consistent
+  // frame — only the pan changes, matching where the boat actually was.
+  const CENTER_BOX_FRAC = 0.6; // default zoom for a shot with no frame yet — leaves room to pan without re-scanning the whole photo
+  let centerPickActive = false;
+
+  function startCenterPick() {
+    const shot = currentLightboxShot();
+    if (!shot) return;
+    endTwistTrace();
+    endFrameEdit();
+    centerPickActive = true;
+    updateLightboxFrameDisplay(shot, true); // show the full unframed photo so any point on it can be clicked
+    el.frameCenterHint.classList.remove('is-hidden');
+    el.frameCenterBtn.classList.add('is-hidden');
+    el.frameCenterCancelBtn.classList.remove('is-hidden');
+    el.frameEditBtn.classList.add('is-hidden');
+    el.frameResetBtn.classList.add('is-hidden');
+  }
+
+  function endCenterPick() {
+    if (!centerPickActive) return;
+    centerPickActive = false;
+    el.frameCenterHint.classList.add('is-hidden');
+    el.frameCenterCancelBtn.classList.add('is-hidden');
+  }
+
+  function applyCenterPick(clickFrac) {
+    const shot = currentLightboxShot();
+    if (!shot || !centerPickActive) return;
+    const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
+    if (!iw || !ih) { endCenterPick(); return; }
+    let wFrac = CENTER_BOX_FRAC, hFrac = CENTER_BOX_FRAC;
+    if (shot.frame) {
+      // Keep the existing zoom level — only move where it's centered.
+      const existingBox = frameBoxFromRenderFit(shot.frame.lightbox, iw, ih);
+      wFrac = existingBox.wFrac;
+      hFrac = existingBox.hFrac;
+    }
+    wFrac = Math.min(1, wFrac);
+    hFrac = Math.min(1, hFrac);
+    const cropBox = {
+      xFrac: Math.min(1 - wFrac, Math.max(0, clickFrac.xFrac - wFrac / 2)),
+      yFrac: Math.min(1 - hFrac, Math.max(0, clickFrac.yFrac - hFrac / 2)),
+      wFrac,
+      hFrac,
+    };
+    const boxAR = (cropBox.wFrac * iw) / (cropBox.hFrac * ih);
+    const lightboxFit = frameRenderFit(cropBox, iw, ih);
+    const gridSub = subRectForTargetAR(cropBox, iw, ih, GRID_TARGET_AR);
+    const gridFit = frameRenderFit(gridSub, iw, ih);
+    shot.frame = {
+      rotationDeg: shot.frame ? shot.frame.rotationDeg : 0,
+      lightbox: { ...lightboxFit, aspectRatio: boxAR },
+      grid: gridFit,
+    };
+    markManifestDirty();
+    endCenterPick();
+    updateLightboxFrameDisplay(shot);
+    renderFrameSection(shot);
+    refreshVisibleShotThumbnail(shot);
+  }
+
+  el.lightboxImageWrap.addEventListener('click', (e) => {
+    if (!centerPickActive) return;
+    applyCenterPick(twistFracFromEvent(e));
+  });
+  el.frameCenterBtn.addEventListener('click', () => startCenterPick());
+  el.frameCenterCancelBtn.addEventListener('click', () => {
+    const shot = currentLightboxShot();
+    endCenterPick();
+    if (shot) { updateLightboxFrameDisplay(shot); renderFrameSection(shot); }
   });
 
   // ---------- twist profile: trace the mainsail leech and plot its offset from the boom up to the masthead, as a % of mast height ----------
@@ -1323,10 +1432,46 @@
   // ratio. Without this, a square-ish default viewBox stretched onto a
   // tall/narrow sail crop would draw the point handles as ellipses instead
   // of circles — this makes 1 viewBox unit = 1 photo pixel in both axes.
+  // Keeps the overlay tracking the photo's current on-screen geometry —
+  // whether that's the full original (unframed) or a saved crop/rotation
+  // (framed). The viewBox always covers the FULL natural photo pixel space
+  // (0 0 w h), so a point's stored {xFrac,yFrac} is always a fraction of
+  // the whole original photo regardless of what's currently visible — but
+  // when a frame is in effect, the overlay's own CSS box (and its rotate())
+  // is set to the exact same position:absolute/width/height/left/top/
+  // transform-origin/rotate as the <img>'s, so its coordinate space maps
+  // onto the screen identically to the photo's, crop and rotation included.
+  // Points and clicks are then converted with the SVG's own screen CTM
+  // (twistNaturalFracFromEvent) rather than hand-derived trig, so this is
+  // the only place that needs to know the current frame's geometry.
   function syncTwistOverlayViewBox() {
     const w = el.lightboxImg.naturalWidth, h = el.lightboxImg.naturalHeight;
     if (!w || !h) return;
     el.twistOverlay.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    const isFramed = el.lightboxImg.classList.contains('is-framed');
+    const shot = currentLightboxShot();
+    if (isFramed && shot && shot.frame) {
+      const fit = shot.frame.lightbox;
+      el.twistOverlay.style.position = 'absolute';
+      el.twistOverlay.style.width = `${fit.widthPct}%`;
+      el.twistOverlay.style.height = `${fit.heightPct}%`;
+      el.twistOverlay.style.left = `${fit.leftPct}%`;
+      el.twistOverlay.style.top = `${fit.topPct}%`;
+      el.twistOverlay.style.right = 'auto';
+      el.twistOverlay.style.bottom = 'auto';
+      el.twistOverlay.style.transformOrigin = `${fit.originXPct}% ${fit.originYPct}%`;
+      el.twistOverlay.style.transform = `rotate(${shot.frame.rotationDeg}deg)`;
+    } else {
+      el.twistOverlay.style.position = '';
+      el.twistOverlay.style.width = '';
+      el.twistOverlay.style.height = '';
+      el.twistOverlay.style.left = '';
+      el.twistOverlay.style.top = '';
+      el.twistOverlay.style.right = '';
+      el.twistOverlay.style.bottom = '';
+      el.twistOverlay.style.transformOrigin = '';
+      el.twistOverlay.style.transform = '';
+    }
     if (twistState) renderTwistOverlay();
   }
 
@@ -1346,6 +1491,28 @@
     const xFrac = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
     const yFrac = Math.min(1, Math.max(0, (e.clientY - rect.top) / rect.height));
     return { xFrac, yFrac };
+  }
+
+  // Same job as twistFracFromEvent (screen click -> fraction of the full
+  // original photo), but correct even while a crop/rotation frame is
+  // showing: it goes through the overlay SVG's own screen CTM, which the
+  // browser keeps accurate for whatever position/size/rotate transform
+  // syncTwistOverlayViewBox last applied to it — no hand-derived trig
+  // needed. The overlay's viewBox is always 0 0 naturalWidth naturalHeight,
+  // so the point it resolves to is already in natural-pixel coordinates.
+  function twistNaturalFracFromEvent(e) {
+    const svg = el.twistOverlay;
+    const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
+    const ctm = svg.getScreenCTM();
+    if (!ctm || !iw || !ih) return twistFracFromEvent(e);
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgP = pt.matrixTransform(ctm.inverse());
+    return {
+      xFrac: Math.min(1, Math.max(0, svgP.x / iw)),
+      yFrac: Math.min(1, Math.max(0, svgP.y / ih)),
+    };
   }
 
   // ---- pixel analysis: load the photo into an offscreen canvas we can read back ----
@@ -1580,7 +1747,12 @@
   function startTwistTrace() {
     const shot = currentLightboxShot();
     if (!shot) return;
-    updateLightboxFrameDisplay(shot, true); // tracing needs the full original photo, not a cropped/rotated view
+    // Traces at whatever scale the photo is currently shown at — cropped/
+    // zoomed if the shot has a saved frame, full otherwise — so a trace
+    // made while zoomed into the sail stays at that same zoom instead of
+    // jumping back out to the full photo. The overlay tracks the frame's
+    // geometry (see syncTwistOverlayViewBox) so clicks still land correctly
+    // either way.
     twistState = { mode: 'await-reference', referenceFrac: null, headFrac: null, points: [], dragIndex: null, imageAnalysis: null, imageAnalysisFile: null };
     el.twistOverlay.classList.remove('is-hidden');
     el.twistOverlay.classList.add('is-active');
@@ -1644,12 +1816,12 @@
 
   el.twistOverlay.addEventListener('click', (e) => {
     if (!twistState || (twistState.mode !== 'await-reference' && twistState.mode !== 'await-head')) return;
-    advanceTwistPick(twistFracFromEvent(e));
+    advanceTwistPick(twistNaturalFracFromEvent(e));
   });
   el.twistOverlay.addEventListener('dblclick', (e) => {
     e.preventDefault();
     if (!twistState || twistState.mode !== 'editing') return;
-    const frac = twistFracFromEvent(e);
+    const frac = twistNaturalFracFromEvent(e);
     if (twistState.dragIndex === null) {
       let bestI = -1, bestD = Infinity;
       twistState.points.forEach((p, i) => {
@@ -1671,7 +1843,7 @@
     if (!twistState || twistState.dragIndex === null) return;
     // Snap live while dragging too, so the line visibly follows the leech
     // as the point moves, not just once it's dropped.
-    twistState.points[twistState.dragIndex] = snapFracToLeech(twistFracFromEvent(e));
+    twistState.points[twistState.dragIndex] = snapFracToLeech(twistNaturalFracFromEvent(e));
     renderTwistOverlay();
   });
 

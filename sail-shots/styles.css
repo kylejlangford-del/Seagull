@@ -69,6 +69,13 @@ h1{margin:10px 0 14px;font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:.98;lette
    shows sky and crops the hull off. Biasing the crop down keeps the boat in
    view. The lightbox (click to open) always shows the full, uncropped photo. */
 .shot-card__image-wrap img{width:100%;height:100%;object-fit:cover;object-position:50% 70%;display:block}
+/* A saved frame overrides the default cover/position above: app.js sets
+   explicit percentage width/height/left/top (position:absolute) so the
+   crop's own pan/zoom/rotation can be reproduced exactly — see
+   frameRenderFit in app.js. The wrap's fixed 4:3 aspect-ratio (and
+   overflow:hidden) above match GRID_TARGET_AR, which is what keeps this
+   undistorted. */
+.shot-card__image-wrap img.is-framed{position:absolute}
 .shot-card__image-wrap.is-clickable{cursor:zoom-in}
 .shot-card__date{position:absolute;z-index:2;left:10px;bottom:10px;padding:4px 9px;border-radius:7px;background:rgba(6,16,27,.72);backdrop-filter:blur(3px);color:var(--text);font-size:.68rem;font-weight:700}
 /* line-height:1.4 (not the default "normal") is needed here specifically for
@@ -179,6 +186,13 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
 .lightbox__body{display:flex;align-items:stretch;gap:14px;max-width:94vw;max-height:88vh}
 .lightbox__image-wrap{position:relative;display:inline-block;line-height:0;border-radius:12px;overflow:hidden;background:#04090f}
 .lightbox__image-wrap img{display:block;max-width:56vw;max-height:88vh;width:auto;height:auto}
+/* A framed <img> is sized by percentage (often well over 100%, when
+   zoomed in) via app.js, not by its own intrinsic size — the max-width/
+   max-height above are meant for the plain unframed photo and would
+   otherwise clip a zoomed-in crop down to the wrap's own box. The WRAP
+   carries the equivalent constraint instead (.lightbox__image-wrap.is-framed
+   above), which is what app.js actually measures. */
+.lightbox__image-wrap img.is-framed{max-width:none;max-height:none}
 
 /* Side panels — the data readout (left) and the comment box (right) — are
    the same fixed width so the photo sits centered between two balanced
@@ -227,15 +241,16 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
    never rotates; the photo underneath does. */
 .lightbox__frame-grid{position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(to right, rgba(255,255,255,.55) 1px, transparent 1px),linear-gradient(to bottom, rgba(255,255,255,.55) 1px, transparent 1px);background-size:33.333% 33.333%}
 /* When a shot has a saved (or in-progress) frame, the lightbox photo shows
-   the cropped/zoomed/rotated view instead of the full original —
-   object-fit and object-position handle the crop/pan; the extra
-   scale()/rotate() transform layers zoom and straightening on top of
-   that. The crop can be any shape the user drew, not just 4:3, so there's
-   no fixed aspect-ratio/width here — app.js sizes the <img> to the crop's
-   own ratio in JS (sizeLightboxImgToFrameAR), fit within whatever box the
-   plain (unframed) rule below already resolves to at the current
-   breakpoint. */
-.lightbox__image-wrap img.is-framed{object-fit:cover}
+   the cropped/zoomed/rotated view instead of the full original. The crop
+   can be any shape the user drew, not just 4:3, so app.js sizes the WRAP
+   (not the <img>) to the crop's own ratio in JS
+   (sizeLightboxWrapToFrameAR), fit within the max-width/max-height set
+   below — that's the visible "window" onto the crop. The <img> itself is
+   then absolutely positioned and sized in percentages of that wrap
+   (frameRenderFit/setImgRenderFit in app.js) so it can be panned to any
+   point on either axis and rotated around the crop's own center; the
+   wrap's overflow:hidden (set above) clips it to exactly the crop. */
+.lightbox__image-wrap.is-framed{max-width:56vw;max-height:88vh}
 
 /* Crop mode: the photo is shown in full (unframed, natural aspect ratio)
    with a freely resizable box drawn on top that the user drags/resizes to
@@ -352,10 +367,11 @@ button,.ghost-button,.file-drop,.col-chip,.text-link{touch-action:manipulation;-
      them. */
   .lightbox__inner{padding-top:calc(44px + max(12px,env(safe-area-inset-top)) + 12px)}
   .lightbox__body{flex-direction:column;max-width:100%;max-height:none}
-  /* is-framed no longer needs its own override here — app.js reads
-     max-width/max-height off this same plain rule (whatever the current
-     breakpoint resolves them to) and fits the crop's own ratio inside it. */
   .lightbox__image-wrap img{max-width:100%;max-height:50vh}
+  /* app.js reads max-width/max-height off the WRAP (sizeLightboxWrapToFrameAR)
+     when a frame is in effect, so this needs its own explicit override at
+     this breakpoint — the plain rule above only constrains the <img>. */
+  .lightbox__image-wrap.is-framed{max-width:100%;max-height:50vh}
   .lightbox__data,.lightbox__comment-wrap{width:100%;flex:0 0 auto;max-height:none}
 
   .preview-item{grid-template-columns:52px 1fr auto;gap:9px;padding:8px}
