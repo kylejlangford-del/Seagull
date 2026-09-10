@@ -6966,7 +6966,7 @@
       "capturedAt": "2026-09-10T12:36:31.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:31.000Z",
         "BSP_kts": "24.71529428949612",
@@ -7000,7 +7000,7 @@
       "capturedAt": "2026-09-10T12:36:31.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:31.000Z",
         "BSP_kts": "24.71529428949612",
