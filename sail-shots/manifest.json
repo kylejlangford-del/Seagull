@@ -408,7 +408,8 @@
         "FootCamber_deg": "21.18",
         "MainTravellerAngle_deg": "-0.82",
         "MainTravellerCarPosition": "-0.08"
-      }
+      },
+      "comment": "Downwind margianl foiling"
     },
     {
       "id": "2026-09-09T13-54-59-000Z-dsc01234",
