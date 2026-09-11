@@ -2597,14 +2597,49 @@
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const blob = await res.blob();
     const bitmap = await createImageBitmap(blob);
-    const dataUrl = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(reader.error || new Error('FileReader failed'));
-      reader.readAsDataURL(blob);
-    });
-    return { dataUrl, width: bitmap.width, height: bitmap.height, isPng: blob.type === 'image/png' };
+    // Re-encode through a canvas rather than embedding the fetched bytes
+    // directly: jsPDF's JPEG support just splices the original compressed
+    // stream into the PDF as a DCTDecode stream without transcoding it, and
+    // photos served from R2 are often progressive-encoded JPEGs, which
+    // jsPDF's own decoder can't parse -- that mismatch is what produced the
+    // vertical-noise corruption seen in earlier reports. A canvas re-encode
+    // always emits a baseline JPEG, which jsPDF embeds cleanly regardless of
+    // how the source file was encoded.
+    const canvas = document.createElement('canvas');
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    canvas.getContext('2d').drawImage(bitmap, 0, 0);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+    return { dataUrl, width: bitmap.width, height: bitmap.height };
   }
+
+  // Color palette mirrors the site's own :root custom properties in
+  // styles.css (see --bg/--surface/--accent/--cat-* etc.) so the report
+  // reads as an extension of the gallery rather than a generic export.
+  const REPORT_THEME = {
+    bg: [6, 16, 27],
+    card: [11, 24, 37],
+    surface: [10, 23, 37],
+    surface2: [13, 29, 44],
+    line: [39, 53, 69],
+    text: [237, 245, 251],
+    muted: [143, 162, 181],
+    muted2: [181, 195, 207],
+    accent: [71, 231, 219],
+    danger: [255, 107, 107],
+  };
+  const REPORT_CATEGORY_COLOR = {
+    manoeuvre: [199, 146, 234],
+    'gybe-exit': [255, 143, 163],
+    upwind: [71, 231, 219],
+    downwind: [126, 200, 255],
+    other: [181, 195, 207],
+  };
+  // Metadata carried on every row purely for matching/provenance (raw unix
+  // seconds, the CSV's own datetime strings) -- the page header already
+  // shows a formatted capture time, so these would just be redundant noise
+  // in a report meant to read as "the boat data for this photo".
+  const REPORT_ROW_SKIP_KEYS = new Set(['ts', 'Datetime', 'Timestamp']);
 
   // Builds and downloads a PDF of the checked shots: one photo per page,
   // with its category/timestamp, comment, and the full row of boat data
@@ -2626,8 +2661,14 @@
     const originalLabel = elReport.generateBtn.textContent;
     elReport.generateBtn.disabled = true;
 
+    const T = REPORT_THEME;
+    const fill = (rgb) => doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+    const stroke = (rgb) => doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
+    const ink = (rgb) => doc.setTextColor(rgb[0], rgb[1], rgb[2]);
+
+    let doc;
     try {
-      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+      doc = new jsPDF({ unit: 'pt', format: 'a4' });
       const pageW = doc.internal.pageSize.getWidth();
       const pageH = doc.internal.pageSize.getHeight();
       const margin = 36;
@@ -2637,61 +2678,117 @@
         const shot = shots[i];
         elReport.generateBtn.textContent = `Generating ${i + 1}/${shots.length}…`;
         if (i > 0) doc.addPage();
+
+        // Full-bleed dark page background -- jsPDF pages default to white.
+        fill(T.bg);
+        doc.rect(0, 0, pageW, pageH, 'F');
+
         let y = margin;
 
+        // Category pill, styled after .shot-card__category: a dark chip
+        // with the category's own accent color for the text.
+        const catColor = REPORT_CATEGORY_COLOR[shot.category] || REPORT_CATEGORY_COLOR.other;
+        const catLabel = (CATEGORY_LABEL[shot.category] || shot.category || 'Other').toUpperCase();
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(13);
-        doc.text(CATEGORY_LABEL[shot.category] || shot.category || 'Other', margin, y);
+        doc.setFontSize(9);
+        const pillPadX = 9, pillH = 18;
+        const catW = doc.getTextWidth(catLabel) + pillPadX * 2;
+        fill(T.surface2);
+        stroke(T.line);
+        doc.setLineWidth(0.75);
+        doc.roundedRect(margin, y - 13, catW, pillH, 5, 5, 'FD');
+        ink(catColor);
+        doc.text(catLabel, margin + pillPadX, y);
+
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(10);
+        ink(T.muted2);
         doc.text(formatShotDate(shot.capturedAt) || '', pageW - margin, y, { align: 'right' });
-        y += 16;
+        y += 30;
 
         try {
           const img = await loadImageForReport(photoSrc(shot.file));
-          const maxImgH = pageH * 0.55;
+          const maxImgH = pageH * 0.52;
           let w = contentW, h = (w * img.height) / img.width;
           if (h > maxImgH) { h = maxImgH; w = (h * img.width) / img.height; }
           const x = margin + (contentW - w) / 2;
-          doc.addImage(img.dataUrl, img.isPng ? 'PNG' : 'JPEG', x, y, w, h);
-          y += h + 16;
+          doc.addImage(img.dataUrl, 'JPEG', x, y, w, h);
+          // Frame the photo like a gallery card (.shot-card's rounded
+          // border), drawn on top so it reads as a crisp screenshot edge
+          // rather than a raw pasted image.
+          stroke(T.line);
+          doc.setLineWidth(1.25);
+          doc.roundedRect(x - 1, y - 1, w + 2, h + 2, 6, 6, 'S');
+          y += h + 22;
         } catch (e) {
+          doc.setFont('helvetica', 'normal');
           doc.setFontSize(9);
-          doc.setTextColor(180, 60, 60);
+          ink(T.danger);
           doc.text(`(photo failed to load: ${(e && e.message) || e})`, margin, y + 10);
-          doc.setTextColor(20, 20, 20);
           y += 24;
         }
 
         if (shot.comment) {
           doc.setFont('helvetica', 'italic');
           doc.setFontSize(10);
-          const lines = doc.splitTextToSize(`“${shot.comment}”`, contentW);
-          doc.text(lines, margin, y);
-          y += lines.length * 12 + 10;
+          const commentPadX = 12, commentPadY = 11;
+          const lines = doc.splitTextToSize(`“${shot.comment}”`, contentW - commentPadX * 2);
+          const panelH = lines.length * 13 + commentPadY * 2 - 3;
+          fill(T.surface);
+          stroke(T.line);
+          doc.setLineWidth(0.75);
+          doc.roundedRect(margin, y, contentW, panelH, 7, 7, 'FD');
+          ink(T.muted2);
+          doc.text(lines, margin + commentPadX, y + commentPadY + 7);
+          y += panelH + 18;
           doc.setFont('helvetica', 'normal');
         }
 
-        const entries = Object.entries(shot.row || {}).filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== '');
+        const entries = Object.entries(shot.row || {})
+          .filter(([k]) => !REPORT_ROW_SKIP_KEYS.has(k))
+          .filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== '');
         if (entries.length) {
           doc.setFont('helvetica', 'bold');
-          doc.setFontSize(10);
-          doc.text('Boat data', margin, y);
-          y += 13;
+          doc.setFontSize(9);
+          ink(T.accent);
+          doc.text('BOAT DATA', margin, y);
+          y += 16;
+
           doc.setFont('helvetica', 'normal');
           doc.setFontSize(8);
           const colCount = 3;
           const colW = contentW / colCount;
-          const rowH = 11;
+          const rowH = 13;
+          const padX = 12, padY = 11;
+          const rows = Math.ceil(entries.length / colCount);
+          const availH = Math.max(rowH + padY * 2, pageH - margin - y);
+          const panelH = Math.min(rows * rowH + padY * 2, availH);
+          fill(T.surface2);
+          stroke(T.line);
+          doc.setLineWidth(0.75);
+          doc.roundedRect(margin, y, contentW, panelH, 7, 7, 'FD');
+
+          const gridTop = y + padY + 7;
+          const gridBottom = y + panelH - 3;
           entries.forEach(([k, v], idx) => {
             const col = idx % colCount;
-            const row = Math.floor(idx / colCount);
-            const cellY = y + row * rowH;
-            if (cellY > pageH - margin) return; // out of room on this page -- rather truncate than spill a near-empty extra page
-            const num = parseFloat(v);
-            const val = String(v).trim() !== '' && !isNaN(num) && isFinite(num) ? num.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') : v;
-            doc.text(`${k}: ${val}`, margin + col * colW, cellY);
+            const rowIdx = Math.floor(idx / colCount);
+            const cellY = gridTop + rowIdx * rowH;
+            if (cellY > gridBottom) return; // out of room on this page -- rather truncate than spill a near-empty extra page
+            const cellX = margin + padX + col * colW;
+            const raw = String(v).trim();
+            // Only format as a number when the *entire* value is numeric --
+            // parseFloat's leading-prefix parsing used to read a value like
+            // "2026-09-11 16:39:48+02:00" as just 2026.
+            const isNum = /^-?\d+(\.\d+)?$/.test(raw);
+            const val = isNum ? Number(raw).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') : raw;
+            const label = `${k}: `;
+            ink(T.muted);
+            doc.text(label, cellX, cellY);
+            ink(T.text);
+            doc.text(String(val), cellX + doc.getTextWidth(label), cellY);
           });
+          y += panelH;
         }
       }
 
