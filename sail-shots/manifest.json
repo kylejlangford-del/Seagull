@@ -7642,31 +7642,7 @@
         "Clew_pct": "43.05327410499255",
         "FootCamber_deg": "16.37319393157959"
       },
-      "comment": "Upwind start of day pre batten adjustment",
-      "twistProfile": {
-        "points": [
-          {
-            "xFrac": 0.40482233502538073,
-            "yFrac": 0.7026988932291667
-          },
-          {
-            "xFrac": 0.4353981598984772,
-            "yFrac": 0.55727734375
-          },
-          {
-            "xFrac": 0.4388681789340102,
-            "yFrac": 0.4292882181803386
-          },
-          {
-            "xFrac": 0.4297271573604061,
-            "yFrac": 0.2925828806559245
-          },
-          {
-            "xFrac": 0.4213197969543147,
-            "yFrac": 0.15587754313151045
-          }
-        ]
-      }
+      "comment": "Upwind start of day pre batten adjustment"
     },
     {
       "id": "2026-09-11T10-52-27-000Z-dsc01566",
