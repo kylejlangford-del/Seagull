@@ -10490,7 +10490,27 @@
         "FootCamber_deg": "15.644725322723389",
         "Timestamp": "2026-09-11 13:49:59+02:00"
       },
-      "comment": ""
+      "comment": "",
+      "frame": {
+        "rotationDeg": 0,
+        "lightbox": {
+          "widthPct": 127.0573607827238,
+          "heightPct": 166.2337557896895,
+          "leftPct": 0,
+          "topPct": -66.23375578968948,
+          "originXPct": 39.352304889681434,
+          "originYPct": 69.92187311026198,
+          "aspectRatio": 0.7361572181372059
+        },
+        "grid": {
+          "widthPct": 127.0573607827238,
+          "heightPct": 301.08379332399005,
+          "leftPct": 0,
+          "topPct": -160.52342792356376,
+          "originXPct": 39.352304889681434,
+          "originYPct": 69.92187311026198
+        }
+      }
     },
     {
       "id": "2026-09-11T14-39-48-000Z-dsc01708",
