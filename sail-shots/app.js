@@ -2706,41 +2706,28 @@
         doc.text(formatShotDate(shot.capturedAt) || '', pageW - margin, y, { align: 'right' });
         y += 30;
 
-        try {
-          const img = await loadImageForReport(photoSrc(shot.file));
-          const maxImgH = pageH * 0.52;
-          let w = contentW, h = (w * img.height) / img.width;
-          if (h > maxImgH) { h = maxImgH; w = (h * img.width) / img.height; }
-          const x = margin + (contentW - w) / 2;
-          doc.addImage(img.dataUrl, 'JPEG', x, y, w, h);
-          // Frame the photo like a gallery card (.shot-card's rounded
-          // border), drawn on top so it reads as a crisp screenshot edge
-          // rather than a raw pasted image.
-          stroke(T.line);
-          doc.setLineWidth(1.25);
-          doc.roundedRect(x - 1, y - 1, w + 2, h + 2, 6, 6, 'S');
-          y += h + 22;
-        } catch (e) {
-          doc.setFont('helvetica', 'normal');
-          doc.setFontSize(9);
-          ink(T.danger);
-          doc.text(`(photo failed to load: ${(e && e.message) || e})`, margin, y + 10);
-          y += 24;
-        }
+        // Two columns below the header, mirroring the site's own lightbox
+        // (category + boat data on the left, photo taking the rest of the
+        // frame) rather than stacking the data under the photo.
+        const colGap = 16;
+        const leftW = Math.round(contentW * 0.34);
+        const rightW = contentW - leftW - colGap;
+        const rightX = margin + leftW + colGap;
+        let leftY = y;
 
         if (shot.comment) {
           doc.setFont('helvetica', 'italic');
-          doc.setFontSize(10);
-          const commentPadX = 12, commentPadY = 11;
-          const lines = doc.splitTextToSize(`“${shot.comment}”`, contentW - commentPadX * 2);
-          const panelH = lines.length * 13 + commentPadY * 2 - 3;
+          doc.setFontSize(9.5);
+          const commentPadX = 10, commentPadY = 10;
+          const lines = doc.splitTextToSize(`“${shot.comment}”`, leftW - commentPadX * 2);
+          const panelH = lines.length * 12.5 + commentPadY * 2 - 3;
           fill(T.surface);
           stroke(T.line);
           doc.setLineWidth(0.75);
-          doc.roundedRect(margin, y, contentW, panelH, 7, 7, 'FD');
+          doc.roundedRect(margin, leftY, leftW, panelH, 7, 7, 'FD');
           ink(T.muted2);
-          doc.text(lines, margin + commentPadX, y + commentPadY + 7);
-          y += panelH + 18;
+          doc.text(lines, margin + commentPadX, leftY + commentPadY + 7);
+          leftY += panelH + 14;
           doc.setFont('helvetica', 'normal');
         }
 
@@ -2751,31 +2738,26 @@
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(9);
           ink(T.accent);
-          doc.text('BOAT DATA', margin, y);
-          y += 16;
+          doc.text('BOAT DATA', margin, leftY);
+          leftY += 16;
 
           doc.setFont('helvetica', 'normal');
-          doc.setFontSize(8);
-          const colCount = 3;
-          const colW = contentW / colCount;
-          const rowH = 13;
-          const padX = 12, padY = 11;
-          const rows = Math.ceil(entries.length / colCount);
-          const availH = Math.max(rowH + padY * 2, pageH - margin - y);
-          const panelH = Math.min(rows * rowH + padY * 2, availH);
+          doc.setFontSize(7.5);
+          const rowH = 12.5;
+          const padX = 10, padY = 10;
+          const availH = Math.max(rowH + padY * 2, pageH - margin - leftY);
+          const maxRows = Math.max(1, Math.floor((availH - padY * 2) / rowH));
+          const rows = Math.min(entries.length, maxRows);
+          const panelH = rows * rowH + padY * 2;
           fill(T.surface2);
           stroke(T.line);
           doc.setLineWidth(0.75);
-          doc.roundedRect(margin, y, contentW, panelH, 7, 7, 'FD');
+          doc.roundedRect(margin, leftY, leftW, panelH, 7, 7, 'FD');
 
-          const gridTop = y + padY + 7;
-          const gridBottom = y + panelH - 3;
-          entries.forEach(([k, v], idx) => {
-            const col = idx % colCount;
-            const rowIdx = Math.floor(idx / colCount);
-            const cellY = gridTop + rowIdx * rowH;
-            if (cellY > gridBottom) return; // out of room on this page -- rather truncate than spill a near-empty extra page
-            const cellX = margin + padX + col * colW;
+          const listTop = leftY + padY + 6.5;
+          entries.slice(0, rows).forEach(([k, v], idx) => {
+            const cellY = listTop + idx * rowH;
+            const cellX = margin + padX;
             const raw = String(v).trim();
             // Only format as a number when the *entire* value is numeric --
             // parseFloat's leading-prefix parsing used to read a value like
@@ -2788,7 +2770,27 @@
             ink(T.text);
             doc.text(String(val), cellX + doc.getTextWidth(label), cellY);
           });
-          y += panelH;
+          leftY += panelH;
+        }
+
+        try {
+          const img = await loadImageForReport(photoSrc(shot.file));
+          const maxW = rightW, maxH = pageH - margin - y;
+          let w = maxW, h = (w * img.height) / img.width;
+          if (h > maxH) { h = maxH; w = (h * img.width) / img.height; }
+          const x = rightX + (rightW - w) / 2;
+          doc.addImage(img.dataUrl, 'JPEG', x, y, w, h);
+          // Frame the photo like a gallery card (.shot-card's rounded
+          // border), drawn on top so it reads as a crisp screenshot edge
+          // rather than a raw pasted image.
+          stroke(T.line);
+          doc.setLineWidth(1.25);
+          doc.roundedRect(x - 1, y - 1, w + 2, h + 2, 6, 6, 'S');
+        } catch (e) {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(9);
+          ink(T.danger);
+          doc.text(`(photo failed to load: ${(e && e.message) || e})`, rightX, y + 10);
         }
       }
 
