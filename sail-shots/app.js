@@ -2722,15 +2722,16 @@
   // side -- it just looks a row up. Only Sept 10 shots appear in that
   // table, so this panel can never touch Sept 9's data even by accident.
   const SYNC_TABLE_PATH = './sync-table.json';
-  // Which single day currently has a sync table built for it -- the panel
-  // only shows its controls while this day is the one selected in the
-  // gallery's date tabs (see updateSyncPanelForDay below). Update this (and
-  // build a matching sync-table.json) if another day's camera-clock offset
-  // ever needs adjusting the same way.
-  const SYNC_DATA_DAY_KEY = '2026-09-10';
-  let syncTableMap = null; // Map<shotId, { baseMs, rows: [{v:[...23 floats],t:isoString}, ...] }>
-  let syncTableOffsets = []; // ascending, e.g. [-2.0, -1.5, ..., 8.0]
-  let syncTableFieldOrder = []; // 23 manifest row keys, in the order sync-table.json's v[] arrays use
+  // sync-table.json holds one entry per day that has an offset table built
+  // for it: { days: { "2026-09-10": {order, offsets, shots}, "2026-09-11": {...} } }.
+  // Different days' CSVs can carry different column sets (Sept 11's logger
+  // captured fewer/differently-named channels than Sept 10's), so each day
+  // keeps its own field order rather than sharing one global schema -- that
+  // also means which days the panel supports is read from the file itself,
+  // not hardcoded here. The panel's controls only show while the gallery's
+  // selected date tab is one of these days (see updateSyncPanelForDay).
+  let syncDayTables = {}; // { [dayKey]: { fieldOrder: string[], offsets: number[], map: Map<shotId, {baseMs, rows}> } }
+  let activeSyncDay = null; // the day key currently backing the panel's controls, or null when the selected tab has no sync data
   let syncOffsetSeconds = 0;
   let syncPublished = true; // false = there's a preview offset not yet published to GitHub
   let syncPanelStatus = 'loading'; // loading | ready | error | unavailable
@@ -2851,21 +2852,25 @@
     const res = await fetch(SYNC_TABLE_PATH, { cache: 'no-store' });
     if (!res.ok) throw new Error(`couldn't load sync-table.json (${res.status})`);
     const data = await res.json();
-    syncTableFieldOrder = data.order;
-    syncTableOffsets = data.offsets;
-    syncTableMap = new Map();
-    data.shots.forEach(([id, baseIso, perOffset]) => {
-      syncTableMap.set(id, { baseMs: new Date(baseIso).getTime(), rows: perOffset });
+    syncDayTables = {};
+    Object.entries(data.days || {}).forEach(([dayKey, dayData]) => {
+      const map = new Map();
+      dayData.shots.forEach(([id, baseIso, perOffset]) => {
+        map.set(id, { baseMs: new Date(baseIso).getTime(), rows: perOffset });
+      });
+      syncDayTables[dayKey] = { fieldOrder: dayData.order, offsets: dayData.offsets, map };
     });
   }
 
   // Nearest available grid value to a requested offset -- the table is only
   // built every 0.5s, and manual entry or repeated stepping could otherwise
-  // land between two grid points or past either end.
+  // land between two grid points or past either end. Scoped to whichever
+  // day is currently active in the panel, since each day has its own grid.
   function snapToOffsetGrid(val) {
-    if (!syncTableOffsets.length) return 0;
-    let best = syncTableOffsets[0], bestDiff = Math.abs(val - best);
-    for (const o of syncTableOffsets) {
+    const table = syncDayTables[activeSyncDay];
+    if (!table || !table.offsets.length) return 0;
+    let best = table.offsets[0], bestDiff = Math.abs(val - best);
+    for (const o of table.offsets) {
       const diff = Math.abs(val - o);
       if (diff < bestDiff) { best = o; bestDiff = diff; }
     }
@@ -2873,19 +2878,25 @@
   }
 
   // Reads whatever offset is implied by the manifest as it currently stands
-  // (comparing one Sept 10 shot's live capturedAt against that same shot's
-  // baseline camera time in the table) so the panel opens already showing
-  // the correction that's actually live on the site, rather than 0.
+  // (comparing one active-day shot's live capturedAt against that same
+  // shot's baseline camera time in that day's table) so the panel opens
+  // already showing the correction that's actually live on the site,
+  // rather than 0. Strictly scoped to activeSyncDay -- a shot from another
+  // day is never consulted, so switching days can never leak one day's
+  // offset into another's display.
   function detectCurrentOffset() {
+    const table = syncDayTables[activeSyncDay];
+    if (!table) return 0;
     const shots = existingManifest.shots || [];
     for (const shot of shots) {
-      const entry = syncTableMap.get(shot.id);
+      if (dateKeyOf(shot) !== activeSyncDay) continue;
+      const entry = table.map.get(shot.id);
       if (!entry) continue;
       const liveMs = new Date(shot.capturedAt).getTime();
       if (Number.isNaN(liveMs)) continue;
       return snapToOffsetGrid((liveMs - entry.baseMs) / 1000);
     }
-    return 0; // no Sept 10 shots loaded (or none matched) -- nothing to sync yet
+    return 0; // no shots loaded for this day (or none matched) -- nothing to sync yet
   }
 
   function setSyncStatus(kind, message) {
@@ -2919,27 +2930,32 @@
     else setSyncStatus('dirty');
   }
 
-  // Mutates every Sept 10 shot in existingManifest to reflect `newOffset`
-  // (snapped to the nearest 0.5s grid point) -- new capturedAt, and the
-  // full 23-field boat-data row, straight from the lookup table. This only
-  // touches in-memory state and re-renders; nothing publishes until the
-  // Publish button is clicked.
+  // Mutates every shot on the active sync day in existingManifest to
+  // reflect `newOffset` (snapped to the nearest 0.5s grid point) -- new
+  // capturedAt, and the full boat-data row for that day, straight from
+  // that day's lookup table. This only touches in-memory state and
+  // re-renders; nothing publishes until the Publish button is clicked.
+  // Strictly scoped to activeSyncDay via dateKeyOf() + the day's own map,
+  // so adjusting one day's offset can never touch another day's shots even
+  // though every day's shots live in the same manifest.shots array.
   function applySyncOffset(newOffset) {
-    if (!syncTableMap) return;
+    const table = syncDayTables[activeSyncDay];
+    if (!table) return;
     const snapped = snapToOffsetGrid(newOffset);
-    const idx = syncTableOffsets.indexOf(snapped);
+    const idx = table.offsets.indexOf(snapped);
     if (idx === -1) return;
 
     let touched = 0;
     (existingManifest.shots || []).forEach(shot => {
-      const entry = syncTableMap.get(shot.id);
-      if (!entry) return; // not a Sept 10 shot -- never touched by this panel
+      if (dateKeyOf(shot) !== activeSyncDay) return; // not on the active sync day -- never touched by this panel
+      const entry = table.map.get(shot.id);
+      if (!entry) return; // not a shot present in this day's sync table
       const rowData = entry.rows[idx];
       if (!rowData) return; // grid point had no matching boat-data sample for this shot (shouldn't happen -- built with 0 misses)
       shot.capturedAt = new Date(entry.baseMs + snapped * 1000).toISOString();
       shot.gapSeconds = 0;
       shot.row = shot.row || {};
-      syncTableFieldOrder.forEach((key, i) => { shot.row[key] = String(rowData.v[i]); });
+      table.fieldOrder.forEach((key, i) => { shot.row[key] = String(rowData.v[i]); });
       shot.row.Timestamp = rowData.t;
       touched++;
     });
@@ -2951,7 +2967,7 @@
     // If the lightbox is open on one of the shots we just touched, refresh
     // it in place so the boat-data panel and timestamp update too -- passing
     // no scopedOrder preserves whatever scoped/manoeuvre session was active.
-    if (currentLightboxShotId && syncTableMap.has(currentLightboxShotId)) {
+    if (currentLightboxShotId && table.map.has(currentLightboxShotId)) {
       const shot = existingManifest.shots.find(s => s.id === currentLightboxShotId);
       if (shot) openLightbox(shot);
     }
@@ -2964,7 +2980,8 @@
       return;
     }
     const sign = syncOffsetSeconds > 0 ? '+' : '';
-    if (!confirm(`Publish ${sign}${syncOffsetSeconds.toFixed(1)}s as the camera-clock offset for all Sept 10 photos?\n\nThis updates manifest.json on GitHub immediately.`)) return;
+    const dayLabel = activeSyncDay ? syncPanelDayLabel(activeSyncDay) : 'this day';
+    if (!confirm(`Publish ${sign}${syncOffsetSeconds.toFixed(1)}s as the camera-clock offset for all ${dayLabel} photos?\n\nThis updates manifest.json on GitHub immediately.`)) return;
     el2.publishBtn.disabled = true;
     setSyncStatus('saving');
     const ok = await publishManifestToGithub();
@@ -2999,23 +3016,37 @@
   }
 
   // Shows the panel's controls only while the gallery's currently-selected
-  // date tab (selectedDateKey) is the one day sync-table.json actually has
-  // data for -- otherwise swaps in a plain "no data for this day" message.
-  // Without this, adjusting the panel while browsing Sept 9 or Sept 11
-  // photos would silently do nothing (applySyncOffset already only ever
-  // touches shots present in syncTableMap), which reads as broken rather
-  // than as "there's nothing to sync on this day".
+  // date tab (selectedDateKey) is one of the days sync-table.json actually
+  // has data for -- otherwise swaps in a plain "no data for this day"
+  // message. Without this, adjusting the panel while browsing a day with
+  // no table (applySyncOffset already only ever touches shots present in
+  // that day's map) would silently do nothing, which reads as broken
+  // rather than as "there's nothing to sync on this day". This is also
+  // where activeSyncDay gets set/cleared, and -- once the table is loaded
+  // -- where the offset display gets recomputed for whichever day just
+  // became active, so switching tabs always shows that day's own offset
+  // rather than carrying over the previous day's.
   function updateSyncPanelForDay() {
     if (!el2.panel) return;
-    const isDataDay = selectedDateKey === SYNC_DATA_DAY_KEY;
+    const isDataDay = !!syncDayTables[selectedDateKey];
+    activeSyncDay = isDataDay ? selectedDateKey : null;
     el2.title.textContent = isDataDay
-      ? `Camera Clock Sync \u2014 ${syncPanelDayLabel(SYNC_DATA_DAY_KEY)}`
+      ? `Camera Clock Sync \u2014 ${syncPanelDayLabel(selectedDateKey)}`
       : 'Camera Clock Sync';
     el2.body.classList.toggle('is-hidden', !isDataDay);
     el2.noData.classList.toggle('is-hidden', isDataDay);
     if (!isDataDay) {
       el2.noDataText.textContent = `No camera sync data for ${syncPanelDayLabel(selectedDateKey)}`;
+      return;
     }
+    // A day with a table just became active -- recompute and redisplay its
+    // own offset rather than leaving whatever the previously-active day's
+    // offset happened to be. detectCurrentOffset() starts each day neutral
+    // at 0 until it finds a shot whose capturedAt already implies a
+    // published correction for that specific day.
+    syncOffsetSeconds = detectCurrentOffset();
+    syncPublished = true;
+    updateSyncPanelDisplay();
   }
 
   async function initSyncPanel() {
@@ -3023,10 +3054,8 @@
     updateSyncPanelForDay();
     try {
       await loadSyncTable();
-      syncOffsetSeconds = detectCurrentOffset();
-      syncPublished = true;
+      updateSyncPanelForDay(); // table is loaded now -- re-run so activeSyncDay/offset reflect it
       syncPanelStatus = 'ready';
-      updateSyncPanelDisplay();
     } catch (err) {
       syncPanelStatus = 'error';
       syncPanelErrorMessage = err.message || String(err);
