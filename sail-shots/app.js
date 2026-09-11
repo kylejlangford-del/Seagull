@@ -1724,7 +1724,10 @@
     if (pts.length === 0) return;
     const { w, h } = twistImgDims();
     const px = (p) => ({ x: p.xFrac * w, y: p.yFrac * h });
-    const r = Math.max(4, Math.round(Math.min(w, h) * 0.006));
+    // Kept small and endpoints only modestly larger -- these are dragged for
+    // precise pixel-level leech placement, so an oversized handle makes fine
+    // positioning harder, not easier.
+    const r = Math.max(2.5, Math.min(w, h) * 0.003);
 
     if (pts.length > 1) {
       const line = document.createElementNS(SVG_NS, 'polyline');
@@ -1830,20 +1833,25 @@
       });
       if (bestI >= 0 && bestD < 0.06) twistState.dragIndex = bestI;
     } else {
-      // Dropping a point: snap it onto the nearest leech edge at that
-      // height, then smooth the whole line so the newly-placed point
-      // doesn't read as a kink against its neighbors.
-      twistState.points[twistState.dragIndex] = snapFracToLeech(frac);
+      // Dropping a point: place it exactly where the user pointed. This
+      // used to re-snap onto the strongest nearby edge and then blend it
+      // toward its neighbors -- helpful for the initial auto-trace, but for
+      // a hand correction it fights the user: a small mouse move could jump
+      // the point onto a completely different high-contrast pixel elsewhere
+      // in the search window, and the follow-up smoothing pulled it partway
+      // back again. Manual placement is taken as final and left alone.
+      twistState.points[twistState.dragIndex] = frac;
       twistState.dragIndex = null;
-      twistState.points = smoothTwistPoints(twistState.points);
     }
     renderTwistOverlay();
   });
   el.twistOverlay.addEventListener('mousemove', (e) => {
     if (!twistState || twistState.dragIndex === null) return;
-    // Snap live while dragging too, so the line visibly follows the leech
-    // as the point moves, not just once it's dropped.
-    twistState.points[twistState.dragIndex] = snapFracToLeech(twistNaturalFracFromEvent(e));
+    // Track the cursor directly (no edge-snapping) so small mouse
+    // movements move the point by small amounts instead of the point
+    // periodically locking onto whichever nearby pixel column has the
+    // strongest edge score.
+    twistState.points[twistState.dragIndex] = twistNaturalFracFromEvent(e);
     renderTwistOverlay();
   });
 
