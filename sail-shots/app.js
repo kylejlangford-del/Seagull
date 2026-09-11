@@ -2555,7 +2555,11 @@
     injectSyncPanelStyles();
     const panel = document.createElement('div');
     panel.id = 'syncPanel';
-    panel.style.position = 'relative';
+    // No inline position here on purpose: an inline style always beats the
+    // #syncPanel{position:fixed} stylesheet rule below, which is what
+    // actually pins this panel to the viewport corner. "fixed" already
+    // establishes a containing block for the absolutely-positioned
+    // collapse button inside it, so nothing extra is needed for that either.
     panel.innerHTML = `
       <button type="button" class="syncPanel__collapse" aria-label="Collapse">&minus;</button>
       <h4>Camera Clock Sync &mdash; Sept 10</h4>
