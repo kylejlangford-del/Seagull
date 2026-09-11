@@ -633,7 +633,7 @@
         sub.textContent = note;
         tab.appendChild(sub);
       }
-      tab.addEventListener('click', () => { selectedDateKey = key; selectedCategory = 'all'; renderGallery(); });
+      tab.addEventListener('click', () => { selectedDateKey = key; selectedCategory = 'all'; renderGallery(); updateSyncPanelForDay(); });
       el.dateTabs.appendChild(tab);
     });
 
@@ -2503,6 +2503,12 @@
   // side -- it just looks a row up. Only Sept 10 shots appear in that
   // table, so this panel can never touch Sept 9's data even by accident.
   const SYNC_TABLE_PATH = './sync-table.json';
+  // Which single day currently has a sync table built for it -- the panel
+  // only shows its controls while this day is the one selected in the
+  // gallery's date tabs (see updateSyncPanelForDay below). Update this (and
+  // build a matching sync-table.json) if another day's camera-clock offset
+  // ever needs adjusting the same way.
+  const SYNC_DATA_DAY_KEY = '2026-09-10';
   let syncTableMap = null; // Map<shotId, { baseMs, rows: [{v:[...23 floats],t:isoString}, ...] }>
   let syncTableOffsets = []; // ascending, e.g. [-2.0, -1.5, ..., 8.0]
   let syncTableFieldOrder = []; // 23 manifest row keys, in the order sync-table.json's v[] arrays use
@@ -2562,8 +2568,8 @@
     // collapse button inside it, so nothing extra is needed for that either.
     panel.innerHTML = `
       <button type="button" class="syncPanel__collapse" aria-label="Collapse">&minus;</button>
-      <h4>Camera Clock Sync &mdash; Sept 10</h4>
-      <div class="syncPanel__body">
+      <h4 id="syncPanelTitle">Camera Clock Sync</h4>
+      <div class="syncPanel__body" id="syncPanelMain">
         <div class="syncPanel__offset" id="syncOffsetVal">&hellip;</div>
         <div class="syncPanel__status" id="syncStatusText">Loading sync table&hellip;</div>
         <div class="syncPanel__row">
@@ -2579,10 +2585,17 @@
         <button type="button" class="syncPanel__publish" id="syncPublishBtn" disabled>Publish this offset</button>
         <button type="button" class="syncPanel__reset" id="syncResetBtn">Reset to published</button>
       </div>
+      <div class="syncPanel__body is-hidden" id="syncPanelNoData">
+        <div class="syncPanel__status" id="syncNoDataText">No camera sync data for this day</div>
+      </div>
     `;
     document.body.appendChild(panel);
 
     el2.panel = panel;
+    el2.title = panel.querySelector('#syncPanelTitle');
+    el2.body = panel.querySelector('#syncPanelMain');
+    el2.noData = panel.querySelector('#syncPanelNoData');
+    el2.noDataText = panel.querySelector('#syncNoDataText');
     el2.offsetVal = panel.querySelector('#syncOffsetVal');
     el2.statusText = panel.querySelector('#syncStatusText');
     el2.manualInput = panel.querySelector('#syncManualInput');
@@ -2756,8 +2769,39 @@
     updateSyncPanelDisplay();
   }
 
+  // "2026-09-10" -> "Sept 10", matching the panel's original hardcoded
+  // label style. A plain unicode escape (not an HTML entity or a literal
+  // multi-byte character in the source) is used for the em dash below to
+  // stay clear of the encoding issues app.js has had before.
+  function syncPanelDayLabel(key) {
+    const [y, m, d] = key.split('-').map(Number);
+    const names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
+    return `${names[m - 1]} ${d}`;
+  }
+
+  // Shows the panel's controls only while the gallery's currently-selected
+  // date tab (selectedDateKey) is the one day sync-table.json actually has
+  // data for -- otherwise swaps in a plain "no data for this day" message.
+  // Without this, adjusting the panel while browsing Sept 9 or Sept 11
+  // photos would silently do nothing (applySyncOffset already only ever
+  // touches shots present in syncTableMap), which reads as broken rather
+  // than as "there's nothing to sync on this day".
+  function updateSyncPanelForDay() {
+    if (!el2.panel) return;
+    const isDataDay = selectedDateKey === SYNC_DATA_DAY_KEY;
+    el2.title.textContent = isDataDay
+      ? `Camera Clock Sync \u2014 ${syncPanelDayLabel(SYNC_DATA_DAY_KEY)}`
+      : 'Camera Clock Sync';
+    el2.body.classList.toggle('is-hidden', !isDataDay);
+    el2.noData.classList.toggle('is-hidden', isDataDay);
+    if (!isDataDay) {
+      el2.noDataText.textContent = `No camera sync data for ${syncPanelDayLabel(selectedDateKey)}`;
+    }
+  }
+
   async function initSyncPanel() {
     buildSyncPanelDom();
+    updateSyncPanelForDay();
     try {
       await loadSyncTable();
       syncOffsetSeconds = detectCurrentOffset();
