@@ -6,7 +6,7 @@
   // ---------- publishing straight to GitHub ----------
   // This page still has no server of its own, but a delete/category/comment
   // edit can publish itself instead of making Kyle download manifest.json
-  // and upload it by hand Ã¢ÂÂ as long as a GitHub token is on file. The token
+  // and upload it by hand — as long as a GitHub token is on file. The token
   // is a personal access token HE creates and pastes in once (see
   // connectGithub() below); it's kept only in this browser's localStorage
   // and used only for direct browser->api.github.com calls, never sent
@@ -26,24 +26,24 @@
     try {
       if (token) localStorage.setItem(GITHUB_TOKEN_KEY, token);
       else localStorage.removeItem(GITHUB_TOKEN_KEY);
-    } catch { /* localStorage unavailable Ã¢ÂÂ token just won't persist across reloads */ }
+    } catch { /* localStorage unavailable — token just won't persist across reloads */ }
   }
-  // btoa() only handles Latin1 Ã¢ÂÂ this widens any UTF-8 (e.g. a comment with
+  // btoa() only handles Latin1 — this widens any UTF-8 (e.g. a comment with
   // a curly quote or emoji) into the byte sequence btoa expects first.
   function utf8ToBase64(str) {
     return btoa(unescape(encodeURIComponent(str)));
   }
   // New shots' photo files are hosted on Cloudflare R2 (not committed to this
-  // repo Ã¢ÂÂ 700MB+ of photos doesn't belong in git or GitHub's web upload).
+  // repo — 700MB+ of photos doesn't belong in git or GitHub's web upload).
   // Older shots still have a plain "photos/whatever.jpg" repo-relative path
-  // in their manifest entry, and photoSrc() below keeps those working too Ã¢ÂÂ
+  // in their manifest entry, and photoSrc() below keeps those working too —
   // nothing needs migrating.
   const R2_PHOTO_BASE_URL = 'https://pub-1c550d12c25441ef85b207d40ac08cfe.r2.dev';
   function photoSrc(file) {
     return /^https?:\/\//i.test(file || '') ? file : `./${file}`;
   }
   // Pulls the plain filename back out of either a repo-relative path
-  // ("photos/DSC01118.JPG") or an R2 URL (".../DSC01118.JPG") Ã¢ÂÂ decoding it
+  // ("photos/DSC01118.JPG") or an R2 URL (".../DSC01118.JPG") — decoding it
   // so it displays/matches the same way a raw filename does.
   function filenameOf(file) {
     const last = (file || '').split('/').pop() || '';
@@ -70,15 +70,15 @@
   const TWIST_ANALYSIS_MAX_DIM = 1400; // downscale the photo before pixel-scanning it, for speed
   // The pixel-level edge trace always walks this many internal steps, for
   // good curve accuracy regardless of how many points the user actually
-  // sees/edits Ã¢ÂÂ that count is separate (see twistPointCount below) and is
+  // sees/edits — that count is separate (see twistPointCount below) and is
   // just a resample of this dense trace down to fewer, easier-to-drag points.
   const TWIST_DENSE_STEPS = 40;
   const TWIST_SEARCH_RADIUS_FRAC = 0.045; // how far either side of the predicted x the edge search looks, as a fraction of image width
-  const TWIST_EDGE_MIN_SCORE = 8; // below this, the local gradient is too weak to trust Ã¢ÂÂ fall back toward the straight-line guess
+  const TWIST_EDGE_MIN_SCORE = 8; // below this, the local gradient is too weak to trust — fall back toward the straight-line guess
   const TWIST_GRAPH_W = 220, TWIST_GRAPH_H = 170;
   const TWIST_GRAPH_PAD = { left: 34, right: 10, top: 10, bottom: 22 };
   const TWIST_POINT_COUNT_MIN = 3, TWIST_POINT_COUNT_MAX = 21;
-  let twistPointCount = 5; // how many points are shown/edited/saved by default Ã¢ÂÂ adjustable via the +/- stepper
+  let twistPointCount = 5; // how many points are shown/edited/saved by default — adjustable via the +/- stepper
 
   const CATEGORIES = [
     { value: 'manoeuvre', label: 'Manoeuvre Sequence' },
@@ -181,9 +181,9 @@
 
   let selectedDateKey = null;
   let selectedCategory = 'all';
-  let currentGalleryOrder = []; // the shots currently shown in the grid, in their displayed order Ã¢ÂÂ lets the lightbox step next/prev
+  let currentGalleryOrder = []; // the shots currently shown in the grid, in their displayed order — lets the lightbox step next/prev
   // When opening a collapsed manoeuvre-group card, prev/next should stay
-  // scoped to just that group's own shots rather than the whole category Ã¢ÂÂ
+  // scoped to just that group's own shots rather than the whole category —
   // this overrides currentGalleryOrder for navigation purposes only, so a
   // renderGallery() triggered from inside the lightbox (e.g. saving a
   // framing edit) can't silently widen the scope back out.
@@ -191,13 +191,13 @@
   function activeGalleryOrder() { return lightboxScopedOrder || currentGalleryOrder; }
 
   // set once a shot is deleted or re-categorized from the gallery (not the
-  // import flow) Ã¢ÂÂ these edits happen straight against existingManifest so
+  // import flow) — these edits happen straight against existingManifest so
   // the page reflects them immediately, but like everything else here they
   // aren't "real" until published, so a banner offers a manifest download
   // rather than firing one on every click
   let manifestDirty = false;
 
-  // ---------- persistence (working config only Ã¢ÂÂ the published gallery
+  // ---------- persistence (working config only — the published gallery
   // always reads manifest.json, never localStorage, so it looks the same
   // on every device once published) ----------
   function loadConfig() {
@@ -265,8 +265,8 @@
   // ---------- EXIF date extraction ----------
   // Both plain JPEG (APP1 segment) and HEIC/HEIF (an 'Exif' item box) wrap the
   // same TIFF-structured EXIF blob behind an "Exif\0\0" signature, so scanning
-  // the raw bytes for that signature Ã¢ÂÂ rather than parsing either container
-  // format Ã¢ÂÂ reads capture time out of both.
+  // the raw bytes for that signature — rather than parsing either container
+  // format — reads capture time out of both.
   function findExifTiffStart(bytes) {
     for (let i = 0; i < bytes.length - 10; i++) {
       if (bytes[i] === 0x45 && bytes[i + 1] === 0x78 && bytes[i + 2] === 0x69 && bytes[i + 3] === 0x66 &&
@@ -290,7 +290,7 @@
 
     // A 12-byte IFD entry is tag(2) + type(2) + count(4) + valueOrOffset(4).
     // "count" is the number of TYPE-sized components (e.g. string length for
-    // ASCII, 1 for a single LONG pointer) Ã¢ÂÂ it is NOT the value itself, so
+    // ASCII, 1 for a single LONG pointer) — it is NOT the value itself, so
     // ASCII strings and LONG pointers each need their own reader below.
     function readIFD(offset) {
       const entryCount = u16(offset);
@@ -390,7 +390,7 @@
   }
 
   // Expands outward from centerIndex to the widest span of rows within
-  // windowSeconds either side, in time (not row count) Ã¢ÂÂ cheap because the
+  // windowSeconds either side, in time (not row count) — cheap because the
   // window is short in wall-clock time even if the CSV has gaps.
   function getWindowIndices(centerIndex, windowSeconds) {
     const centerTs = sortedRows[centerIndex].ts;
@@ -401,7 +401,7 @@
   }
 
   // Auto-suggests a category from the heading/TWA trend around the matched
-  // row. Returns null when there isn't enough data to guess Ã¢ÂÂ the shot then
+  // row. Returns null when there isn't enough data to guess — the shot then
   // starts as "Other" and the user picks manually.
   function classifyShot(index) {
     if (index < 0 || index >= sortedRows.length || !headingColumn) return null;
@@ -451,7 +451,7 @@
     try {
       const res = await fetch(MANIFEST_PATH, { cache: 'no-store' });
       if (res.ok) existingManifest = await res.json();
-    } catch (e) { /* first run Ã¢ÂÂ manifest.json may not exist yet */ }
+    } catch (e) { /* first run — manifest.json may not exist yet */ }
     if (!Array.isArray(existingManifest.shots)) existingManifest.shots = [];
     if (!Array.isArray(existingManifest.variables)) existingManifest.variables = [];
     if (!existingManifest.dayNotes || typeof existingManifest.dayNotes !== 'object') existingManifest.dayNotes = {};
@@ -463,13 +463,13 @@
   // Boat-data values arrive at whatever precision the CSV happened to log
   // (often 2 decimals even for a load in the thousands, e.g. "2774.81"),
   // which reads as noisy clutter once a dozen-plus of them are stacked on a
-  // photo. Round each to a precision that matches its unit instead Ã¢ÂÂ loads
+  // photo. Round each to a precision that matches its unit instead — loads
   // (kgf) to whole numbers, angles/speeds (deg/kts) to one decimal, small
-  // foil measurements (m) to two Ã¢ÂÂ so the overlay reads like a clean
+  // foil measurements (m) to two — so the overlay reads like a clean
   // instrument panel rather than a raw data dump. Falls back to the raw
   // value untouched if it isn't a plain number.
   function formatOverlayValue(varName, raw) {
-    if (raw === undefined || raw === '' || raw === 'Ã¢ÂÂ') return raw;
+    if (raw === undefined || raw === '' || raw === '—') return raw;
     const num = Number(raw);
     if (Number.isNaN(num)) return raw;
     if (/_kgf$/.test(varName)) return String(Math.round(num));
@@ -483,8 +483,8 @@
   // from CSV column order) happens to be in. Groups get a visible gap
   // between them, and each row's value is colored by group. A row is simply
   // skipped if that CSV column isn't present on this shot (e.g. an older
-  // batch predating a newer column) Ã¢ÂÂ nothing renders as blank/zero.
-  // "Mast AOA" isn't a CSV column at all Ã¢ÂÂ it's computed on the fly as
+  // batch predating a newer column) — nothing renders as blank/zero.
+  // "Mast AOA" isn't a CSV column at all — it's computed on the fly as
   // AWA_deg - MastRotation_deg.
   const MAST_AOA_KEY = '__mastAoa';
   const LIGHTBOX_VAR_GROUPS = [
@@ -497,12 +497,12 @@
   ];
 
   // The boat logs MastRotation_deg as an unsigned magnitude (always
-  // positive, whichever side the mast is actually rotated to) Ã¢ÂÂ but AWA_deg
+  // positive, whichever side the mast is actually rotated to) — but AWA_deg
   // is signed by which side the wind's on (negative = wind from port). To
   // combine them (for Mast AOA, and to show a rotation value that actually
-  // means something on its own) the magnitude needs the sign of AWA_deg Ã¢ÂÂ
-  // confirmed with Kyle: same sign as AWA_deg, e.g. AWA -14ÃÂ° + raw rotation
-  // 21.4ÃÂ° -> signed rotation -21.4ÃÂ°.
+  // means something on its own) the magnitude needs the sign of AWA_deg —
+  // confirmed with Kyle: same sign as AWA_deg, e.g. AWA -14° + raw rotation
+  // 21.4° -> signed rotation -21.4°.
   function normalizedMastRotation(row) {
     if (row['MastRotation_deg'] === undefined || row['MastRotation_deg'] === '') return undefined;
     const mag = Math.abs(Number(row['MastRotation_deg']));
@@ -520,7 +520,7 @@
     return awa - rot;
   }
 
-  // Resolves one curated-list entry against a shot's matched CSV row Ã¢ÂÂ
+  // Resolves one curated-list entry against a shot's matched CSV row —
   // returns { label, value } to render, or undefined to skip the row
   // entirely (missing column / not computable).
   function lightboxVarEntry(key, row) {
@@ -569,13 +569,13 @@
 
   // ---------- manoeuvre grouping (Manoeuvre Sequence category only) ----------
   // Clusters the shots in one manoeuvre burst together and names each
-  // cluster in chronological order Ã¢ÂÂ "Tack 1", "Gybe 1", "Gybe 2", etc.,
+  // cluster in chronological order — "Tack 1", "Gybe 1", "Gybe 2", etc.,
   // counted separately per type. A cluster is a run of shots with no gap
   // bigger than MANOEUVRE_GROUP_GAP_SECONDS between consecutive capture
   // times; whether it's a tack or a gybe is read off the average TWA across
   // the cluster, using the same upwind/downwind split the auto-categorizer
   // uses elsewhere (below DOWNWIND_TWA_THRESHOLD => upwind => tack).
-  // Returns an array of { label, shots }, one entry per cluster Ã¢ÂÂ each
+  // Returns an array of { label, shots }, one entry per cluster — each
   // cluster's own shots sorted chronologically (earliest first, so opening
   // the group starts at the first shot of that manoeuvre and steps forward
   // through the rest). The array of groups itself is newest-group-first, to
@@ -661,7 +661,7 @@
 
     // Manoeuvre Sequence view only: collapse each tack/gybe burst down to a
     // single card (the earliest shot in it) with a header and a "N photos"
-    // badge instead of one card per photo Ã¢ÂÂ opening it starts at that first
+    // badge instead of one card per photo — opening it starts at that first
     // shot and steps forward through the rest in chronological order.
     if (selectedCategory === 'manoeuvre') {
       manoeuvreGroups(filtered).forEach(group => {
@@ -716,7 +716,7 @@
     deleteBtn.type = 'button';
     deleteBtn.className = 'shot-card__delete';
     deleteBtn.setAttribute('aria-label', 'Delete photo');
-    deleteBtn.textContent = 'ÃÂ';
+    deleteBtn.textContent = '×';
     deleteBtn.addEventListener('click', (e) => {
       e.stopPropagation(); // don't open the lightbox
       deleteShot(shot.id);
@@ -730,7 +730,7 @@
     applyFrameToImg(img, shot, 'grid');
 
     // The full boat-data readout now only lives in the lightbox (left
-    // panel), so it doesn't clash with the photo here Ã¢ÂÂ the card stays a
+    // panel), so it doesn't clash with the photo here — the card stays a
     // clean thumbnail with just the category/date badges. A comment box
     // sits right under it, so a quick note can be added without opening
     // the lightbox at all.
@@ -740,7 +740,7 @@
     commentInput.className = 'shot-card__comment';
     commentInput.dataset.shotId = shot.id;
     commentInput.rows = 2;
-    commentInput.placeholder = 'Add a commentÃ¢ÂÂ¦';
+    commentInput.placeholder = 'Add a comment…';
     commentInput.value = shot.comment || '';
     commentInput.addEventListener('input', () => setShotComment(shot.id, commentInput.value));
     commentInput.addEventListener('blur', () => flushPendingPublish());
@@ -754,10 +754,10 @@
   // as the thumbnail (that's the one that opens), with a "N photos" badge
   // when there's more than one hidden behind it. No per-shot controls here
   // (category/delete/comment) since those would be ambiguous applied to a
-  // whole burst Ã¢ÂÂ they stay available per-photo inside the lightbox once
+  // whole burst — they stay available per-photo inside the lightbox once
   // you've opened the group and stepped to the shot you want.
   function renderManoeuvreGroupCard(group) {
-    const repShot = group.shots[0]; // earliest in the group Ã¢ÂÂ the one that opens
+    const repShot = group.shots[0]; // earliest in the group — the one that opens
     const card = document.createElement('article');
     card.className = 'shot-card';
 
@@ -795,9 +795,9 @@
 
   // ---------- lightbox (full-size photo view) ----------
   // The card thumbnails are cropped to a 4:3 tile; the lightbox shows the
-  // whole, uncropped photo instead Ã¢ÂÂ that's the point of "full screen". The
+  // whole, uncropped photo instead — that's the point of "full screen". The
   // boat data used to float directly on top of the photo, which got
-  // unreadable fast once a dozen-plus variables were selected Ã¢ÂÂ it now
+  // unreadable fast once a dozen-plus variables were selected — it now
   // lives in a plain list in a panel to the left of the photo instead, with
   // a comment box in a matching panel on the right, so nothing sits on the
   // photo itself anymore.
@@ -814,7 +814,7 @@
     currentLightboxShotId = shot.id;
     // scopedOrder is only passed explicitly by a direct open (a plain shot
     // card passes null to clear it, a manoeuvre-group card passes its own
-    // shots) Ã¢ÂÂ stepLightbox's internal re-open omits it entirely so an
+    // shots) — stepLightbox's internal re-open omits it entirely so an
     // active scoped session survives stepping through it.
     if (scopedOrder !== undefined) lightboxScopedOrder = scopedOrder;
     endTwistTrace(); // switching shots (open, or prev/next) abandons any in-progress trace
@@ -823,7 +823,7 @@
 
     el.lightboxImg.src = photoSrc(shot.file);
     // updateLightboxFrameDisplay must run before the syncTwistOverlayViewBox
-    // below can fire synchronously (a cached image completes immediately) Ã¢ÂÂ
+    // below can fire synchronously (a cached image completes immediately) —
     // it reads the .is-framed class that call sets, to know whether the
     // overlay should track the crop or the full photo.
     updateLightboxFrameDisplay(shot);
@@ -849,7 +849,7 @@
         .map(key => lightboxVarEntry(key, row))
         .filter(Boolean);
       if (rows.length === 0) return;
-      // A blank-line gap between groups Ã¢ÂÂ only once there's already a
+      // A blank-line gap between groups — only once there's already a
       // group rendered above it, so the panel never starts with one.
       if (el.lightboxVars.children.length > 0) {
         const gap = document.createElement('div');
@@ -868,7 +868,7 @@
 
     el.lightboxComment.value = shot.comment || '';
 
-    // Prev/next only make sense when there's something to step to Ã¢ÂÂ hide
+    // Prev/next only make sense when there's something to step to — hide
     // them rather than leaving a dead-end arrow when the gallery has just
     // this one shot (or the filtered view has been narrowed to one).
     const canNavigate = activeGalleryOrder().length > 1;
@@ -891,8 +891,8 @@
     currentLightboxShotId = null;
   }
   // Steps to the next/previous shot in the currently displayed gallery
-  // order (same date + category filter the grid is showing, or Ã¢ÂÂ when
-  // opened from a collapsed manoeuvre-group card Ã¢ÂÂ just that group's own
+  // order (same date + category filter the grid is showing, or — when
+  // opened from a collapsed manoeuvre-group card — just that group's own
   // shots). Wraps around at either end so the arrows always do something
   // while more than one photo is in view.
   function stepLightbox(delta) {
@@ -930,7 +930,7 @@
   document.addEventListener('keydown', (e) => {
     if (el.lightbox.classList.contains('is-hidden')) return;
     // Don't hijack the left/right arrow keys for prev/next while the
-    // comment box has focus Ã¢ÂÂ that's just normal cursor movement while typing.
+    // comment box has focus — that's just normal cursor movement while typing.
     const typingComment = document.activeElement === el.lightboxComment;
     if (e.key === 'Escape') closeLightbox();
     else if (!typingComment && e.key === 'ArrowLeft') stepLightbox(-1);
@@ -938,7 +938,7 @@
   });
 
   // ---------- framing: crop/zoom/straighten, all categories ----------
-  // Non-destructive Ã¢ÂÂ the original photo on R2 is never touched. A saved
+  // Non-destructive — the original photo on R2 is never touched. A saved
   // frame is just { rotationDeg, zoom, posX, posY } on the shot, and every
   // place the photo is drawn (gallery thumbnail, lightbox) renders it the
   // same way: object-fit:cover + object-position handle the crop/pan (the
@@ -948,23 +948,23 @@
   // the extra zoom and straightening. posX/posY are the object-position
   // percentages (50/50 = centered); zoom is a multiplier >=1.
 
-  // A frame's crop can be any shape the user drags Ã¢ÂÂ there's no longer a
+  // A frame's crop can be any shape the user drags — there's no longer a
   // fixed target ratio for it. The gallery TILE is still a fixed 4:3 box
   // (a uniform-grid layout choice, unrelated to the user's chosen crop),
-  // so a saved frame carries two independently pre-fit renderings Ã¢ÂÂ
+  // so a saved frame carries two independently pre-fit renderings —
   // 'grid' (that free-shaped crop cover-fit into 4:3, same idea as
   // object-fit:cover treating a differently-shaped photo) and 'lightbox'
-  // (the crop shown at its own exact shape) Ã¢ÂÂ plus the crop's own aspect
+  // (the crop shown at its own exact shape) — plus the crop's own aspect
   // ratio, used to size the lightbox <img> itself. Pre-fitting both at
   // Save time (rather than recomputing from a raw box on every render)
   // means applying a frame never needs to know the image's pixel
-  // dimensions again Ã¢ÂÂ only object-position/scale percentages, which work
+  // dimensions again — only object-position/scale percentages, which work
   // on any <img> showing that same photo regardless of its on-screen size.
   const GRID_TARGET_AR = 4 / 3;
 
   // Puts an <img> in "render fit" mode: absolutely positioned, sized and
   // panned via percentages (relative to its containing block, which is
-  // always sized/clipped to exactly the visible crop Ã¢ÂÂ see
+  // always sized/clipped to exactly the visible crop — see
   // sizeLightboxWrapToFrameAR and the fixed-AR grid tiles), rotated around
   // the crop's own center. See frameRenderFit below for why this replaced
   // object-fit:cover + object-position + scale().
@@ -999,7 +999,7 @@
   }
 
   // Updates just this shot's own thumbnail(s) already in the grid, without
-  // a full renderGallery() Ã¢ÂÂ that would reset currentGalleryOrder and drop
+  // a full renderGallery() — that would reset currentGalleryOrder and drop
   // out of a manoeuvre-group-scoped lightbox session for no good reason
   // when all that actually changed is how one photo is framed.
   function refreshVisibleShotThumbnail(shot) {
@@ -1008,13 +1008,13 @@
   }
 
   // A frame's aspect ratio isn't fixed, so the lightbox wrap can't just be
-  // "width:56vw, aspect-ratio:something" in CSS Ã¢ÂÂ a very tall/narrow crop
+  // "width:56vw, aspect-ratio:something" in CSS — a very tall/narrow crop
   // combined with a fixed width could overflow max-height without the
   // width shrinking to compensate. Instead: the .is-framed rule on the wrap
   // gives it the same max-width/max-height the plain (unframed) <img> rule
   // resolves to at the current breakpoint (56vw/88vh on desktop, 100%/50vh
   // on phones), then this fits the crop's own ratio inside that box in JS
-  // and sets an explicit pixel width/height on the WRAP Ã¢ÂÂ the <img> inside
+  // and sets an explicit pixel width/height on the WRAP — the <img> inside
   // it is absolutely positioned and sized in percentages of that, per
   // frameRenderFit, and the wrap's overflow:hidden clips it to the crop.
   function sizeLightboxWrapToFrameAR(ar) {
@@ -1028,7 +1028,7 @@
   }
 
   // The lightbox photo isn't normally boxed to a fixed aspect ratio (it
-  // shows the whole original at its own aspect ratio) Ã¢ÂÂ the .is-framed
+  // shows the whole original at its own aspect ratio) — the .is-framed
   // class switches it to the crop's own shape, only while a frame is
   // actually in effect. forceUnframed shows the full original regardless
   // (used by the Center-boat tool, which needs to click anywhere on the
@@ -1054,14 +1054,14 @@
     el.frameSaveBtn.classList.add('is-hidden');
     el.frameCancelBtn.classList.add('is-hidden');
     // The one-click "center the boat" shortcut only makes sense for
-    // Manoeuvre Sequence bursts Ã¢ÂÂ that's the case it was built for (keeping
+    // Manoeuvre Sequence bursts — that's the case it was built for (keeping
     // the boat in the same screen position while stepping through a tack
     // or gybe for side-by-side comparison).
     el.frameCenterBtn.classList.toggle('is-hidden', shot.category !== 'manoeuvre');
     el.frameCenterCancelBtn.classList.add('is-hidden');
   }
 
-  // Re-applies the live edit state to the photo from frameState.cropBox Ã¢ÂÂ
+  // Re-applies the live edit state to the photo from frameState.cropBox —
   // called while straightening (rotate slider) so the preview always
   // matches frameState. The preview is fit to the crop box's OWN aspect
   // ratio (not a fixed one), matching what Save will actually persist.
@@ -1084,13 +1084,13 @@
   // object-fit:cover + object-position + scale() approach, this can place
   // the crop's pan on BOTH axes independently and exactly, because nothing
   // is first clamped to a "cover" rectangle (that clamping is what silently
-  // pinned one axis to dead-center once zoomed in Ã¢ÂÂ see the diagnostic
+  // pinned one axis to dead-center once zoomed in — see the diagnostic
   // writeup in git history for the full derivation).
   //
   // The container this is rendered into must itself be sized to exactly
   // the crop box's own aspect ratio (sizeLightboxWrapToFrameAR does that
   // for the lightbox wrap; the grid tiles are a fixed 4:3 by CSS, matching
-  // GRID_TARGET_AR) Ã¢ÂÂ that's what keeps the <img>'s resulting pixel
+  // GRID_TARGET_AR) — that's what keeps the <img>'s resulting pixel
   // width:height ratio equal to the photo's own natural ratio, undistorted.
   function frameRenderFit(box, iw, ih) {
     const bw = box.wFrac * iw, bh = box.hFrac * ih;
@@ -1104,7 +1104,7 @@
       originYPct: (centerY / ih) * 100,
     };
   }
-  // Inverse of frameRenderFit Ã¢ÂÂ reconstructs the natural-image-fraction
+  // Inverse of frameRenderFit — reconstructs the natural-image-fraction
   // crop box from a saved render fit, so reopening the crop editor (or
   // re-centering) starts from exactly the saved crop.
   function frameBoxFromRenderFit(fit, iw, ih) {
@@ -1114,7 +1114,7 @@
   }
 
   // Crops an arbitrary box down to a centered sub-rectangle of exactly
-  // targetAR Ã¢ÂÂ the same idea as object-fit:cover treating a photo shaped
+  // targetAR — the same idea as object-fit:cover treating a photo shaped
   // like the box as it's placed into a targetAR tile: crop the box's
   // longer axis, keep its shorter axis in full. Used to fit a free-ratio
   // crop into the gallery's fixed 4:3 tile.
@@ -1129,7 +1129,7 @@
     return { xFrac: subX / iw, yFrac: subY / ih, wFrac: subW / iw, hFrac: subH / ih };
   }
 
-  // Places the crop-box overlay div to match frameState.cropBox Ã¢ÂÂ the box
+  // Places the crop-box overlay div to match frameState.cropBox — the box
   // lives in image-fraction coordinates so this is the only place that
   // needs to know the image's current on-screen size.
   function positionFrameCropBoxDom() {
@@ -1144,9 +1144,9 @@
   }
 
   // Crop mode: show the full, untouched photo with a freely resizable box
-  // on top of it (dragging the box or a corner is how the crop is chosen Ã¢ÂÂ
+  // on top of it (dragging the box or a corner is how the crop is chosen —
   // any shape, no locked ratio). frameState.cropBox is the single source
-  // of truth for the crop's geometry throughout the whole edit Ã¢ÂÂ Straighten
+  // of truth for the crop's geometry throughout the whole edit — Straighten
   // mode only adds rotation on top of it, so nothing needs converting back
   // and forth when switching modes.
   function enterFrameCropMode() {
@@ -1184,7 +1184,7 @@
   function startFrameEdit() {
     const shot = currentLightboxShot();
     if (!shot) return;
-    endTwistTrace(); // the two tools need conflicting views of the photo (cropped vs. full) Ã¢ÂÂ only one at a time
+    endTwistTrace(); // the two tools need conflicting views of the photo (cropped vs. full) — only one at a time
     endCenterPick();
     const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
     const existing = shot.frame;
@@ -1200,7 +1200,7 @@
       dragging: null,
     };
     el.frameRotateRange.value = String(frameState.rotationDeg);
-    el.frameRotateValue.textContent = `${frameState.rotationDeg}ÃÂ°`;
+    el.frameRotateValue.textContent = `${frameState.rotationDeg}°`;
     el.frameControls.classList.remove('is-hidden');
     el.frameEditBtn.classList.add('is-hidden');
     el.frameResetBtn.classList.add('is-hidden');
@@ -1217,7 +1217,7 @@
     el.frameCropBox.classList.add('is-hidden');
   }
 
-  // Converts a mouse event to a point in natural-image-pixel coordinates Ã¢ÂÂ
+  // Converts a mouse event to a point in natural-image-pixel coordinates —
   // the crop box's own math (and its stored fractions) all live there, so
   // this is the one place that needs to know the image's on-screen rect.
   function frameNaturalPointFromEvent(e) {
@@ -1230,7 +1230,7 @@
   }
 
   // Resizes the crop box from one corner handle, keeping the opposite
-  // corner fixed. Width and height move independently Ã¢ÂÂ no locked ratio Ã¢ÂÂ
+  // corner fixed. Width and height move independently — no locked ratio —
   // clamped so the box never runs off the photo or shrinks to a sliver.
   function frameResizeCropBox(handle, startBox, point, iw, ih) {
     const startBx = startBox.xFrac * iw, startBy = startBox.yFrac * ih;
@@ -1291,7 +1291,7 @@
   el.frameRotateRange.addEventListener('input', () => {
     if (!frameState) return;
     frameState.rotationDeg = Number(el.frameRotateRange.value);
-    el.frameRotateValue.textContent = `${frameState.rotationDeg}ÃÂ°`;
+    el.frameRotateValue.textContent = `${frameState.rotationDeg}°`;
     applyFrameEditLive();
   });
 
@@ -1332,15 +1332,15 @@
     refreshVisibleShotThumbnail(shot);
   });
 
-  // ---------- "Center" Ã¢ÂÂ one-click boat-centering for Manoeuvre Sequence bursts ----------
+  // ---------- "Center" — one-click boat-centering for Manoeuvre Sequence bursts ----------
   // Dragging a crop box by hand for every photo in a 10+ shot burst is slow.
   // This is a fast alternative for that specific case: click once where the
   // boat is, and the photo is framed (reusing the exact same shot.frame
   // model Framing saves) so that point sits centered. Re-clicking on an
   // already-framed shot re-centers on the new point but keeps the same zoom
   // level, so stepping through the burst afterwards holds a consistent
-  // frame Ã¢ÂÂ only the pan changes, matching where the boat actually was.
-  const CENTER_BOX_FRAC = 0.6; // default zoom for a shot with no frame yet Ã¢ÂÂ leaves room to pan without re-scanning the whole photo
+  // frame — only the pan changes, matching where the boat actually was.
+  const CENTER_BOX_FRAC = 0.6; // default zoom for a shot with no frame yet — leaves room to pan without re-scanning the whole photo
   let centerPickActive = false;
 
   function startCenterPick() {
@@ -1371,7 +1371,7 @@
     if (!iw || !ih) { endCenterPick(); return; }
     let wFrac = CENTER_BOX_FRAC, hFrac = CENTER_BOX_FRAC;
     if (shot.frame) {
-      // Keep the existing zoom level Ã¢ÂÂ only move where it's centered.
+      // Keep the existing zoom level — only move where it's centered.
       const existingBox = frameBoxFromRenderFit(shot.frame.lightbox, iw, ih);
       wFrac = existingBox.wFrac;
       hFrac = existingBox.hFrac;
@@ -1413,15 +1413,15 @@
 
   // ---------- twist profile: trace the mainsail leech and plot its offset from the boom up to the masthead, as a % of mast height ----------
   // Straight Line Upwind shots only. The user clicks two points on the
-  // photo Ã¢ÂÂ the boom/traveller reference (bottom) and roughly the masthead
-  // (top) Ã¢ÂÂ and the app auto-traces the leech edge between them by
+  // photo — the boom/traveller reference (bottom) and roughly the masthead
+  // (top) — and the app auto-traces the leech edge between them by
   // following the strongest local brightness edge column-by-column. The
   // result is editable: double-click a point to pick it up, move the
   // mouse, double-click again to drop it in its corrected spot.
   //
   // Persisted on the shot as `twistProfile: { points: [{xFrac,yFrac}, ...] }`
-  // Ã¢ÂÂ image-fraction coordinates (0-1 of the photo's natural width/height),
-  // ordered bottom (boom) to top (head) Ã¢ÂÂ so it survives a re-render at any
+  // — image-fraction coordinates (0-1 of the photo's natural width/height),
+  // ordered bottom (boom) to top (head) — so it survives a re-render at any
   // display size and publishes/downloads the same way every other edit does.
 
   function currentLightboxShot() {
@@ -1431,12 +1431,12 @@
   // Keeps the overlay's viewBox matched to the photo's own pixel aspect
   // ratio. Without this, a square-ish default viewBox stretched onto a
   // tall/narrow sail crop would draw the point handles as ellipses instead
-  // of circles Ã¢ÂÂ this makes 1 viewBox unit = 1 photo pixel in both axes.
-  // Keeps the overlay tracking the photo's current on-screen geometry Ã¢ÂÂ
+  // of circles — this makes 1 viewBox unit = 1 photo pixel in both axes.
+  // Keeps the overlay tracking the photo's current on-screen geometry —
   // whether that's the full original (unframed) or a saved crop/rotation
   // (framed). The viewBox always covers the FULL natural photo pixel space
   // (0 0 w h), so a point's stored {xFrac,yFrac} is always a fraction of
-  // the whole original photo regardless of what's currently visible Ã¢ÂÂ but
+  // the whole original photo regardless of what's currently visible — but
   // when a frame is in effect, the overlay's own CSS box (and its rotate())
   // is set to the exact same position:absolute/width/height/left/top/
   // transform-origin/rotate as the <img>'s, so its coordinate space maps
@@ -1497,7 +1497,7 @@
   // original photo), but correct even while a crop/rotation frame is
   // showing: it goes through the overlay SVG's own screen CTM, which the
   // browser keeps accurate for whatever position/size/rotate transform
-  // syncTwistOverlayViewBox last applied to it Ã¢ÂÂ no hand-derived trig
+  // syncTwistOverlayViewBox last applied to it — no hand-derived trig
   // needed. The overlay's viewBox is always 0 0 naturalWidth naturalHeight,
   // so the point it resolves to is already in natural-pixel coordinates.
   function twistNaturalFracFromEvent(e) {
@@ -1516,7 +1516,7 @@
   }
 
   // ---- pixel analysis: load the photo into an offscreen canvas we can read back ----
-  // Requires the image host to send CORS headers (the R2 bucket now does Ã¢ÂÂ
+  // Requires the image host to send CORS headers (the R2 bucket now does —
   // see its CORS Policy setting); without that, getImageData throws and the
   // trace falls back to a straight line between the two clicked points.
   function loadImageDataForAnalysis(url) {
@@ -1570,7 +1570,7 @@
     return sum;
   }
   // Searches a window around aroundX (at fixed pixel row y) for the
-  // strongest vertical edge (biggest horizontal brightness gradient) Ã¢ÂÂ
+  // strongest vertical edge (biggest horizontal brightness gradient) —
   // that's the sail/background boundary. Returns both the best x found and
   // its score, so callers can decide whether the signal was strong enough
   // to trust (see TWIST_EDGE_MIN_SCORE).
@@ -1589,11 +1589,11 @@
   // Follows the leech edge from (startX,startY) up to (endX,endY) in image
   // pixel space, sampling TWIST_DENSE_STEPS+1 evenly-spaced heights. At each
   // height it searches a window around the previous point's x for the
-  // strongest vertical edge Ã¢ÂÂ that's the sail/background boundary. A
+  // strongest vertical edge — that's the sail/background boundary. A
   // weak/ambiguous local signal (open sky, low contrast) falls back toward
   // the straight reference line rather than snapping onto noise. Always
   // traces at the same dense resolution regardless of how many points the
-  // user wants to see Ã¢ÂÂ see resamplePoints() for the step that thins this
+  // user wants to see — see resamplePoints() for the step that thins this
   // down.
   function traceLeechEdge(imageData, width, height, startX, startY, endX, endY) {
     const points = [{ x: startX, y: startY }];
@@ -1633,7 +1633,7 @@
   // Loads (once) and caches the analyzable pixel data for the shot currently
   // being traced, on twistState itself, so that per-point edge snapping
   // (snapFracToLeech below) doesn't have to reload/redecode the photo on
-  // every drag Ã¢ÂÂ it's the same canvas ImageData the dense trace used.
+  // every drag — it's the same canvas ImageData the dense trace used.
   async function getTwistImageAnalysis(shot) {
     if (twistState && twistState.imageAnalysis && twistState.imageAnalysisFile === shot.file) {
       return twistState.imageAnalysis;
@@ -1658,7 +1658,7 @@
       const pxPoints = traceLeechEdge(imageData, width, height, startX, startY, endX, endY);
       return pxPoints.map(p => ({ xFrac: p.x / width, yFrac: p.y / height }));
     } catch (e) {
-      // CORS/network failure Ã¢ÂÂ still give the user something to correct by
+      // CORS/network failure — still give the user something to correct by
       // hand rather than a dead end: a straight line between their two clicks.
       console.error('Twist auto-trace fell back to a straight line:', e);
       const pts = [];
@@ -1678,7 +1678,7 @@
   // in progress. Synchronous (no re-decoding), so it's cheap enough to run
   // on every pointer-move while dragging. If no analysis is cached yet (or
   // the local signal is too weak/ambiguous to trust), the point is
-  // returned unchanged Ã¢ÂÂ same "don't snap onto noise" fallback the dense
+  // returned unchanged — same "don't snap onto noise" fallback the dense
   // trace uses.
   function snapFracToLeech(frac) {
     const analysis = twistState && twistState.imageAnalysis;
@@ -1691,7 +1691,7 @@
   }
 
   // Softens a point list so a single point that snapped to a slightly
-  // different spot on the leech than its neighbors doesn't read as a kink Ã¢ÂÂ
+  // different spot on the leech than its neighbors doesn't read as a kink —
   // one pass blending each interior point toward the average of its two
   // neighbors. The two endpoints (the user's original boom/masthead
   // reference clicks) are left alone so the trace still starts and ends
@@ -1747,8 +1747,8 @@
   function startTwistTrace() {
     const shot = currentLightboxShot();
     if (!shot) return;
-    // Traces at whatever scale the photo is currently shown at Ã¢ÂÂ cropped/
-    // zoomed if the shot has a saved frame, full otherwise Ã¢ÂÂ so a trace
+    // Traces at whatever scale the photo is currently shown at — cropped/
+    // zoomed if the shot has a saved frame, full otherwise — so a trace
     // made while zoomed into the sail stays at that same zoom instead of
     // jumping back out to the full photo. The overlay tracks the frame's
     // geometry (see syncTwistOverlayViewBox) so clicks still land correctly
@@ -1781,7 +1781,7 @@
     } else if (twistState.mode === 'await-head') {
       twistState.headFrac = frac;
       twistState.mode = 'tracing';
-      updateTwistHint('Tracing the leech edgeÃ¢ÂÂ¦');
+      updateTwistHint('Tracing the leech edge…');
       const shot = currentLightboxShot();
       const dense = await traceDenseFrac(shot, twistState.referenceFrac, twistState.headFrac);
       if (!twistState || twistState.mode !== 'tracing') return; // trace was cancelled while awaiting
@@ -1795,7 +1795,7 @@
     }
   }
 
-  // Changes how many points are shown/edited Ã¢ÂÂ clamped to
+  // Changes how many points are shown/edited — clamped to
   // [TWIST_POINT_COUNT_MIN, TWIST_POINT_COUNT_MAX]. If a trace is already in
   // progress, re-thins it from the cached dense trace immediately (no need
   // to re-scan the photo); otherwise it just applies to the next trace.
@@ -2004,11 +2004,11 @@
     if (kind === 'saving') {
       el.githubStatus.classList.remove('is-hidden');
       el.githubStatus.classList.add('github-status--saving');
-      el.githubStatus.textContent = 'Saving to GitHubÃ¢ÂÂ¦';
+      el.githubStatus.textContent = 'Saving to GitHub…';
     } else if (kind === 'saved') {
       el.githubStatus.classList.remove('is-hidden');
       el.githubStatus.classList.add('github-status--saved');
-      el.githubStatus.textContent = 'Saved Ã¢ÂÂ live on the site in about a minute';
+      el.githubStatus.textContent = 'Saved — live on the site in about a minute';
       githubStatusFadeTimer = setTimeout(() => el.githubStatus.classList.add('is-hidden'), 5000);
     } else if (kind === 'error') {
       el.githubStatus.classList.remove('is-hidden');
@@ -2030,7 +2030,7 @@
 
   // Reads the manifest file's current sha (required by GitHub's API to
   // confirm we're not overwriting someone else's newer commit) and PUTs the
-  // updated content in its place Ã¢ÂÂ the same "get sha, then commit" dance
+  // updated content in its place — the same "get sha, then commit" dance
   // the GitHub web UI does under the hood.
   async function publishManifestToGithub() {
     const token = getGithubToken();
@@ -2041,7 +2041,7 @@
     try {
       const headers = { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' };
       const getRes = await fetch(`${GITHUB_API_URL}?ref=${GITHUB_BRANCH}`, { headers, cache: 'no-store' });
-      if (!getRes.ok) throw new Error(getRes.status === 401 ? 'token rejected Ã¢ÂÂ reconnect GitHub' : `couldn't read the current file (${getRes.status})`);
+      if (!getRes.ok) throw new Error(getRes.status === 401 ? 'token rejected — reconnect GitHub' : `couldn't read the current file (${getRes.status})`);
       const currentFile = await getRes.json();
       const manifest = currentManifestSnapshot();
       const putRes = await fetch(GITHUB_API_URL, {
@@ -2099,8 +2099,8 @@
     if (!shot) return false;
     const label = filenameOf(shot.file) || 'this photo';
     const publishNote = getGithubToken()
-      ? 'This publishes automatically Ã¢ÂÂ it\'ll be off the live site in about a minute.'
-      : 'This removes it from manifest.json Ã¢ÂÂ you\'ll still need to download and publish the update below.';
+      ? 'This publishes automatically — it\'ll be off the live site in about a minute.'
+      : 'This removes it from manifest.json — you\'ll still need to download and publish the update below.';
     if (!confirm(`Delete ${label} from the gallery?\n\n${publishNote} The photo file itself stays in the repo until that's done.`)) {
       return false;
     }
@@ -2118,7 +2118,7 @@
     renderGallery();
   }
 
-  // Unlike category, a comment is free text typed one keystroke at a time Ã¢ÂÂ
+  // Unlike category, a comment is free text typed one keystroke at a time —
   // re-rendering the whole grid on every keystroke (like setShotCategory
   // does) would blow away focus and cursor position mid-type, so this just
   // updates the data model and flags the manifest dirty without touching
@@ -2136,7 +2136,7 @@
 
   // Whichever box the comment was just typed into updates existingManifest
   // above, but the *other* box (grid card vs. lightbox) still shows
-  // whatever it had at its own last render Ã¢ÂÂ so mirror the new value into
+  // whatever it had at its own last render — so mirror the new value into
   // it here. Skips the currently-focused element so this never clobbers an
   // in-progress keystroke or cursor position in the box the user is
   // actually typing in.
@@ -2177,7 +2177,7 @@
     const token = prompt(
       'Paste a GitHub personal access token to publish gallery edits automatically.\n\n' +
       'Create a fine-grained token at github.com/settings/personal-access-tokens/new, scoped ONLY to the "Seagull" repository, with "Contents" permission set to Read and write.\n\n' +
-      'It\'s stored only in this browser and sent only to api.github.com Ã¢ÂÂ never anywhere else.'
+      'It\'s stored only in this browser and sent only to api.github.com — never anywhere else.'
     );
     if (token && token.trim()) {
       setGithubToken(token.trim());
@@ -2205,7 +2205,7 @@
     [el.headingSelect, el.twaSelect].forEach(sel => {
       sel.innerHTML = '';
       const noneOpt = document.createElement('option');
-      noneOpt.value = ''; noneOpt.textContent = 'Ã¢ÂÂ none, skip auto-categorizing Ã¢ÂÂ';
+      noneOpt.value = ''; noneOpt.textContent = '— none, skip auto-categorizing —';
       sel.appendChild(noneOpt);
       csvHeaders.forEach(h => {
         const opt = document.createElement('option');
@@ -2260,7 +2260,7 @@
       .map(r => Object.fromEntries(csvHeaders.map((h, idx) => [h, (r[idx] ?? '').trim()])));
 
     el.csvDropLabel.textContent = file.name;
-    el.csvSummary.textContent = `${csvRows.length} rows ÃÂ· ${csvHeaders.length} columns`;
+    el.csvSummary.textContent = `${csvRows.length} rows · ${csvHeaders.length} columns`;
     el.csvSummary.classList.remove('is-hidden');
 
     populateTimestampSelect();
@@ -2358,7 +2358,7 @@
         detail.textContent = 'No capture time found';
       } else {
         const sourceLabel = p.source === 'exif' ? 'from photo EXIF' : 'from file date (approx.)';
-        detail.textContent = `${p.capturedAt.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })} ÃÂ· ${sourceLabel}`;
+        detail.textContent = `${p.capturedAt.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })} · ${sourceLabel}`;
       }
       meta.appendChild(detail);
 
@@ -2383,7 +2383,7 @@
       if (isDuplicate) {
         const dupBadge = document.createElement('span');
         dupBadge.className = 'preview-badge preview-badge--warn';
-        dupBadge.textContent = 'Filename already used Ã¢ÂÂ rename before uploading';
+        dupBadge.textContent = 'Filename already used — rename before uploading';
         meta.appendChild(document.createElement('br'));
         meta.appendChild(dupBadge);
       }
@@ -2414,7 +2414,7 @@
       removeBtn.type = 'button';
       removeBtn.className = 'preview-item__remove';
       removeBtn.setAttribute('aria-label', `Remove ${p.name}`);
-      removeBtn.textContent = 'ÃÂ';
+      removeBtn.textContent = '×';
       removeBtn.addEventListener('click', () => {
         photos.splice(idx, 1);
         renderPreview();
@@ -2436,7 +2436,7 @@
       .filter(p => p.capturedAt)
       .map(p => ({
         id: `${p.capturedAt.toISOString().replace(/[:.]/g, '-')}-${slugify(p.name.replace(/\.[^.]+$/, '')) || 'shot'}`,
-        // The photo itself isn't published through this page Ã¢ÂÂ it's dragged
+        // The photo itself isn't published through this page — it's dragged
         // into the R2 bucket separately (see the Publish step below), using
         // this exact filename as the object name.
         file: `${R2_PHOTO_BASE_URL}/${encodeURIComponent(p.name)}`,
@@ -2487,6 +2487,287 @@
     el.addBtn.textContent = isOpen ? 'Add Shots' : 'Hide';
   });
 
+  // ---------- Sync panel: interactive camera-clock offset control ----------
+  // Kyle had to ask in chat for a camera-clock correction three times in a
+  // row (+7s, then +2s closer, then +4s total) before it looked right in
+  // the gallery. This panel replaces that back-and-forth: a floating
+  // control lets him nudge the offset himself (plus/minus 1s / 0.5s
+  // buttons, or type one in directly) and see every Sept 10 photo's
+  // displayed time and boat data update together, live, before deciding to
+  // publish it.
+  //
+  // Data comes from sail-shots/sync-table.json, a precomputed lookup table
+  // (all 23 boat-data columns, at every 0.5s offset from -2.0s to +8.0s,
+  // for all 115 Sept 10 shots) built once on the boat-data CSV so this
+  // panel never needs to touch the CSV itself or recompute anything client
+  // side -- it just looks a row up. Only Sept 10 shots appear in that
+  // table, so this panel can never touch Sept 9's data even by accident.
+  const SYNC_TABLE_PATH = './sync-table.json';
+  let syncTableMap = null; // Map<shotId, { baseMs, rows: [{v:[...23 floats],t:isoString}, ...] }>
+  let syncTableOffsets = []; // ascending, e.g. [-2.0, -1.5, ..., 8.0]
+  let syncTableFieldOrder = []; // 23 manifest row keys, in the order sync-table.json's v[] arrays use
+  let syncOffsetSeconds = 0;
+  let syncPublished = true; // false = there's a preview offset not yet published to GitHub
+  let syncPanelStatus = 'loading'; // loading | ready | error | unavailable
+  let syncPanelErrorMessage = '';
+
+  const el2 = {}; // small second element bag for the panel, kept separate from el{} above (which is bound to fixed ids already in index.html)
+
+  function injectSyncPanelStyles() {
+    if (document.getElementById('syncPanelStyles')) return;
+    const style = document.createElement('style');
+    style.id = 'syncPanelStyles';
+    style.textContent = `
+      #syncPanel { position: fixed; right: 16px; bottom: 16px; z-index: 5000; width: 258px;
+        background: #1b1f24; color: #e8ebef; border: 1px solid #3a4048; border-radius: 10px;
+        box-shadow: 0 6px 24px rgba(0,0,0,0.4); font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        padding: 12px; }
+      #syncPanel h4 { margin: 0 0 6px; font-size: 12.5px; font-weight: 600; letter-spacing: 0.2px; color: #cfd6de; }
+      #syncPanel .syncPanel__offset { font-size: 20px; font-weight: 700; text-align: center; margin: 6px 0; color: #7fd0ff; }
+      #syncPanel .syncPanel__status { text-align: center; font-size: 11.5px; margin-bottom: 8px; color: #9aa4af; }
+      #syncPanel .syncPanel__status--dirty { color: #ffb454; }
+      #syncPanel .syncPanel__status--saved { color: #6cd67a; }
+      #syncPanel .syncPanel__status--error { color: #ff6b6b; }
+      #syncPanel .syncPanel__row { display: flex; gap: 6px; margin-bottom: 8px; }
+      #syncPanel button.syncPanel__step { flex: 1; background: #2a3038; color: #e8ebef; border: 1px solid #454c55;
+        border-radius: 6px; padding: 6px 4px; font-size: 12.5px; cursor: pointer; }
+      #syncPanel button.syncPanel__step:hover { background: #333b45; }
+      #syncPanel button.syncPanel__step:disabled { opacity: 0.4; cursor: default; }
+      #syncPanel .syncPanel__manualRow { display: flex; gap: 6px; margin-bottom: 8px; align-items: center; }
+      #syncPanel input.syncPanel__manualInput { width: 72px; background: #101316; color: #e8ebef;
+        border: 1px solid #454c55; border-radius: 6px; padding: 5px 6px; font-size: 12.5px; }
+      #syncPanel button.syncPanel__go { background: #2a3038; color: #e8ebef; border: 1px solid #454c55;
+        border-radius: 6px; padding: 5px 10px; font-size: 12.5px; cursor: pointer; }
+      #syncPanel button.syncPanel__publish { width: 100%; background: #1f6f3c; color: #fff; border: none;
+        border-radius: 6px; padding: 8px; font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 6px; }
+      #syncPanel button.syncPanel__publish:disabled { background: #2a3038; color: #77808a; cursor: default; }
+      #syncPanel button.syncPanel__reset { width: 100%; background: transparent; color: #9aa4af; border: 1px solid #3a4048;
+        border-radius: 6px; padding: 6px; font-size: 12px; cursor: pointer; }
+      #syncPanel button.syncPanel__collapse { position: absolute; top: 8px; right: 10px; background: none; border: none;
+        color: #9aa4af; font-size: 14px; cursor: pointer; padding: 0; line-height: 1; }
+      #syncPanel.is-collapsed .syncPanel__body { display: none; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function buildSyncPanelDom() {
+    if (document.getElementById('syncPanel')) return;
+    injectSyncPanelStyles();
+    const panel = document.createElement('div');
+    panel.id = 'syncPanel';
+    panel.style.position = 'relative';
+    panel.innerHTML = `
+      <button type="button" class="syncPanel__collapse" aria-label="Collapse">&minus;</button>
+      <h4>Camera Clock Sync &mdash; Sept 10</h4>
+      <div class="syncPanel__body">
+        <div class="syncPanel__offset" id="syncOffsetVal">&hellip;</div>
+        <div class="syncPanel__status" id="syncStatusText">Loading sync table&hellip;</div>
+        <div class="syncPanel__row">
+          <button type="button" class="syncPanel__step" data-delta="-1">-1s</button>
+          <button type="button" class="syncPanel__step" data-delta="-0.5">-0.5s</button>
+          <button type="button" class="syncPanel__step" data-delta="0.5">+0.5s</button>
+          <button type="button" class="syncPanel__step" data-delta="1">+1s</button>
+        </div>
+        <div class="syncPanel__manualRow">
+          <input type="number" step="0.5" class="syncPanel__manualInput" id="syncManualInput" placeholder="e.g. 4.0" />
+          <button type="button" class="syncPanel__go" id="syncManualGo">Set</button>
+        </div>
+        <button type="button" class="syncPanel__publish" id="syncPublishBtn" disabled>Publish this offset</button>
+        <button type="button" class="syncPanel__reset" id="syncResetBtn">Reset to published</button>
+      </div>
+    `;
+    document.body.appendChild(panel);
+
+    el2.panel = panel;
+    el2.offsetVal = panel.querySelector('#syncOffsetVal');
+    el2.statusText = panel.querySelector('#syncStatusText');
+    el2.manualInput = panel.querySelector('#syncManualInput');
+    el2.manualGo = panel.querySelector('#syncManualGo');
+    el2.publishBtn = panel.querySelector('#syncPublishBtn');
+    el2.resetBtn = panel.querySelector('#syncResetBtn');
+    el2.collapseBtn = panel.querySelector('.syncPanel__collapse');
+
+    panel.querySelectorAll('.syncPanel__step').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const delta = Number(btn.dataset.delta);
+        applySyncOffset(syncOffsetSeconds + delta);
+      });
+    });
+    el2.manualGo.addEventListener('click', () => {
+      const val = Number(el2.manualInput.value);
+      if (!Number.isNaN(val)) applySyncOffset(val);
+    });
+    el2.manualInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const val = Number(el2.manualInput.value);
+        if (!Number.isNaN(val)) applySyncOffset(val);
+      }
+    });
+    el2.publishBtn.addEventListener('click', () => publishSyncOffset());
+    el2.resetBtn.addEventListener('click', () => resetSyncOffset());
+    el2.collapseBtn.addEventListener('click', () => {
+      panel.classList.toggle('is-collapsed');
+      el2.collapseBtn.innerHTML = panel.classList.contains('is-collapsed') ? '&plus;' : '&minus;';
+    });
+  }
+
+  async function loadSyncTable() {
+    const res = await fetch(SYNC_TABLE_PATH, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`couldn't load sync-table.json (${res.status})`);
+    const data = await res.json();
+    syncTableFieldOrder = data.order;
+    syncTableOffsets = data.offsets;
+    syncTableMap = new Map();
+    data.shots.forEach(([id, baseIso, perOffset]) => {
+      syncTableMap.set(id, { baseMs: new Date(baseIso).getTime(), rows: perOffset });
+    });
+  }
+
+  // Nearest available grid value to a requested offset -- the table is only
+  // built every 0.5s, and manual entry or repeated stepping could otherwise
+  // land between two grid points or past either end.
+  function snapToOffsetGrid(val) {
+    if (!syncTableOffsets.length) return 0;
+    let best = syncTableOffsets[0], bestDiff = Math.abs(val - best);
+    for (const o of syncTableOffsets) {
+      const diff = Math.abs(val - o);
+      if (diff < bestDiff) { best = o; bestDiff = diff; }
+    }
+    return best;
+  }
+
+  // Reads whatever offset is implied by the manifest as it currently stands
+  // (comparing one Sept 10 shot's live capturedAt against that same shot's
+  // baseline camera time in the table) so the panel opens already showing
+  // the correction that's actually live on the site, rather than 0.
+  function detectCurrentOffset() {
+    const shots = existingManifest.shots || [];
+    for (const shot of shots) {
+      const entry = syncTableMap.get(shot.id);
+      if (!entry) continue;
+      const liveMs = new Date(shot.capturedAt).getTime();
+      if (Number.isNaN(liveMs)) continue;
+      return snapToOffsetGrid((liveMs - entry.baseMs) / 1000);
+    }
+    return 0; // no Sept 10 shots loaded (or none matched) -- nothing to sync yet
+  }
+
+  function setSyncStatus(kind, message) {
+    if (!el2.statusText) return;
+    el2.statusText.classList.remove('syncPanel__status--dirty', 'syncPanel__status--saved', 'syncPanel__status--error');
+    if (kind === 'dirty') {
+      el2.statusText.classList.add('syncPanel__status--dirty');
+      el2.statusText.textContent = 'Preview -- not published yet';
+    } else if (kind === 'saved') {
+      el2.statusText.classList.add('syncPanel__status--saved');
+      el2.statusText.textContent = 'Published -- live in about a minute';
+    } else if (kind === 'saving') {
+      el2.statusText.textContent = 'Publishing...';
+    } else if (kind === 'error') {
+      el2.statusText.classList.add('syncPanel__status--error');
+      el2.statusText.textContent = message || 'Something went wrong';
+    } else if (kind === 'matches-published') {
+      el2.statusText.textContent = "Matches what's published";
+    } else {
+      el2.statusText.textContent = message || '';
+    }
+  }
+
+  function updateSyncPanelDisplay() {
+    if (!el2.offsetVal) return;
+    const sign = syncOffsetSeconds > 0 ? '+' : '';
+    el2.offsetVal.textContent = `${sign}${syncOffsetSeconds.toFixed(1)}s`;
+    el2.manualInput.value = syncOffsetSeconds.toFixed(1);
+    el2.publishBtn.disabled = syncPublished;
+    if (syncPublished) setSyncStatus('matches-published');
+    else setSyncStatus('dirty');
+  }
+
+  // Mutates every Sept 10 shot in existingManifest to reflect `newOffset`
+  // (snapped to the nearest 0.5s grid point) -- new capturedAt, and the
+  // full 23-field boat-data row, straight from the lookup table. This only
+  // touches in-memory state and re-renders; nothing publishes until the
+  // Publish button is clicked.
+  function applySyncOffset(newOffset) {
+    if (!syncTableMap) return;
+    const snapped = snapToOffsetGrid(newOffset);
+    const idx = syncTableOffsets.indexOf(snapped);
+    if (idx === -1) return;
+
+    let touched = 0;
+    (existingManifest.shots || []).forEach(shot => {
+      const entry = syncTableMap.get(shot.id);
+      if (!entry) return; // not a Sept 10 shot -- never touched by this panel
+      const rowData = entry.rows[idx];
+      if (!rowData) return; // grid point had no matching boat-data sample for this shot (shouldn't happen -- built with 0 misses)
+      shot.capturedAt = new Date(entry.baseMs + snapped * 1000).toISOString();
+      shot.gapSeconds = 0;
+      shot.row = shot.row || {};
+      syncTableFieldOrder.forEach((key, i) => { shot.row[key] = String(rowData.v[i]); });
+      shot.row.Timestamp = rowData.t;
+      touched++;
+    });
+
+    syncOffsetSeconds = snapped;
+    syncPublished = false;
+    updateSyncPanelDisplay();
+    renderGallery();
+    // If the lightbox is open on one of the shots we just touched, refresh
+    // it in place so the boat-data panel and timestamp update too -- passing
+    // no scopedOrder preserves whatever scoped/manoeuvre session was active.
+    if (currentLightboxShotId && syncTableMap.has(currentLightboxShotId)) {
+      const shot = existingManifest.shots.find(s => s.id === currentLightboxShotId);
+      if (shot) openLightbox(shot);
+    }
+    return touched;
+  }
+
+  async function publishSyncOffset() {
+    if (!getGithubToken()) {
+      alert("Connect GitHub first (top of the page) -- the sync offset needs a token on file to publish.");
+      return;
+    }
+    const sign = syncOffsetSeconds > 0 ? '+' : '';
+    if (!confirm(`Publish ${sign}${syncOffsetSeconds.toFixed(1)}s as the camera-clock offset for all Sept 10 photos?\n\nThis updates manifest.json on GitHub immediately.`)) return;
+    el2.publishBtn.disabled = true;
+    setSyncStatus('saving');
+    const ok = await publishManifestToGithub();
+    if (ok) {
+      syncPublished = true;
+      setSyncStatus('saved');
+      setTimeout(() => updateSyncPanelDisplay(), 2500);
+    } else {
+      el2.publishBtn.disabled = false;
+      setSyncStatus('error', 'Publish failed -- see the status bar above for retry');
+    }
+  }
+
+  // Reloads the manifest as it's actually published (discarding any
+  // preview offset that hasn't been published), then re-detects the offset
+  // that implies.
+  async function resetSyncOffset() {
+    await loadManifest();
+    syncOffsetSeconds = detectCurrentOffset();
+    syncPublished = true;
+    updateSyncPanelDisplay();
+  }
+
+  async function initSyncPanel() {
+    buildSyncPanelDom();
+    try {
+      await loadSyncTable();
+      syncOffsetSeconds = detectCurrentOffset();
+      syncPublished = true;
+      syncPanelStatus = 'ready';
+      updateSyncPanelDisplay();
+    } catch (err) {
+      syncPanelStatus = 'error';
+      syncPanelErrorMessage = err.message || String(err);
+      setSyncStatus('error', syncPanelErrorMessage);
+      console.error('Sync panel: failed to load sync-table.json', err);
+    }
+  }
+
   updateGithubConnectBtn();
-  loadManifest();
+  loadManifest().then(initSyncPanel);
 })();
