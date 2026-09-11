@@ -7566,7 +7566,8 @@
         "Clew_pct": "44.96063167850176",
         "FootCamber_deg": "-0.7373209238052368"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T10-52-23-000Z-dsc01564",
@@ -7604,7 +7605,8 @@
         "Clew_pct": "43.05381029844285",
         "FootCamber_deg": "16.32513847351074"
       },
-      "comment": "Upwind start of day pre batten adjustment"
+      "comment": "Upwind start of day pre batten adjustment",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T10-52-25-000Z-dsc01565",
@@ -7642,7 +7644,8 @@
         "Clew_pct": "43.05327410499255",
         "FootCamber_deg": "16.37319393157959"
       },
-      "comment": "Upwind start of day pre batten adjustment"
+      "comment": "Upwind start of day pre batten adjustment",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T10-52-27-000Z-dsc01566",
@@ -7680,7 +7683,8 @@
         "Clew_pct": "43.05123562614123",
         "FootCamber_deg": "16.308567619323732"
       },
-      "comment": "Upwind start of day pre batten adjustment"
+      "comment": "Upwind start of day pre batten adjustment",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T10-52-28-000Z-dsc01567",
@@ -7718,7 +7722,8 @@
         "Clew_pct": "43.05124332507451",
         "FootCamber_deg": "16.303724670410155"
       },
-      "comment": "Upwind start of day pre batten adjustment"
+      "comment": "Upwind start of day pre batten adjustment",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T10-52-29-000Z-dsc01568",
@@ -7756,7 +7761,8 @@
         "Clew_pct": "43.052517622709274",
         "FootCamber_deg": "16.29510440826416"
       },
-      "comment": "Upwind start of day pre batten adjustment"
+      "comment": "Upwind start of day pre batten adjustment",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T10-53-29-000Z-dsc01571",
@@ -7794,7 +7800,8 @@
         "Clew_pct": "58.1790417432785",
         "FootCamber_deg": "-13.78871774673462"
       },
-      "comment": "Upwind start of day pre batten adjustment"
+      "comment": "Upwind start of day pre batten adjustment",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T10-53-30-000Z-dsc01572",
@@ -7832,7 +7839,8 @@
         "Clew_pct": "58.18039005001386",
         "FootCamber_deg": "-14.182256507873536"
       },
-      "comment": "Upwind start of day pre batten adjustment"
+      "comment": "Upwind start of day pre batten adjustment",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T10-54-23-000Z-dsc01576",
@@ -7870,7 +7878,8 @@
         "Clew_pct": "59.91472899913788",
         "FootCamber_deg": "-15.17346830368042"
       },
-      "comment": "Upwind start of day pre batten adjustment"
+      "comment": "Upwind start of day pre batten adjustment",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-27-36-000Z-dsc01587",
@@ -7908,7 +7917,8 @@
         "Clew_pct": "61.47210647662482",
         "FootCamber_deg": "15.342944622039795"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-27-38-000Z-dsc01588",
@@ -7946,7 +7956,8 @@
         "Clew_pct": "61.117089788118996",
         "FootCamber_deg": "15.643435668945312"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-27-40-000Z-dsc01589",
@@ -7984,7 +7995,8 @@
         "Clew_pct": "61.11473316947619",
         "FootCamber_deg": "15.227118587493896"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-27-40-000Z-dsc01590",
@@ -8022,7 +8034,8 @@
         "Clew_pct": "61.11473316947619",
         "FootCamber_deg": "15.227118587493896"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-29-02-000Z-dsc01591",
@@ -8060,7 +8073,8 @@
         "Clew_pct": "61.12874696652094",
         "FootCamber_deg": "15.785035800933837"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-18-000Z-dsc01597",
@@ -8068,7 +8082,7 @@
       "capturedAt": "2026-09-11T11:36:18.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:18+02:00",
         "ts": "1789126578.0",
@@ -8098,7 +8112,8 @@
         "Clew_pct": "68.35679287711778",
         "FootCamber_deg": "21.77846336364746"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-42-000Z-dsc01598",
@@ -8106,7 +8121,7 @@
       "capturedAt": "2026-09-11T11:36:42.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:42+02:00",
         "ts": "1789126602.0",
@@ -8136,7 +8151,8 @@
         "Clew_pct": "68.34494670232138",
         "FootCamber_deg": "21.05211982727051"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-42-000Z-dsc01599",
@@ -8144,7 +8160,7 @@
       "capturedAt": "2026-09-11T11:36:42.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:42+02:00",
         "ts": "1789126602.0",
@@ -8174,7 +8190,8 @@
         "Clew_pct": "68.34494670232138",
         "FootCamber_deg": "21.05211982727051"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-43-000Z-dsc01600",
@@ -8182,7 +8199,7 @@
       "capturedAt": "2026-09-11T11:36:43.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:43+02:00",
         "ts": "1789126603.0",
@@ -8212,7 +8229,8 @@
         "Clew_pct": "68.34573969244958",
         "FootCamber_deg": "21.911514854431154"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-43-000Z-dsc01601",
@@ -8220,7 +8238,7 @@
       "capturedAt": "2026-09-11T11:36:43.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:43+02:00",
         "ts": "1789126603.0",
@@ -8250,7 +8268,8 @@
         "Clew_pct": "68.34573969244958",
         "FootCamber_deg": "21.911514854431154"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-43-000Z-dsc01602",
@@ -8258,7 +8277,7 @@
       "capturedAt": "2026-09-11T11:36:43.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:43+02:00",
         "ts": "1789126603.0",
@@ -8288,7 +8307,8 @@
         "Clew_pct": "68.34573969244958",
         "FootCamber_deg": "21.911514854431154"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-44-000Z-dsc01603",
@@ -8296,7 +8316,7 @@
       "capturedAt": "2026-09-11T11:36:44.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:44+02:00",
         "ts": "1789126604.0",
@@ -8326,7 +8346,8 @@
         "Clew_pct": "64.57718114058177",
         "FootCamber_deg": "3.7712847709655763"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-44-000Z-dsc01604",
@@ -8334,7 +8355,7 @@
       "capturedAt": "2026-09-11T11:36:44.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:44+02:00",
         "ts": "1789126604.0",
@@ -8364,7 +8385,8 @@
         "Clew_pct": "64.57718114058177",
         "FootCamber_deg": "3.7712847709655763"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-44-000Z-dsc01605",
@@ -8372,7 +8394,7 @@
       "capturedAt": "2026-09-11T11:36:44.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:44+02:00",
         "ts": "1789126604.0",
@@ -8402,7 +8424,8 @@
         "Clew_pct": "64.57718114058177",
         "FootCamber_deg": "3.7712847709655763"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-44-000Z-dsc01606",
@@ -8410,7 +8433,7 @@
       "capturedAt": "2026-09-11T11:36:44.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:44+02:00",
         "ts": "1789126604.0",
@@ -8440,7 +8463,8 @@
         "Clew_pct": "64.57718114058177",
         "FootCamber_deg": "3.7712847709655763"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-45-000Z-dsc01607",
@@ -8448,7 +8472,7 @@
       "capturedAt": "2026-09-11T11:36:45.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:45+02:00",
         "ts": "1789126605.0",
@@ -8478,7 +8502,8 @@
         "Clew_pct": "53.023239225149155",
         "FootCamber_deg": "-11.160938262939453"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-45-000Z-dsc01608",
@@ -8486,7 +8511,7 @@
       "capturedAt": "2026-09-11T11:36:45.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:45+02:00",
         "ts": "1789126605.0",
@@ -8516,7 +8541,8 @@
         "Clew_pct": "53.023239225149155",
         "FootCamber_deg": "-11.160938262939453"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-45-000Z-dsc01609",
@@ -8524,7 +8550,7 @@
       "capturedAt": "2026-09-11T11:36:45.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:45+02:00",
         "ts": "1789126605.0",
@@ -8554,7 +8580,8 @@
         "Clew_pct": "53.023239225149155",
         "FootCamber_deg": "-11.160938262939453"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-46-000Z-dsc01610",
@@ -8562,7 +8589,7 @@
       "capturedAt": "2026-09-11T11:36:46.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:46+02:00",
         "ts": "1789126606.0",
@@ -8592,7 +8619,8 @@
         "Clew_pct": "67.80409812927246",
         "FootCamber_deg": "-20.895513916015624"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-46-000Z-dsc01611",
@@ -8600,7 +8628,7 @@
       "capturedAt": "2026-09-11T11:36:46.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:46+02:00",
         "ts": "1789126606.0",
@@ -8630,7 +8658,8 @@
         "Clew_pct": "67.80409812927246",
         "FootCamber_deg": "-20.895513916015624"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-46-000Z-dsc01612",
@@ -8638,7 +8667,7 @@
       "capturedAt": "2026-09-11T11:36:46.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:46+02:00",
         "ts": "1789126606.0",
@@ -8668,7 +8697,8 @@
         "Clew_pct": "67.80409812927246",
         "FootCamber_deg": "-20.895513916015624"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-47-000Z-dsc01613",
@@ -8676,7 +8706,7 @@
       "capturedAt": "2026-09-11T11:36:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:47+02:00",
         "ts": "1789126607.0",
@@ -8706,7 +8736,8 @@
         "Clew_pct": "68.11623672644296",
         "FootCamber_deg": "-19.44555778503418"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-47-000Z-dsc01614",
@@ -8714,7 +8745,7 @@
       "capturedAt": "2026-09-11T11:36:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:47+02:00",
         "ts": "1789126607.0",
@@ -8744,7 +8775,8 @@
         "Clew_pct": "68.11623672644296",
         "FootCamber_deg": "-19.44555778503418"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-47-000Z-dsc01615",
@@ -8752,7 +8784,7 @@
       "capturedAt": "2026-09-11T11:36:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:47+02:00",
         "ts": "1789126607.0",
@@ -8782,7 +8814,8 @@
         "Clew_pct": "68.11623672644296",
         "FootCamber_deg": "-19.44555778503418"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-47-000Z-dsc01616",
@@ -8790,7 +8823,7 @@
       "capturedAt": "2026-09-11T11:36:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:47+02:00",
         "ts": "1789126607.0",
@@ -8820,7 +8853,8 @@
         "Clew_pct": "68.11623672644296",
         "FootCamber_deg": "-19.44555778503418"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-48-000Z-dsc01617",
@@ -8828,7 +8862,7 @@
       "capturedAt": "2026-09-11T11:36:48.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:48+02:00",
         "ts": "1789126608.0",
@@ -8858,7 +8892,8 @@
         "Clew_pct": "67.91903202732405",
         "FootCamber_deg": "-20.047719383239745"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-48-000Z-dsc01618",
@@ -8866,7 +8901,7 @@
       "capturedAt": "2026-09-11T11:36:48.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:48+02:00",
         "ts": "1789126608.0",
@@ -8896,7 +8931,8 @@
         "Clew_pct": "67.91903202732405",
         "FootCamber_deg": "-20.047719383239745"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-48-000Z-dsc01619",
@@ -8904,7 +8940,7 @@
       "capturedAt": "2026-09-11T11:36:48.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:48+02:00",
         "ts": "1789126608.0",
@@ -8934,7 +8970,8 @@
         "Clew_pct": "67.91903202732405",
         "FootCamber_deg": "-20.047719383239745"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-49-000Z-dsc01620",
@@ -8942,7 +8979,7 @@
       "capturedAt": "2026-09-11T11:36:49.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:49+02:00",
         "ts": "1789126609.0",
@@ -8972,7 +9009,8 @@
         "Clew_pct": "67.93554276227951",
         "FootCamber_deg": "-21.070030212402344"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-49-000Z-dsc01621",
@@ -8980,7 +9018,7 @@
       "capturedAt": "2026-09-11T11:36:49.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:49+02:00",
         "ts": "1789126609.0",
@@ -9010,7 +9048,8 @@
         "Clew_pct": "67.93554276227951",
         "FootCamber_deg": "-21.070030212402344"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-49-000Z-dsc01622",
@@ -9018,7 +9057,7 @@
       "capturedAt": "2026-09-11T11:36:49.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:49+02:00",
         "ts": "1789126609.0",
@@ -9048,7 +9087,8 @@
         "Clew_pct": "67.93554276227951",
         "FootCamber_deg": "-21.070030212402344"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-50-000Z-dsc01623",
@@ -9056,7 +9096,7 @@
       "capturedAt": "2026-09-11T11:36:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:50+02:00",
         "ts": "1789126610.0",
@@ -9086,7 +9126,8 @@
         "Clew_pct": "78.85804449518523",
         "FootCamber_deg": "-23.63173027038574"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-50-000Z-dsc01624",
@@ -9094,7 +9135,7 @@
       "capturedAt": "2026-09-11T11:36:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:50+02:00",
         "ts": "1789126610.0",
@@ -9124,7 +9165,8 @@
         "Clew_pct": "78.85804449518523",
         "FootCamber_deg": "-23.63173027038574"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-50-000Z-dsc01625",
@@ -9132,7 +9174,7 @@
       "capturedAt": "2026-09-11T11:36:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:50+02:00",
         "ts": "1789126610.0",
@@ -9162,7 +9204,8 @@
         "Clew_pct": "78.85804449518523",
         "FootCamber_deg": "-23.63173027038574"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-50-000Z-dsc01626",
@@ -9170,7 +9213,7 @@
       "capturedAt": "2026-09-11T11:36:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:50+02:00",
         "ts": "1789126610.0",
@@ -9200,7 +9243,8 @@
         "Clew_pct": "78.85804449518523",
         "FootCamber_deg": "-23.63173027038574"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-51-000Z-dsc01627",
@@ -9208,7 +9252,7 @@
       "capturedAt": "2026-09-11T11:36:51.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:51+02:00",
         "ts": "1789126611.0",
@@ -9238,7 +9282,8 @@
         "Clew_pct": "78.74203498164813",
         "FootCamber_deg": "-22.644228744506837"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-51-000Z-dsc01628",
@@ -9246,7 +9291,7 @@
       "capturedAt": "2026-09-11T11:36:51.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:51+02:00",
         "ts": "1789126611.0",
@@ -9276,7 +9321,8 @@
         "Clew_pct": "78.74203498164813",
         "FootCamber_deg": "-22.644228744506837"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-51-000Z-dsc01629",
@@ -9284,7 +9330,7 @@
       "capturedAt": "2026-09-11T11:36:51.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:51+02:00",
         "ts": "1789126611.0",
@@ -9314,7 +9360,8 @@
         "Clew_pct": "78.74203498164813",
         "FootCamber_deg": "-22.644228744506837"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-52-000Z-dsc01630",
@@ -9322,7 +9369,7 @@
       "capturedAt": "2026-09-11T11:36:52.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:52+02:00",
         "ts": "1789126612.0",
@@ -9352,7 +9399,8 @@
         "Clew_pct": "78.35894276698431",
         "FootCamber_deg": "-25.26162929534912"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-36-52-000Z-dsc01631",
@@ -9360,7 +9408,7 @@
       "capturedAt": "2026-09-11T11:36:52.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:36:52+02:00",
         "ts": "1789126612.0",
@@ -9390,7 +9438,8 @@
         "Clew_pct": "78.35894276698431",
         "FootCamber_deg": "-25.26162929534912"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-44-000Z-dsc01671",
@@ -9398,7 +9447,7 @@
       "capturedAt": "2026-09-11T11:43:44.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:44+02:00",
         "ts": "1789127024.0",
@@ -9428,7 +9477,8 @@
         "Clew_pct": "72.60966077446939",
         "FootCamber_deg": "-20.364232730865478"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-44-000Z-dsc01672",
@@ -9436,7 +9486,7 @@
       "capturedAt": "2026-09-11T11:43:44.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:44+02:00",
         "ts": "1789127024.0",
@@ -9466,7 +9516,8 @@
         "Clew_pct": "72.60966077446939",
         "FootCamber_deg": "-20.364232730865478"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-45-000Z-dsc01674",
@@ -9474,7 +9525,7 @@
       "capturedAt": "2026-09-11T11:43:45.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "upwind",
+      "category": "manoeuvre",
       "row": {
         "Datetime": "2026-09-11 13:43:45+02:00",
         "ts": "1789127025.0",
@@ -9504,7 +9555,8 @@
         "Clew_pct": "72.53806193669638",
         "FootCamber_deg": "-9.39246335029602"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-46-000Z-dsc01676",
@@ -9512,7 +9564,7 @@
       "capturedAt": "2026-09-11T11:43:46.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:46+02:00",
         "ts": "1789127026.0",
@@ -9542,7 +9594,8 @@
         "Clew_pct": "45.17294069131215",
         "FootCamber_deg": "9.657613849639892"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-46-000Z-dsc01677",
@@ -9550,7 +9603,7 @@
       "capturedAt": "2026-09-11T11:43:46.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:46+02:00",
         "ts": "1789127026.0",
@@ -9580,7 +9633,8 @@
         "Clew_pct": "45.17294069131215",
         "FootCamber_deg": "9.657613849639892"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-46-000Z-dsc01678",
@@ -9588,7 +9642,7 @@
       "capturedAt": "2026-09-11T11:43:46.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:46+02:00",
         "ts": "1789127026.0",
@@ -9618,7 +9672,8 @@
         "Clew_pct": "45.17294069131215",
         "FootCamber_deg": "9.657613849639892"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-47-000Z-dsc01679",
@@ -9626,7 +9681,7 @@
       "capturedAt": "2026-09-11T11:43:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:47+02:00",
         "ts": "1789127027.0",
@@ -9656,7 +9711,8 @@
         "Clew_pct": "73.06680579980215",
         "FootCamber_deg": "21.06223335266113"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-47-000Z-dsc01680",
@@ -9664,7 +9720,7 @@
       "capturedAt": "2026-09-11T11:43:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:47+02:00",
         "ts": "1789127027.0",
@@ -9694,7 +9750,8 @@
         "Clew_pct": "73.06680579980215",
         "FootCamber_deg": "21.06223335266113"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-47-000Z-dsc01681",
@@ -9702,7 +9759,7 @@
       "capturedAt": "2026-09-11T11:43:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:47+02:00",
         "ts": "1789127027.0",
@@ -9732,7 +9789,8 @@
         "Clew_pct": "73.06680579980215",
         "FootCamber_deg": "21.06223335266113"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-47-000Z-dsc01682",
@@ -9740,7 +9798,7 @@
       "capturedAt": "2026-09-11T11:43:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:47+02:00",
         "ts": "1789127027.0",
@@ -9770,7 +9828,8 @@
         "Clew_pct": "73.06680579980215",
         "FootCamber_deg": "21.06223335266113"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-48-000Z-dsc01683",
@@ -9778,7 +9837,7 @@
       "capturedAt": "2026-09-11T11:43:48.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:48+02:00",
         "ts": "1789127028.0",
@@ -9808,7 +9867,8 @@
         "Clew_pct": "72.97573412458102",
         "FootCamber_deg": "16.05207414627075"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-48-000Z-dsc01684",
@@ -9816,7 +9876,7 @@
       "capturedAt": "2026-09-11T11:43:48.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:48+02:00",
         "ts": "1789127028.0",
@@ -9846,7 +9906,8 @@
         "Clew_pct": "72.97573412458102",
         "FootCamber_deg": "16.05207414627075"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-48-000Z-dsc01685",
@@ -9854,7 +9915,7 @@
       "capturedAt": "2026-09-11T11:43:48.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:48+02:00",
         "ts": "1789127028.0",
@@ -9884,7 +9945,8 @@
         "Clew_pct": "72.97573412458102",
         "FootCamber_deg": "16.05207414627075"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-49-000Z-dsc01686",
@@ -9892,7 +9954,7 @@
       "capturedAt": "2026-09-11T11:43:49.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:49+02:00",
         "ts": "1789127029.0",
@@ -9922,7 +9984,8 @@
         "Clew_pct": "72.79231647650401",
         "FootCamber_deg": "18.537517166137697"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-49-000Z-dsc01687",
@@ -9930,7 +9993,7 @@
       "capturedAt": "2026-09-11T11:43:49.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:49+02:00",
         "ts": "1789127029.0",
@@ -9960,7 +10023,8 @@
         "Clew_pct": "72.79231647650401",
         "FootCamber_deg": "18.537517166137697"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-49-000Z-dsc01688",
@@ -9968,7 +10032,7 @@
       "capturedAt": "2026-09-11T11:43:49.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:49+02:00",
         "ts": "1789127029.0",
@@ -9998,7 +10062,8 @@
         "Clew_pct": "72.79231647650401",
         "FootCamber_deg": "18.537517166137697"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-50-000Z-dsc01689",
@@ -10006,7 +10071,7 @@
       "capturedAt": "2026-09-11T11:43:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:50+02:00",
         "ts": "1789127030.0",
@@ -10036,7 +10101,8 @@
         "Clew_pct": "72.78824547926584",
         "FootCamber_deg": "21.35478973388672"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-50-000Z-dsc01690",
@@ -10044,7 +10110,7 @@
       "capturedAt": "2026-09-11T11:43:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:50+02:00",
         "ts": "1789127030.0",
@@ -10074,7 +10140,8 @@
         "Clew_pct": "72.78824547926584",
         "FootCamber_deg": "21.35478973388672"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-50-000Z-dsc01691",
@@ -10082,7 +10149,7 @@
       "capturedAt": "2026-09-11T11:43:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:50+02:00",
         "ts": "1789127030.0",
@@ -10112,7 +10179,8 @@
         "Clew_pct": "72.78824547926584",
         "FootCamber_deg": "21.35478973388672"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-50-000Z-dsc01692",
@@ -10120,7 +10188,7 @@
       "capturedAt": "2026-09-11T11:43:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:50+02:00",
         "ts": "1789127030.0",
@@ -10150,7 +10218,8 @@
         "Clew_pct": "72.78824547926584",
         "FootCamber_deg": "21.35478973388672"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-51-000Z-dsc01693",
@@ -10158,7 +10227,7 @@
       "capturedAt": "2026-09-11T11:43:51.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:51+02:00",
         "ts": "1789127031.0",
@@ -10188,7 +10257,8 @@
         "Clew_pct": "72.78818413615228",
         "FootCamber_deg": "19.841816711425782"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-51-000Z-dsc01694",
@@ -10196,7 +10266,7 @@
       "capturedAt": "2026-09-11T11:43:51.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:51+02:00",
         "ts": "1789127031.0",
@@ -10226,7 +10296,8 @@
         "Clew_pct": "72.78818413615228",
         "FootCamber_deg": "19.841816711425782"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-51-000Z-dsc01695",
@@ -10234,7 +10305,7 @@
       "capturedAt": "2026-09-11T11:43:51.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:51+02:00",
         "ts": "1789127031.0",
@@ -10264,7 +10335,8 @@
         "Clew_pct": "72.78818413615228",
         "FootCamber_deg": "19.841816711425782"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-52-000Z-dsc01696",
@@ -10272,7 +10344,7 @@
       "capturedAt": "2026-09-11T11:43:52.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:52+02:00",
         "ts": "1789127032.0",
@@ -10302,7 +10374,8 @@
         "Clew_pct": "76.7377016445001",
         "FootCamber_deg": "20.315497398376465"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-52-000Z-dsc01697",
@@ -10310,7 +10383,7 @@
       "capturedAt": "2026-09-11T11:43:52.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:52+02:00",
         "ts": "1789127032.0",
@@ -10340,7 +10413,8 @@
         "Clew_pct": "76.7377016445001",
         "FootCamber_deg": "20.315497398376465"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-52-000Z-dsc01698",
@@ -10348,7 +10422,7 @@
       "capturedAt": "2026-09-11T11:43:52.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:52+02:00",
         "ts": "1789127032.0",
@@ -10378,7 +10452,8 @@
         "Clew_pct": "76.7377016445001",
         "FootCamber_deg": "20.315497398376465"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-43-53-000Z-dsc01699",
@@ -10386,7 +10461,7 @@
       "capturedAt": "2026-09-11T11:43:53.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-11 13:43:53+02:00",
         "ts": "1789127033.0",
@@ -10416,7 +10491,8 @@
         "Clew_pct": "75.91022253036499",
         "FootCamber_deg": "20.031872367858888"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T11-50-00-000Z-dsc01707",
@@ -10454,7 +10530,8 @@
         "Clew_pct": "43.593487640221916",
         "FootCamber_deg": "14.237401485443115"
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T14-39-48-000Z-dsc01708",
@@ -10492,7 +10569,8 @@
         "Clew_pct": "",
         "FootCamber_deg": ""
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T14-39-48-000Z-dsc01709",
@@ -10530,7 +10608,8 @@
         "Clew_pct": "",
         "FootCamber_deg": ""
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T14-40-55-000Z-dsc01713",
@@ -10568,7 +10647,8 @@
         "Clew_pct": "",
         "FootCamber_deg": ""
       },
-      "comment": ""
+      "comment": "",
+      "categoryManual": true
     },
     {
       "id": "2026-09-11T14-44-42-000Z-dsc01718",
@@ -10606,7 +10686,8 @@
         "Clew_pct": "",
         "FootCamber_deg": ""
       },
-      "comment": "Pietro 'more twist at the end of the day'"
+      "comment": "Pietro 'more twist at the end of the day'",
+      "categoryManual": true
     }
   ],
   "dayNotes": {
