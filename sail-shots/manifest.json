@@ -7857,7 +7857,27 @@
         "FootCamber_deg": "-13.78871774673462",
         "Timestamp": "2026-09-11 12:53:29+02:00"
       },
-      "comment": "Upwind start of day pre batten adjustment"
+      "comment": "Upwind start of day pre batten adjustment",
+      "frame": {
+        "rotationDeg": 0,
+        "lightbox": {
+          "widthPct": 139.723878890749,
+          "heightPct": 119.24120274985708,
+          "leftPct": -30.604054284474188,
+          "topPct": -11.686991482246214,
+          "originXPct": 57.688102366166795,
+          "originYPct": 51.73294973521235,
+          "aspectRatio": 0.480183134144499
+        },
+        "grid": {
+          "widthPct": 139.723878890749,
+          "heightPct": 331.0992390776043,
+          "leftPct": -30.604054284474188,
+          "topPct": -121.28740292568759,
+          "originXPct": 57.688102366166795,
+          "originYPct": 51.73294973521235
+        }
+      }
     },
     {
       "id": "2026-09-11T11-27-36-000Z-dsc01587",
