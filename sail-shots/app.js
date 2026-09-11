@@ -541,7 +541,7 @@
   function formatShotDate(iso) {
     const d = new Date(iso);
     if (isNaN(d.getTime())) return 'Unknown time';
-    return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit', timeZone: 'UTC' });
+    return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', second: '2-digit' });
   }
 
   function dateKeyOf(shot) {
