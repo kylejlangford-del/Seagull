@@ -181,6 +181,12 @@
 
   let selectedDateKey = null;
   let selectedCategory = 'all';
+  // Shot ids checked for the PDF report, via the checkbox on each gallery
+  // card (see renderShotCard / buildReportBarDom below). Kept as a plain
+  // module-level Set rather than on existingManifest so it's just UI state —
+  // it isn't saved/published and survives switching day tabs, so a report
+  // can mix shots from more than one day.
+  let selectedForReport = new Set();
   let currentGalleryOrder = []; // the shots currently shown in the grid, in their displayed order — lets the lightbox step next/prev
   // When opening a collapsed manoeuvre-group card, prev/next should stay
   // scoped to just that group's own shots rather than the whole category —
@@ -722,6 +728,22 @@
       deleteShot(shot.id);
     });
     imgWrap.appendChild(deleteBtn);
+
+    // Report-selection checkbox (bottom-right corner — the other three
+    // corners are already taken by delete/category/date). Toggling it
+    // doesn't touch existingManifest or trigger a publish; it's purely
+    // local UI state feeding the PDF report button in the floating bar
+    // built by buildReportBarDom().
+    const reportCheck = document.createElement('button');
+    reportCheck.type = 'button';
+    reportCheck.className = 'shot-card__reportcheck' + (selectedForReport.has(shot.id) ? ' is-checked' : '');
+    reportCheck.setAttribute('aria-label', selectedForReport.has(shot.id) ? 'Remove from report' : 'Add to report');
+    reportCheck.setAttribute('aria-pressed', selectedForReport.has(shot.id) ? 'true' : 'false');
+    reportCheck.addEventListener('click', (e) => {
+      e.stopPropagation(); // don't open the lightbox
+      toggleReportSelection(shot.id);
+    });
+    imgWrap.appendChild(reportCheck);
 
     imgWrap.classList.add('is-clickable');
     imgWrap.addEventListener('click', () => openLightbox(shot, null));
@@ -2126,6 +2148,21 @@
     renderGallery();
   }
 
+  // ---------- PDF report: select shots with a checkbox, export them ----------
+  function toggleReportSelection(shotId) {
+    if (selectedForReport.has(shotId)) selectedForReport.delete(shotId);
+    else selectedForReport.add(shotId);
+    updateReportBar();
+    renderGallery();
+  }
+
+  function clearReportSelection() {
+    if (selectedForReport.size === 0) return;
+    selectedForReport.clear();
+    updateReportBar();
+    renderGallery();
+  }
+
   // Unlike category, a comment is free text typed one keystroke at a time —
   // re-rendering the whole grid on every keystroke (like setShotCategory
   // does) would blow away focus and cursor position mid-type, so this just
@@ -2495,6 +2532,180 @@
     el.addBtn.textContent = isOpen ? 'Add Shots' : 'Hide';
   });
 
+  // ---------- Report bar: floating "N selected" + Generate/Clear controls ----------
+  // Built once, on load, the same way the sync panel below builds its own
+  // floating DOM -- separate from el{} (which only binds ids already present
+  // in index.html). Lives bottom-left so it never overlaps the sync panel,
+  // which docks bottom-right.
+  const elReport = {};
+
+  function injectReportBarStyles() {
+    if (document.getElementById('reportBarStyles')) return;
+    const style = document.createElement('style');
+    style.id = 'reportBarStyles';
+    style.textContent = `
+      #reportBar { position: fixed; left: 16px; bottom: 16px; z-index: 9999; background: #0b1622;
+        border: 1px solid #2a3038; border-radius: 10px; padding: 10px 14px; display: flex;
+        align-items: center; gap: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.4); font-family: inherit;
+        color: #e7edf3; }
+      #reportBar.is-hidden { display: none; }
+      #reportBar .reportBar__count { font-size: 13px; font-weight: 600; white-space: nowrap; }
+      #reportBar button.reportBar__generate { background: #1f6f3c; color: #fff; border: none; border-radius: 6px;
+        padding: 7px 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+      #reportBar button.reportBar__generate:disabled { background: #2a3038; color: #77808a; cursor: default; }
+      #reportBar button.reportBar__clear { background: transparent; color: #9aa4af; border: 1px solid #3a4048;
+        border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function buildReportBarDom() {
+    if (document.getElementById('reportBar')) return;
+    injectReportBarStyles();
+    const bar = document.createElement('div');
+    bar.id = 'reportBar';
+    bar.className = 'is-hidden';
+    bar.innerHTML = `
+      <span class="reportBar__count" id="reportBarCount">0 selected</span>
+      <button type="button" class="reportBar__generate" id="reportBarGenerateBtn">Generate PDF report</button>
+      <button type="button" class="reportBar__clear" id="reportBarClearBtn">Clear</button>
+    `;
+    document.body.appendChild(bar);
+    elReport.bar = bar;
+    elReport.count = bar.querySelector('#reportBarCount');
+    elReport.generateBtn = bar.querySelector('#reportBarGenerateBtn');
+    elReport.clearBtn = bar.querySelector('#reportBarClearBtn');
+    elReport.generateBtn.addEventListener('click', () => generateReportPdf());
+    elReport.clearBtn.addEventListener('click', () => clearReportSelection());
+  }
+
+  function updateReportBar() {
+    if (!elReport.bar) return;
+    const n = selectedForReport.size;
+    elReport.bar.classList.toggle('is-hidden', n === 0);
+    elReport.count.textContent = `${n} selected`;
+  }
+
+  // Fetches a photo (same-origin repo path or cross-origin Cloudflare R2
+  // URL) as bytes rather than going through an <img>/<canvas> -- that
+  // sidesteps canvas tainting on the R2 URLs entirely, since the raw bytes
+  // go straight into the PDF as a base64 image with no canvas involved.
+  // createImageBitmap gives the pixel dimensions (needed to scale the image
+  // into the page without distorting it) without needing a DOM <img> either.
+  async function loadImageForReport(url) {
+    const res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    const bitmap = await createImageBitmap(blob);
+    const dataUrl = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error || new Error('FileReader failed'));
+      reader.readAsDataURL(blob);
+    });
+    return { dataUrl, width: bitmap.width, height: bitmap.height, isPng: blob.type === 'image/png' };
+  }
+
+  // Builds and downloads a PDF of the checked shots: one photo per page,
+  // with its category/timestamp, comment, and the full row of boat data
+  // recorded for that shot. Different days can carry different CSV column
+  // sets (Sept 11's logger captured fewer channels than Sept 9/10's), so the
+  // data block is built from whatever keys are actually present on each
+  // shot's own `row` rather than a fixed field list.
+  async function generateReportPdf() {
+    if (selectedForReport.size === 0 || !elReport.generateBtn || elReport.generateBtn.disabled) return;
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+      alert('The PDF library hasn’t finished loading yet -- wait a moment and try again.');
+      return;
+    }
+    const { jsPDF } = window.jspdf;
+    const shots = existingManifest.shots
+      .filter(s => selectedForReport.has(s.id))
+      .sort((a, b) => new Date(a.capturedAt) - new Date(b.capturedAt));
+
+    const originalLabel = elReport.generateBtn.textContent;
+    elReport.generateBtn.disabled = true;
+
+    try {
+      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const margin = 36;
+      const contentW = pageW - margin * 2;
+
+      for (let i = 0; i < shots.length; i++) {
+        const shot = shots[i];
+        elReport.generateBtn.textContent = `Generating ${i + 1}/${shots.length}…`;
+        if (i > 0) doc.addPage();
+        let y = margin;
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.text(CATEGORY_LABEL[shot.category] || shot.category || 'Other', margin, y);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text(formatShotDate(shot.capturedAt) || '', pageW - margin, y, { align: 'right' });
+        y += 16;
+
+        try {
+          const img = await loadImageForReport(photoSrc(shot.file));
+          const maxImgH = pageH * 0.55;
+          let w = contentW, h = (w * img.height) / img.width;
+          if (h > maxImgH) { h = maxImgH; w = (h * img.width) / img.height; }
+          const x = margin + (contentW - w) / 2;
+          doc.addImage(img.dataUrl, img.isPng ? 'PNG' : 'JPEG', x, y, w, h);
+          y += h + 16;
+        } catch (e) {
+          doc.setFontSize(9);
+          doc.setTextColor(180, 60, 60);
+          doc.text(`(photo failed to load: ${(e && e.message) || e})`, margin, y + 10);
+          doc.setTextColor(20, 20, 20);
+          y += 24;
+        }
+
+        if (shot.comment) {
+          doc.setFont('helvetica', 'italic');
+          doc.setFontSize(10);
+          const lines = doc.splitTextToSize(`“${shot.comment}”`, contentW);
+          doc.text(lines, margin, y);
+          y += lines.length * 12 + 10;
+          doc.setFont('helvetica', 'normal');
+        }
+
+        const entries = Object.entries(shot.row || {}).filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== '');
+        if (entries.length) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(10);
+          doc.text('Boat data', margin, y);
+          y += 13;
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          const colCount = 3;
+          const colW = contentW / colCount;
+          const rowH = 11;
+          entries.forEach(([k, v], idx) => {
+            const col = idx % colCount;
+            const row = Math.floor(idx / colCount);
+            const cellY = y + row * rowH;
+            if (cellY > pageH - margin) return; // out of room on this page -- rather truncate than spill a near-empty extra page
+            const num = parseFloat(v);
+            const val = String(v).trim() !== '' && !isNaN(num) && isFinite(num) ? num.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1') : v;
+            doc.text(`${k}: ${val}`, margin + col * colW, cellY);
+          });
+        }
+      }
+
+      const stamp = new Date().toISOString().slice(0, 10);
+      doc.save(`sail-shots-report-${stamp}.pdf`);
+    } catch (e) {
+      console.error('PDF report generation failed:', e);
+      alert(`Couldn’t generate the PDF: ${(e && e.message) || e}`);
+    } finally {
+      elReport.generateBtn.disabled = false;
+      elReport.generateBtn.textContent = originalLabel;
+    }
+  }
+
   // ---------- Sync panel: interactive camera-clock offset control ----------
   // Kyle had to ask in chat for a camera-clock correction three times in a
   // row (+7s, then +2s closer, then +4s total) before it looked right in
@@ -2825,5 +3036,6 @@
   }
 
   updateGithubConnectBtn();
+  buildReportBarDom();
   loadManifest().then(initSyncPanel);
 })();
