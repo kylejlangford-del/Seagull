@@ -10626,7 +10626,27 @@
         "FootCamber_deg": "12.59765911102295",
         "Timestamp": "2026-09-11 16:44:41+02:00"
       },
-      "comment": "Pietro 'more twist at the end of the day'"
+      "comment": "Pietro 'more twist at the end of the day'",
+      "frame": {
+        "rotationDeg": 0,
+        "lightbox": {
+          "widthPct": 138.4057290898929,
+          "heightPct": 161.2829463998067,
+          "leftPct": -29.05747515600433,
+          "topPct": -24.467353427533013,
+          "originXPct": 57.12008865229663,
+          "originYPct": 46.17187067189037,
+          "aspectRatio": 0.6556703861732327
+        },
+        "grid": {
+          "widthPct": 138.4057290898929,
+          "heightPct": 327.975661350457,
+          "leftPct": -29.05747515600433,
+          "topPct": -101.43249819401015,
+          "originXPct": 57.12008865229663,
+          "originYPct": 46.17187067189037
+        }
+      }
     }
   ],
   "dayNotes": {
