@@ -2734,11 +2734,23 @@
   // go straight into the PDF as a base64 image with no canvas involved.
   // createImageBitmap gives the pixel dimensions (needed to scale the image
   // into the page without distorting it) without needing a DOM <img> either.
-  async function loadImageForReport(url) {
+  //
+  // If the shot has a saved frame (crop and/or straighten, from the
+  // framing tool above), the report should show exactly what the lightbox
+  // shows -- not the untouched original -- so this bakes the same crop box
+  // + rotation into the canvas before it's ever re-encoded, using the same
+  // frameBoxFromRenderFit math the lightbox itself uses to recover the
+  // natural-pixel crop box from the saved render-fit percentages. Rotating
+  // around the crop box's own center and then reading back just that box's
+  // width/height starting at the canvas origin reproduces the lightbox's
+  // rotate-then-view-through-a-fixed-window rendering exactly.
+  async function loadImageForReport(url, shot) {
     const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const blob = await res.blob();
     const bitmap = await createImageBitmap(blob);
+    const frame = shot && shot.frame;
+    const canvas = document.createElement('canvas');
     // Re-encode through a canvas rather than embedding the fetched bytes
     // directly: jsPDF's JPEG support just splices the original compressed
     // stream into the PDF as a DCTDecode stream without transcoding it, and
@@ -2746,13 +2758,28 @@
     // jsPDF's own decoder can't parse -- that mismatch is what produced the
     // vertical-noise corruption seen in earlier reports. A canvas re-encode
     // always emits a baseline JPEG, which jsPDF embeds cleanly regardless of
-    // how the source file was encoded.
-    const canvas = document.createElement('canvas');
-    canvas.width = bitmap.width;
-    canvas.height = bitmap.height;
-    canvas.getContext('2d').drawImage(bitmap, 0, 0);
+    // how the source file was encoded -- true whether or not a frame is
+    // also being applied below.
+    if (frame && frame.lightbox) {
+      const iw = bitmap.width, ih = bitmap.height;
+      const box = frameBoxFromRenderFit(frame.lightbox, iw, ih);
+      const bw = Math.max(1, Math.round(box.wFrac * iw));
+      const bh = Math.max(1, Math.round(box.hFrac * ih));
+      const cx = (box.xFrac + box.wFrac / 2) * iw;
+      const cy = (box.yFrac + box.hFrac / 2) * ih;
+      canvas.width = bw;
+      canvas.height = bh;
+      const ctx = canvas.getContext('2d');
+      ctx.translate(bw / 2, bh / 2);
+      ctx.rotate((frame.rotationDeg || 0) * Math.PI / 180);
+      ctx.drawImage(bitmap, -cx, -cy);
+    } else {
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      canvas.getContext('2d').drawImage(bitmap, 0, 0);
+    }
     const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-    return { dataUrl, width: bitmap.width, height: bitmap.height };
+    return { dataUrl, width: canvas.width, height: canvas.height };
   }
 
   // Color palette mirrors the site's own :root custom properties in
@@ -2916,7 +2943,7 @@
         }
 
         try {
-          const img = await loadImageForReport(photoSrc(shot.file));
+          const img = await loadImageForReport(photoSrc(shot.file), shot);
           const maxW = rightW, maxH = pageH - margin - y;
           let w = maxW, h = (w * img.height) / img.width;
           if (h > maxH) { h = maxH; w = (h * img.width) / img.height; }
