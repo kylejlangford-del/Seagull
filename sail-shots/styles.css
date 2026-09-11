@@ -290,8 +290,8 @@ select.shot-card__category option{background:#0c1d2c;color:var(--text)}
    the <img> since .lightbox__image-wrap is sized to fit it exactly. */
 .lightbox__twist-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .lightbox__twist-overlay.is-active{pointer-events:auto;cursor:crosshair}
-.twist-overlay__line{fill:none;stroke:var(--accent);stroke-width:3;vector-effect:non-scaling-stroke;opacity:.9}
-.twist-overlay__point{fill:var(--accent);stroke:#06101b;stroke-width:2;vector-effect:non-scaling-stroke;cursor:grab}
+.twist-overlay__line{fill:none;stroke:var(--accent);stroke-width:1.5;vector-effect:non-scaling-stroke;opacity:.9}
+.twist-overlay__point{fill:var(--accent);stroke:#06101b;stroke-width:1;vector-effect:non-scaling-stroke;cursor:grab}
 .twist-overlay__point.is-endpoint{fill:var(--warn)}
 .twist-overlay__point.is-dragging{fill:#fff;cursor:grabbing}
 
