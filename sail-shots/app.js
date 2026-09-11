@@ -1232,9 +1232,8 @@
     const newX = clamp(cursor.xFrac - cursor.fx * newW, 0, 1 - newW);
     const newY = clamp(cursor.yFrac - cursor.fy * newH, 0, 1 - newH);
     if (Math.abs(newW - baseline.wFrac) < 1e-4) {
-      viewZoomBox = null;
+      resetViewZoom();
       updateLightboxFrameDisplay(shot);
-      updateZoomHint();
     } else {
       viewZoomBox = { xFrac: newX, yFrac: newY, wFrac: newW, hFrac: newH };
       applyViewZoomBox();
@@ -1270,9 +1269,8 @@
     if (!viewZoomBox || frameState || twistState || centerPickActive) return;
     e.preventDefault();
     const shot = currentLightboxShot();
-    viewZoomBox = null;
+    resetViewZoom();
     if (shot) updateLightboxFrameDisplay(shot);
-    updateZoomHint();
   });
 
   // Crops an arbitrary box down to a centered sub-rectangle of exactly
