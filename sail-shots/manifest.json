@@ -7536,7 +7536,7 @@
       "capturedAt": "2026-09-11T10:42:16.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:42:16+02:00",
         "ts": "1789123336.0",
@@ -7574,7 +7574,7 @@
       "capturedAt": "2026-09-11T10:42:17.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:42:17+02:00",
         "ts": "1789123337.0",
@@ -7612,7 +7612,7 @@
       "capturedAt": "2026-09-11T10:42:18.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:42:18+02:00",
         "ts": "1789123338.0",
@@ -7650,7 +7650,7 @@
       "capturedAt": "2026-09-11T10:42:19.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:42:19+02:00",
         "ts": "1789123339.0",
@@ -7688,7 +7688,7 @@
       "capturedAt": "2026-09-11T10:42:20.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:42:20+02:00",
         "ts": "1789123340.0",
@@ -7726,7 +7726,7 @@
       "capturedAt": "2026-09-11T10:42:21.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:42:21+02:00",
         "ts": "1789123341.0",
@@ -7764,7 +7764,7 @@
       "capturedAt": "2026-09-11T10:42:22.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:42:22+02:00",
         "ts": "1789123342.0",
@@ -7802,7 +7802,7 @@
       "capturedAt": "2026-09-11T10:42:22.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:42:22+02:00",
         "ts": "1789123342.0",
@@ -7840,7 +7840,7 @@
       "capturedAt": "2026-09-11T10:52:23.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:52:23+02:00",
         "ts": "1789123943.0",
@@ -7878,7 +7878,7 @@
       "capturedAt": "2026-09-11T10:52:25.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:52:25+02:00",
         "ts": "1789123945.0",
@@ -7916,7 +7916,7 @@
       "capturedAt": "2026-09-11T10:52:27.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:52:27+02:00",
         "ts": "1789123947.0",
@@ -7954,7 +7954,7 @@
       "capturedAt": "2026-09-11T10:52:28.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:52:28+02:00",
         "ts": "1789123948.0",
@@ -7992,7 +7992,7 @@
       "capturedAt": "2026-09-11T10:52:29.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:52:29+02:00",
         "ts": "1789123949.0",
@@ -8030,7 +8030,7 @@
       "capturedAt": "2026-09-11T10:52:36.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:52:36+02:00",
         "ts": "1789123956.0",
@@ -8068,7 +8068,7 @@
       "capturedAt": "2026-09-11T10:52:37.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:52:37+02:00",
         "ts": "1789123957.0",
@@ -8106,7 +8106,7 @@
       "capturedAt": "2026-09-11T10:53:29.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:53:29+02:00",
         "ts": "1789124009.0",
@@ -8144,7 +8144,7 @@
       "capturedAt": "2026-09-11T10:53:30.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:53:30+02:00",
         "ts": "1789124010.0",
@@ -8182,7 +8182,7 @@
       "capturedAt": "2026-09-11T10:53:31.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:53:31+02:00",
         "ts": "1789124011.0",
@@ -8220,7 +8220,7 @@
       "capturedAt": "2026-09-11T10:53:35.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:53:35+02:00",
         "ts": "1789124015.0",
@@ -8258,7 +8258,7 @@
       "capturedAt": "2026-09-11T10:54:05.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:54:05+02:00",
         "ts": "1789124045.0",
@@ -8296,7 +8296,7 @@
       "capturedAt": "2026-09-11T10:54:23.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:54:23+02:00",
         "ts": "1789124063.0",
@@ -8334,7 +8334,7 @@
       "capturedAt": "2026-09-11T10:54:51.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:54:51+02:00",
         "ts": "1789124091.0",
@@ -8372,7 +8372,7 @@
       "capturedAt": "2026-09-11T10:54:54.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:54:54+02:00",
         "ts": "1789124094.0",
@@ -8410,7 +8410,7 @@
       "capturedAt": "2026-09-11T10:54:56.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:54:56+02:00",
         "ts": "1789124096.0",
@@ -8448,7 +8448,7 @@
       "capturedAt": "2026-09-11T10:54:59.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:54:59+02:00",
         "ts": "1789124099.0",
@@ -8486,7 +8486,7 @@
       "capturedAt": "2026-09-11T10:55:00.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:55:00+02:00",
         "ts": "1789124100.0",
@@ -8524,7 +8524,7 @@
       "capturedAt": "2026-09-11T10:56:41.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:56:41+02:00",
         "ts": "1789124201.0",
@@ -8562,7 +8562,7 @@
       "capturedAt": "2026-09-11T10:56:43.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:56:43+02:00",
         "ts": "1789124203.0",
@@ -8600,7 +8600,7 @@
       "capturedAt": "2026-09-11T10:56:53.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:56:53+02:00",
         "ts": "1789124213.0",
@@ -8638,7 +8638,7 @@
       "capturedAt": "2026-09-11T10:56:54.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 12:56:54+02:00",
         "ts": "1789124214.0",
@@ -8676,7 +8676,7 @@
       "capturedAt": "2026-09-11T11:27:36.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 13:27:36+02:00",
         "ts": "1789126056.0",
@@ -8714,7 +8714,7 @@
       "capturedAt": "2026-09-11T11:27:38.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 13:27:38+02:00",
         "ts": "1789126058.0",
@@ -8752,7 +8752,7 @@
       "capturedAt": "2026-09-11T11:27:40.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 13:27:40+02:00",
         "ts": "1789126060.0",
@@ -8790,7 +8790,7 @@
       "capturedAt": "2026-09-11T11:27:40.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 13:27:40+02:00",
         "ts": "1789126060.0",
@@ -8828,7 +8828,7 @@
       "capturedAt": "2026-09-11T11:29:02.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 13:29:02+02:00",
         "ts": "1789126142.0",
@@ -8866,7 +8866,7 @@
       "capturedAt": "2026-09-11T11:36:18.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:18+02:00",
         "ts": "1789126578.0",
@@ -8904,7 +8904,7 @@
       "capturedAt": "2026-09-11T11:36:42.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:42+02:00",
         "ts": "1789126602.0",
@@ -8942,7 +8942,7 @@
       "capturedAt": "2026-09-11T11:36:42.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:42+02:00",
         "ts": "1789126602.0",
@@ -8980,7 +8980,7 @@
       "capturedAt": "2026-09-11T11:36:43.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:43+02:00",
         "ts": "1789126603.0",
@@ -9018,7 +9018,7 @@
       "capturedAt": "2026-09-11T11:36:43.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:43+02:00",
         "ts": "1789126603.0",
@@ -9056,7 +9056,7 @@
       "capturedAt": "2026-09-11T11:36:43.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:43+02:00",
         "ts": "1789126603.0",
@@ -9094,7 +9094,7 @@
       "capturedAt": "2026-09-11T11:36:44.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:44+02:00",
         "ts": "1789126604.0",
@@ -9132,7 +9132,7 @@
       "capturedAt": "2026-09-11T11:36:44.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:44+02:00",
         "ts": "1789126604.0",
@@ -9170,7 +9170,7 @@
       "capturedAt": "2026-09-11T11:36:44.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:44+02:00",
         "ts": "1789126604.0",
@@ -9208,7 +9208,7 @@
       "capturedAt": "2026-09-11T11:36:44.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:44+02:00",
         "ts": "1789126604.0",
@@ -9246,7 +9246,7 @@
       "capturedAt": "2026-09-11T11:36:45.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:45+02:00",
         "ts": "1789126605.0",
@@ -9284,7 +9284,7 @@
       "capturedAt": "2026-09-11T11:36:45.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:45+02:00",
         "ts": "1789126605.0",
@@ -9322,7 +9322,7 @@
       "capturedAt": "2026-09-11T11:36:45.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:45+02:00",
         "ts": "1789126605.0",
@@ -9360,7 +9360,7 @@
       "capturedAt": "2026-09-11T11:36:46.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:46+02:00",
         "ts": "1789126606.0",
@@ -9398,7 +9398,7 @@
       "capturedAt": "2026-09-11T11:36:46.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:46+02:00",
         "ts": "1789126606.0",
@@ -9436,7 +9436,7 @@
       "capturedAt": "2026-09-11T11:36:46.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:46+02:00",
         "ts": "1789126606.0",
@@ -9474,7 +9474,7 @@
       "capturedAt": "2026-09-11T11:36:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:47+02:00",
         "ts": "1789126607.0",
@@ -9512,7 +9512,7 @@
       "capturedAt": "2026-09-11T11:36:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:47+02:00",
         "ts": "1789126607.0",
@@ -9550,7 +9550,7 @@
       "capturedAt": "2026-09-11T11:36:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:47+02:00",
         "ts": "1789126607.0",
@@ -9588,7 +9588,7 @@
       "capturedAt": "2026-09-11T11:36:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:47+02:00",
         "ts": "1789126607.0",
@@ -9626,7 +9626,7 @@
       "capturedAt": "2026-09-11T11:36:48.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:48+02:00",
         "ts": "1789126608.0",
@@ -9664,7 +9664,7 @@
       "capturedAt": "2026-09-11T11:36:48.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:48+02:00",
         "ts": "1789126608.0",
@@ -9702,7 +9702,7 @@
       "capturedAt": "2026-09-11T11:36:48.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:48+02:00",
         "ts": "1789126608.0",
@@ -9740,7 +9740,7 @@
       "capturedAt": "2026-09-11T11:36:49.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:49+02:00",
         "ts": "1789126609.0",
@@ -9778,7 +9778,7 @@
       "capturedAt": "2026-09-11T11:36:49.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:49+02:00",
         "ts": "1789126609.0",
@@ -9816,7 +9816,7 @@
       "capturedAt": "2026-09-11T11:36:49.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:49+02:00",
         "ts": "1789126609.0",
@@ -9854,7 +9854,7 @@
       "capturedAt": "2026-09-11T11:36:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:50+02:00",
         "ts": "1789126610.0",
@@ -9892,7 +9892,7 @@
       "capturedAt": "2026-09-11T11:36:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:50+02:00",
         "ts": "1789126610.0",
@@ -9930,7 +9930,7 @@
       "capturedAt": "2026-09-11T11:36:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:50+02:00",
         "ts": "1789126610.0",
@@ -9968,7 +9968,7 @@
       "capturedAt": "2026-09-11T11:36:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:50+02:00",
         "ts": "1789126610.0",
@@ -10006,7 +10006,7 @@
       "capturedAt": "2026-09-11T11:36:51.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:51+02:00",
         "ts": "1789126611.0",
@@ -10044,7 +10044,7 @@
       "capturedAt": "2026-09-11T11:36:51.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:51+02:00",
         "ts": "1789126611.0",
@@ -10082,7 +10082,7 @@
       "capturedAt": "2026-09-11T11:36:51.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:51+02:00",
         "ts": "1789126611.0",
@@ -10120,7 +10120,7 @@
       "capturedAt": "2026-09-11T11:36:52.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:52+02:00",
         "ts": "1789126612.0",
@@ -10158,7 +10158,7 @@
       "capturedAt": "2026-09-11T11:36:52.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:36:52+02:00",
         "ts": "1789126612.0",
@@ -10196,7 +10196,7 @@
       "capturedAt": "2026-09-11T11:43:44.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:44+02:00",
         "ts": "1789127024.0",
@@ -10234,7 +10234,7 @@
       "capturedAt": "2026-09-11T11:43:44.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:44+02:00",
         "ts": "1789127024.0",
@@ -10272,7 +10272,7 @@
       "capturedAt": "2026-09-11T11:43:45.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 13:43:45+02:00",
         "ts": "1789127025.0",
@@ -10310,7 +10310,7 @@
       "capturedAt": "2026-09-11T11:43:45.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 13:43:45+02:00",
         "ts": "1789127025.0",
@@ -10348,7 +10348,7 @@
       "capturedAt": "2026-09-11T11:43:45.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 13:43:45+02:00",
         "ts": "1789127025.0",
@@ -10386,7 +10386,7 @@
       "capturedAt": "2026-09-11T11:43:46.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:46+02:00",
         "ts": "1789127026.0",
@@ -10424,7 +10424,7 @@
       "capturedAt": "2026-09-11T11:43:46.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:46+02:00",
         "ts": "1789127026.0",
@@ -10462,7 +10462,7 @@
       "capturedAt": "2026-09-11T11:43:46.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:46+02:00",
         "ts": "1789127026.0",
@@ -10500,7 +10500,7 @@
       "capturedAt": "2026-09-11T11:43:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:47+02:00",
         "ts": "1789127027.0",
@@ -10538,7 +10538,7 @@
       "capturedAt": "2026-09-11T11:43:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:47+02:00",
         "ts": "1789127027.0",
@@ -10576,7 +10576,7 @@
       "capturedAt": "2026-09-11T11:43:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:47+02:00",
         "ts": "1789127027.0",
@@ -10614,7 +10614,7 @@
       "capturedAt": "2026-09-11T11:43:47.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:47+02:00",
         "ts": "1789127027.0",
@@ -10652,7 +10652,7 @@
       "capturedAt": "2026-09-11T11:43:48.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:48+02:00",
         "ts": "1789127028.0",
@@ -10690,7 +10690,7 @@
       "capturedAt": "2026-09-11T11:43:48.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:48+02:00",
         "ts": "1789127028.0",
@@ -10728,7 +10728,7 @@
       "capturedAt": "2026-09-11T11:43:48.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:48+02:00",
         "ts": "1789127028.0",
@@ -10766,7 +10766,7 @@
       "capturedAt": "2026-09-11T11:43:49.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:49+02:00",
         "ts": "1789127029.0",
@@ -10804,7 +10804,7 @@
       "capturedAt": "2026-09-11T11:43:49.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:49+02:00",
         "ts": "1789127029.0",
@@ -10842,7 +10842,7 @@
       "capturedAt": "2026-09-11T11:43:49.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:49+02:00",
         "ts": "1789127029.0",
@@ -10880,7 +10880,7 @@
       "capturedAt": "2026-09-11T11:43:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:50+02:00",
         "ts": "1789127030.0",
@@ -10918,7 +10918,7 @@
       "capturedAt": "2026-09-11T11:43:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:50+02:00",
         "ts": "1789127030.0",
@@ -10956,7 +10956,7 @@
       "capturedAt": "2026-09-11T11:43:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:50+02:00",
         "ts": "1789127030.0",
@@ -10994,7 +10994,7 @@
       "capturedAt": "2026-09-11T11:43:50.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:50+02:00",
         "ts": "1789127030.0",
@@ -11032,7 +11032,7 @@
       "capturedAt": "2026-09-11T11:43:51.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:51+02:00",
         "ts": "1789127031.0",
@@ -11070,7 +11070,7 @@
       "capturedAt": "2026-09-11T11:43:51.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:51+02:00",
         "ts": "1789127031.0",
@@ -11108,7 +11108,7 @@
       "capturedAt": "2026-09-11T11:43:51.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:51+02:00",
         "ts": "1789127031.0",
@@ -11146,7 +11146,7 @@
       "capturedAt": "2026-09-11T11:43:52.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:52+02:00",
         "ts": "1789127032.0",
@@ -11184,7 +11184,7 @@
       "capturedAt": "2026-09-11T11:43:52.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:52+02:00",
         "ts": "1789127032.0",
@@ -11222,7 +11222,7 @@
       "capturedAt": "2026-09-11T11:43:52.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:52+02:00",
         "ts": "1789127032.0",
@@ -11260,7 +11260,7 @@
       "capturedAt": "2026-09-11T11:43:53.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "downwind",
       "row": {
         "Datetime": "2026-09-11 13:43:53+02:00",
         "ts": "1789127033.0",
@@ -11298,7 +11298,7 @@
       "capturedAt": "2026-09-11T11:50:00.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-11 13:50:00+02:00",
         "ts": "1789127400.0",
