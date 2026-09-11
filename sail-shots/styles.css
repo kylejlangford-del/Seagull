@@ -78,6 +78,11 @@ h1{margin:10px 0 14px;font-size:clamp(2.1rem,4.4vw,3.4rem);line-height:.98;lette
 .shot-card__image-wrap img.is-framed{position:absolute}
 .shot-card__image-wrap.is-clickable{cursor:zoom-in}
 .shot-card__date{position:absolute;z-index:2;left:10px;bottom:10px;padding:4px 9px;border-radius:7px;background:rgba(6,16,27,.72);backdrop-filter:blur(3px);color:var(--text);font-size:.68rem;font-weight:700}
+
+.shot-card__reportcheck{position:absolute;z-index:2;right:10px;bottom:10px;width:24px;height:24px;border-radius:50%;border:2px solid rgba(255,255,255,.55);background:rgba(6,16,27,.55);backdrop-filter:blur(3px);cursor:pointer;padding:0;display:inline-flex;align-items:center;justify-content:center;transition:background .12s,border-color .12s}
+.shot-card__reportcheck::after{content:'';width:11px;height:6px;border-left:2px solid #06101b;border-bottom:2px solid #06101b;transform:rotate(-45deg) translateY(-1px);opacity:0}
+.shot-card__reportcheck.is-checked{background:var(--accent);border-color:var(--accent)}
+.shot-card__reportcheck.is-checked::after{opacity:1}
 /* line-height:1.4 (not the default "normal") is needed here specifically for
    the lightbox: .lightbox__image-wrap sets line-height:0 so the wrap
    shrink-wraps tightly to the photo with no letterboxing gap, and a <select>
