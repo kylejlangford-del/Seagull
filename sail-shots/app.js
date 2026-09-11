@@ -110,6 +110,7 @@
     lightboxNext: document.getElementById('lightboxNext'),
     lightboxImageWrap: document.getElementById('lightboxImageWrap'),
     lightboxImg: document.getElementById('lightboxImg'),
+    lightboxZoomHint: document.getElementById('lightboxZoomHint'),
     lightboxVars: document.getElementById('lightboxVars'),
     lightboxCategory: document.getElementById('lightboxCategory'),
     lightboxDate: document.getElementById('lightboxDate'),
@@ -830,6 +831,10 @@
   // Twist-profile trace in progress, or null when idle. See the "twist
   // profile" block below for the full state machine.
   let twistState = null;
+  // Live pan/zoom in progress (or baseline, null), and an active pan drag.
+  // See the "view zoom" block below for the full state machine.
+  let viewZoomBox = null;
+  let panDragging = null;
 
   function openLightbox(shot, scopedOrder) {
     const row = shot.row || {};
@@ -842,6 +847,7 @@
     endTwistTrace(); // switching shots (open, or prev/next) abandons any in-progress trace
     endFrameEdit(); // ditto for an in-progress framing edit
     endCenterPick(); // ditto for an in-progress boat-centering click
+    resetViewZoom(); // ditto for a live pan/zoom on whatever shot was open before
 
     el.lightboxImg.src = photoSrc(shot.file);
     // updateLightboxFrameDisplay must run before the syncTwistOverlayViewBox
@@ -1135,6 +1141,140 @@
     return { xFrac: (centerX - bw / 2) / iw, yFrac: (centerY - bh / 2) / ih, wFrac: bw / iw, hFrac: bh / ih };
   }
 
+  // ---------- view zoom: live pan/zoom for casually browsing a photo ----------
+  // Separate from the framing tool above, which saves a permanent crop —
+  // this is just a live, unsaved view. Scroll/trackpad to zoom in past
+  // whatever's currently shown (the shot's saved crop if it has one,
+  // otherwise the full original), drag to pan once zoomed, double-click to
+  // reset. It reuses the framing tool's own render-fit math
+  // (frameRenderFit/setImgRenderFit) rather than a CSS transform, so it
+  // composes correctly with a saved frame's crop and straighten-rotation
+  // instead of the two fighting over img.style.transform. viewZoomBox is
+  // null at the shot's normal baseline view; once zoomed it holds the
+  // visible sub-rectangle, in the same natural-image-pixel-fraction
+  // coordinates as frameState.cropBox above.
+  const VIEW_ZOOM_MAX_SCALE = 6; // how far past the baseline crop the user can zoom in
+
+  function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+  // The box the user is zooming FROM — the shot's saved crop if it has
+  // one, otherwise the whole original photo.
+  function viewZoomBaselineBox(shot) {
+    const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
+    if (!iw || !ih) return null;
+    if (shot && shot.frame) return frameBoxFromRenderFit(shot.frame.lightbox, iw, ih);
+    return { xFrac: 0, yFrac: 0, wFrac: 1, hFrac: 1 };
+  }
+
+  // Cancels any live zoom/pan without touching the shot's saved frame —
+  // called whenever the lightbox moves to a different shot, or whenever
+  // another tool (framing, twist trace, center-pick) is about to take over
+  // the photo view instead.
+  function resetViewZoom() {
+    viewZoomBox = null;
+    panDragging = null;
+    el.lightboxImageWrap.classList.remove('is-zoomed', 'is-panning');
+    if (el.lightboxZoomHint) el.lightboxZoomHint.classList.add('is-hidden');
+  }
+
+  function updateZoomHint() {
+    if (!el.lightboxZoomHint) return;
+    const shot = currentLightboxShot();
+    const baseline = shot && viewZoomBaselineBox(shot);
+    if (!viewZoomBox || !baseline) { el.lightboxZoomHint.classList.add('is-hidden'); return; }
+    const scale = baseline.wFrac / viewZoomBox.wFrac;
+    el.lightboxZoomHint.textContent = `${scale.toFixed(1)}× — double-click to reset`;
+    el.lightboxZoomHint.classList.remove('is-hidden');
+  }
+
+  // Renders the current viewZoomBox, composed with the shot's own saved
+  // straighten rotation (if any) exactly like a saved frame would be.
+  function applyViewZoomBox() {
+    const shot = currentLightboxShot();
+    const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
+    if (!shot || !iw || !ih || !viewZoomBox) return;
+    const rotationDeg = (shot.frame && shot.frame.rotationDeg) || 0;
+    const ar = (viewZoomBox.wFrac * iw) / (viewZoomBox.hFrac * ih);
+    el.lightboxImageWrap.classList.add('is-framed', 'is-zoomed');
+    sizeLightboxWrapToFrameAR(ar);
+    setImgRenderFit(el.lightboxImg, frameRenderFit(viewZoomBox, iw, ih), rotationDeg);
+    updateZoomHint();
+  }
+
+  // Maps a mouse event to a fraction of the FULL natural photo (0-1 on
+  // each axis), given the box currently filling el.lightboxImg on screen —
+  // the baseline (full photo or saved crop) once idle, or viewZoomBox
+  // itself while already zoomed further. Also returns the cursor's own
+  // fraction across that box (fx/fy), used to zoom toward the cursor.
+  function naturalFracFromEventOverBox(e, box) {
+    const imgRect = el.lightboxImg.getBoundingClientRect();
+    const fx = clamp((e.clientX - imgRect.left) / imgRect.width, 0, 1);
+    const fy = clamp((e.clientY - imgRect.top) / imgRect.height, 0, 1);
+    return { xFrac: box.xFrac + fx * box.wFrac, yFrac: box.yFrac + fy * box.hFrac, fx, fy };
+  }
+
+  el.lightboxImg.setAttribute('draggable', 'false'); // avoid the native ghost-image drag while panning
+
+  el.lightboxImageWrap.addEventListener('wheel', (e) => {
+    if (el.lightbox.classList.contains('is-hidden')) return;
+    if (frameState || twistState || centerPickActive) return; // those tools own the view instead
+    const shot = currentLightboxShot();
+    if (!shot) return;
+    const baseline = viewZoomBaselineBox(shot);
+    if (!baseline) return;
+    e.preventDefault();
+    const box = viewZoomBox || baseline;
+    const cursor = naturalFracFromEventOverBox(e, box);
+    const zoomFactor = Math.exp(-e.deltaY * 0.0015); // scroll up/forward = zoom in
+    const baselineAR = baseline.wFrac / baseline.hFrac;
+    const newW = clamp(box.wFrac / zoomFactor, baseline.wFrac / VIEW_ZOOM_MAX_SCALE, baseline.wFrac);
+    const newH = newW / baselineAR;
+    const newX = clamp(cursor.xFrac - cursor.fx * newW, 0, 1 - newW);
+    const newY = clamp(cursor.yFrac - cursor.fy * newH, 0, 1 - newH);
+    if (Math.abs(newW - baseline.wFrac) < 1e-4) {
+      viewZoomBox = null;
+      updateLightboxFrameDisplay(shot);
+      updateZoomHint();
+    } else {
+      viewZoomBox = { xFrac: newX, yFrac: newY, wFrac: newW, hFrac: newH };
+      applyViewZoomBox();
+    }
+  }, { passive: false });
+
+  el.lightboxImageWrap.addEventListener('mousedown', (e) => {
+    if (!viewZoomBox || frameState || twistState || centerPickActive) return;
+    e.preventDefault();
+    panDragging = { startClientX: e.clientX, startClientY: e.clientY, startBox: { ...viewZoomBox } };
+    el.lightboxImageWrap.classList.add('is-panning');
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!panDragging) return;
+    const imgRect = el.lightboxImg.getBoundingClientRect();
+    if (!imgRect.width || !imgRect.height) return;
+    const box = panDragging.startBox;
+    const dxFrac = -(e.clientX - panDragging.startClientX) / imgRect.width * box.wFrac;
+    const dyFrac = -(e.clientY - panDragging.startClientY) / imgRect.height * box.hFrac;
+    viewZoomBox = {
+      ...box,
+      xFrac: clamp(box.xFrac + dxFrac, 0, 1 - box.wFrac),
+      yFrac: clamp(box.yFrac + dyFrac, 0, 1 - box.hFrac),
+    };
+    applyViewZoomBox();
+  });
+  window.addEventListener('mouseup', () => {
+    if (!panDragging) return;
+    panDragging = null;
+    el.lightboxImageWrap.classList.remove('is-panning');
+  });
+  el.lightboxImageWrap.addEventListener('dblclick', (e) => {
+    if (!viewZoomBox || frameState || twistState || centerPickActive) return;
+    e.preventDefault();
+    const shot = currentLightboxShot();
+    viewZoomBox = null;
+    if (shot) updateLightboxFrameDisplay(shot);
+    updateZoomHint();
+  });
+
   // Crops an arbitrary box down to a centered sub-rectangle of exactly
   // targetAR — the same idea as object-fit:cover treating a photo shaped
   // like the box as it's placed into a targetAR tile: crop the box's
@@ -1208,6 +1348,7 @@
     if (!shot) return;
     endTwistTrace(); // the two tools need conflicting views of the photo (cropped vs. full) — only one at a time
     endCenterPick();
+    resetViewZoom(); // a live pan/zoom would fight the crop editor's own view of the photo
     const iw = el.lightboxImg.naturalWidth, ih = el.lightboxImg.naturalHeight;
     const existing = shot.frame;
     frameState = {
@@ -1370,6 +1511,7 @@
     if (!shot) return;
     endTwistTrace();
     endFrameEdit();
+    resetViewZoom(); // the center-pick click needs to land on the full unframed photo, not a zoomed-in view of it
     centerPickActive = true;
     updateLightboxFrameDisplay(shot, true); // show the full unframed photo so any point on it can be clicked
     el.frameCenterHint.classList.remove('is-hidden');
@@ -1778,6 +1920,8 @@
     // jumping back out to the full photo. The overlay tracks the frame's
     // geometry (see syncTwistOverlayViewBox) so clicks still land correctly
     // either way.
+    resetViewZoom(); // a live pan/zoom is a different thing from the saved frame this traces against — drop it first
+    updateLightboxFrameDisplay(shot);
     twistState = { mode: 'await-reference', referenceFrac: null, headFrac: null, points: [], dragIndex: null, imageAnalysis: null, imageAnalysisFile: null };
     el.twistOverlay.classList.remove('is-hidden');
     el.twistOverlay.classList.add('is-active');
