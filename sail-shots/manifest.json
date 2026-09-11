@@ -7976,23 +7976,23 @@
       },
       "comment": "Post batten adjustment \n",
       "frame": {
-        "rotationDeg": 0,
+        "rotationDeg": 3.5,
         "lightbox": {
           "widthPct": 123.63208384996052,
           "heightPct": 162.96297709147132,
-          "leftPct": -4.045722189913981,
-          "topPct": -15.763888359069824,
+          "leftPct": -4.045722189913988,
+          "topPct": -15.763888359069838,
           "originXPct": 43.71496500496076,
-          "originYPct": 40.3551098125536,
-          "aspectRatio": 0.7416669868754608
+          "originYPct": 40.35510981255361,
+          "aspectRatio": 0.7416669868754606
         },
         "grid": {
           "widthPct": 123.63208384996052,
           "heightPct": 292.96702334113866,
-          "leftPct": -4.045722189913981,
-          "topPct": -68.22716398388604,
+          "leftPct": -4.045722189913988,
+          "topPct": -68.22716398388606,
           "originXPct": 43.71496500496076,
-          "originYPct": 40.3551098125536
+          "originYPct": 40.35510981255361
         }
       }
     },
