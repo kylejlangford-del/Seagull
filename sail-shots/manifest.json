@@ -7974,7 +7974,27 @@
         "FootCamber_deg": "16.828750228881837",
         "Timestamp": "2026-09-11 13:27:39+02:00"
       },
-      "comment": "Post batten adjustment \n"
+      "comment": "Post batten adjustment \n",
+      "frame": {
+        "rotationDeg": 0,
+        "lightbox": {
+          "widthPct": 123.63208384996052,
+          "heightPct": 162.96297709147132,
+          "leftPct": -4.045722189913981,
+          "topPct": -15.763888359069824,
+          "originXPct": 43.71496500496076,
+          "originYPct": 40.3551098125536,
+          "aspectRatio": 0.7416669868754608
+        },
+        "grid": {
+          "widthPct": 123.63208384996052,
+          "heightPct": 292.96702334113866,
+          "leftPct": -4.045722189913981,
+          "topPct": -68.22716398388604,
+          "originXPct": 43.71496500496076,
+          "originYPct": 40.3551098125536
+        }
+      }
     },
     {
       "id": "2026-09-11T11-29-02-000Z-dsc01591",
