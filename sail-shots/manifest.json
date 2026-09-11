@@ -10492,7 +10492,7 @@
       },
       "comment": "",
       "frame": {
-        "rotationDeg": 0,
+        "rotationDeg": -1.5,
         "lightbox": {
           "widthPct": 173.279613584984,
           "heightPct": 232.80425298781617,
