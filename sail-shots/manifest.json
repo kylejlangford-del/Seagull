@@ -5529,7 +5529,7 @@
       "capturedAt": "2026-09-10T12:36:23.500Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "manoeuvre",
       "row": {
         "Timestamp": "2026-09-10T12:36:23Z",
         "BSP_kts": "28.43299",
