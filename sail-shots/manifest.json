@@ -10983,23 +10983,23 @@
       },
       "comment": "",
       "frame": {
-        "rotationDeg": 0,
+        "rotationDeg": -1,
         "lightbox": {
           "widthPct": 137.11221760307149,
           "heightPct": 197.5308813229956,
           "leftPct": -26.95135669173483,
           "topPct": -62.03703639483213,
           "originXPct": 56.12290285793687,
-          "originYPct": 56.718744757501014,
+          "originYPct": 56.71874475750103,
           "aspectRatio": 0.8106064105789001
         },
         "grid": {
           "widthPct": 137.11221760307149,
           "heightPct": 324.91046825372393,
           "leftPct": -26.95135669173483,
-          "topPct": -134.28513917923098,
+          "topPct": -134.28513917923104,
           "originXPct": 56.12290285793687,
-          "originYPct": 56.71874475750101
+          "originYPct": 56.71874475750103
         }
       }
     },
