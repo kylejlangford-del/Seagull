@@ -10789,21 +10789,21 @@
       "frame": {
         "rotationDeg": 7,
         "lightbox": {
-          "widthPct": 100,
-          "heightPct": 100,
-          "leftPct": 0,
-          "topPct": 0,
-          "originXPct": 50,
-          "originYPct": 50,
-          "aspectRatio": 0.5626666666666666
+          "widthPct": 178.1903718647204,
+          "heightPct": 158.3445931253163,
+          "leftPct": -32.191844121647264,
+          "topPct": -22.8070170290557,
+          "originXPct": 46.125861493821986,
+          "originYPct": 45.98010932487927,
+          "aspectRatio": 0.5000002158710973
         },
         "grid": {
-          "widthPct": 100,
-          "heightPct": 236.96682464454977,
-          "leftPct": 0,
-          "topPct": -68.48341232227489,
-          "originXPct": 50,
-          "originYPct": 50
+          "widthPct": 178.1903718647204,
+          "heightPct": 422.25206603014306,
+          "leftPct": -32.191844121647264,
+          "topPct": -144.1519615872212,
+          "originXPct": 46.125861493821986,
+          "originYPct": 45.98010932487927
         }
       }
     },
