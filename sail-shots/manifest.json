@@ -10985,65 +10985,6 @@
       }
     },
     {
-      "id": "2026-09-12T13-57-23-000Z-dsc01772",
-      "file": "https://pub-1c550d12c25441ef85b207d40ac08cfe.r2.dev/DSC01772.JPG",
-      "capturedAt": "2026-09-12T13:57:25.000Z",
-      "capturedAtSource": "exif",
-      "gapSeconds": 0,
-      "category": "other",
-      "row": {
-        "Datetime": "2026-09-12 15:57:23+02:00",
-        "ts": "1789221443.0",
-        "TWS_kts": "9.83481",
-        "AWA_deg": "10.63445",
-        "MastRotation_deg": "18.1273",
-        "MastAOA_deg": "7.49285",
-        "MainTravellerAngle_deg": "-2.48378",
-        "Heel_deg": "-5.1648",
-        "FoilCantPort_deg": "58.10937",
-        "FoilCantStbd_deg": "126.09673",
-        "FoilSinkPort": "-0.68702",
-        "FoilSinkPort_target": "-0.75",
-        "FoilSinkStbd": "1.94476",
-        "FoilSinkStbd_target": "-0.8",
-        "JibSheetLoad_kgf": "1331.5855",
-        "JibCunninghamLoad_kgf": "1413.75916",
-        "JibTrackLoad_kgf": "464.41402",
-        "MainSheetLoad_kgf": "3765.72695",
-        "Clew_pct": "49.71532",
-        "BSP_kts": "25.93283",
-        "Leeway_deg": "-0.93411",
-        "TrimTarget_deg": "-3",
-        "FoilFlapPort_deg": "4.55703",
-        "FoilFlapStbd_deg": "-0.04232",
-        "MainCunninghamLoad_kgf": "-2411.8292",
-        "FootCamber_deg": "-15.64352",
-        "TWA_deg": "48.79786",
-        "Timestamp": "2026-09-12 15:57:25+02:00"
-      },
-      "comment": "",
-      "frame": {
-        "rotationDeg": -1.5,
-        "lightbox": {
-          "widthPct": 126.47420072007456,
-          "heightPct": 178.18275399523066,
-          "leftPct": -24.572946833468052,
-          "topPct": -42.52088021037248,
-          "originXPct": 58.96297142728769,
-          "originYPct": 51.92471108222345,
-          "aspectRatio": 0.7927110483970016
-        },
-        "grid": {
-          "widthPct": 126.47420072007456,
-          "heightPct": 299.701897440935,
-          "leftPct": -24.572946833468052,
-          "topPct": -105.61934435414713,
-          "originXPct": 58.96297142728769,
-          "originYPct": 51.92471108222345
-        }
-      }
-    },
-    {
       "id": "2026-09-12T13-57-25-000Z-dsc01775",
       "file": "https://pub-1c550d12c25441ef85b207d40ac08cfe.r2.dev/DSC01775.JPG",
       "capturedAt": "2026-09-12T13:57:27.000Z",
