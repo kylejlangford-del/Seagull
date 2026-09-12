@@ -11080,7 +11080,27 @@
         "TWA_deg": "46.83895",
         "Timestamp": "2026-09-12 15:57:29+02:00"
       },
-      "comment": ""
+      "comment": "",
+      "frame": {
+        "rotationDeg": 0,
+        "lightbox": {
+          "widthPct": 129.07044530963617,
+          "heightPct": 154.58938538321394,
+          "leftPct": -11.880895888700515,
+          "topPct": -36.69301662520458,
+          "originXPct": 47.9435053782065,
+          "originYPct": 56.07954026746401,
+          "aspectRatio": 0.6739133344349572
+        },
+        "grid": {
+          "widthPct": 129.07044530963617,
+          "heightPct": 305.8541358048251,
+          "leftPct": -11.880895888700515,
+          "topPct": -121.52159324837092,
+          "originXPct": 47.9435053782065,
+          "originYPct": 56.07954026746401
+        }
+      }
     }
   ],
   "dayNotes": {
