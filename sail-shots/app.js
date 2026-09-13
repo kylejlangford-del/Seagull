@@ -620,6 +620,33 @@
     return groups.reverse();
   }
 
+  // ---------- gybe-exit grouping (Gybe Exit category only) ----------
+  // Same clustering idea as manoeuvreGroups (a run of shots with no gap
+  // bigger than MANOEUVRE_GROUP_GAP_SECONDS between consecutive capture
+  // times becomes one cluster) but every shot here already carries the
+  // Gybe Exit category -- whether by the auto-categorizer or a manual/batch
+  // recategorize -- so there's no tack-vs-gybe guess to make off TWA; each
+  // cluster is just the next distinct gybe, numbered "Gybe 1", "Gybe 2", ...
+  // in chronological order. Same newest-group-first return order as
+  // manoeuvreGroups, and { label, shots } shape so renderManoeuvreGroupCard
+  // can render either kind of group unchanged.
+  function gybeExitGroups(shots) {
+    const ascending = [...shots].sort((a, b) => new Date(a.capturedAt) - new Date(b.capturedAt));
+    const groups = [];
+    let gybeCount = 0, clusterStart = 0;
+    const flushCluster = (endExclusive) => {
+      const cluster = ascending.slice(clusterStart, endExclusive);
+      if (cluster.length === 0) return;
+      groups.push({ label: `Gybe ${++gybeCount}`, shots: cluster });
+    };
+    for (let i = 1; i < ascending.length; i++) {
+      const gapSec = (new Date(ascending[i].capturedAt) - new Date(ascending[i - 1].capturedAt)) / 1000;
+      if (gapSec > MANOEUVRE_GROUP_GAP_SECONDS) { flushCluster(i); clusterStart = i; }
+    }
+    flushCluster(ascending.length);
+    return groups.reverse();
+  }
+
   function renderGallery() {
     const shots = existingManifest.shots || [];
     const hasShots = shots.length > 0;
@@ -690,18 +717,19 @@
 
     el.shotGrid.innerHTML = '';
 
-    // Manoeuvre Sequence view only: collapse each tack/gybe burst down to a
-    // single card (the earliest shot in it) with a header and a "N photos"
-    // badge instead of one card per photo — opening it starts at that first
-    // shot and steps forward through the rest in chronological order. Those
-    // grouped cards don't have per-shot controls (see renderManoeuvreGroupCard),
-    // so a range selection across them would be ambiguous -- batch mode
-    // isn't offered here at all.
-    if (selectedCategory === 'manoeuvre') {
+    // Manoeuvre Sequence and Gybe Exit views only: collapse each tack/gybe
+    // burst down to a single card (the earliest shot in it) with a header
+    // and a "N photos" badge instead of one card per photo — opening it
+    // starts at that first shot and steps forward through the rest in
+    // chronological order. Those grouped cards don't have per-shot controls
+    // (see renderManoeuvreGroupCard), so a range selection across them
+    // would be ambiguous -- batch mode isn't offered here at all.
+    if (selectedCategory === 'manoeuvre' || selectedCategory === 'gybe-exit') {
       if (batchCategorizeMode) { batchCategorizeMode = false; batchSelection.clear(); batchAnchorId = null; }
       updateBatchCategorizeBtn();
       updateBatchBar();
-      manoeuvreGroups(filtered).forEach(group => {
+      const groups = selectedCategory === 'manoeuvre' ? manoeuvreGroups(filtered) : gybeExitGroups(filtered);
+      groups.forEach(group => {
         const header = document.createElement('div');
         const isGybe = /^Gybe/.test(group.label);
         header.className = `shot-grid__group-label shot-grid__group-label--${isGybe ? 'gybe' : 'tack'}`;
