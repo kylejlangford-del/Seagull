@@ -71,6 +71,15 @@
   // settled (however briefly), a fresh swing starting up again is a new
   // manoeuvre, not a continuation of the last one.
   const MANOEUVRE_ACTIVE_TURN_RATE = 4;
+  // A pause at least this long -- well past the ~1s cadence of continuous
+  // burst shooting, comfortably under MANOEUVRE_GROUP_GAP_SECONDS -- coming
+  // right after a manoeuvre has already finished turning marks the
+  // photographer stopping and waiting for the *next* one, even if the next
+  // shot after the pause isn't itself mid-turn yet (it might just be the
+  // boat lining up before the swing properly starts). So this alone also
+  // starts a new burst, on top of MANOEUVRE_ACTIVE_TURN_RATE's "already
+  // mid-turn again" trigger.
+  const MANOEUVRE_SETTLE_GAP_SECONDS = 15;
 
   // ---------- framing tuning (crop/zoom/straighten, all categories) ----------
   const FRAME_ROTATE_MIN = -45, FRAME_ROTATE_MAX = 45;
@@ -598,16 +607,24 @@
 
   // ---------- manoeuvre burst splitting (shared: Manoeuvre Sequence + Gybe Exit) ----------
   // Splits an ascending-chronological run of same-category shots into
-  // distinct manoeuvre bursts. Two signals decide a split:
+  // distinct manoeuvre bursts. Three signals decide a split:
   //  1. A hard split on any gap bigger than MANOEUVRE_GROUP_GAP_SECONDS --
   //     always a separate shooting session.
-  //  2. A soft split *within* an otherwise-continuous run: once the boat's
-  //     TWA has swung through one active turn (rate >=
-  //     MANOEUVRE_ACTIVE_TURN_RATE deg/sec between consecutive distinct
-  //     capture timestamps) and then settled, a fresh swing starting up
-  //     again is a new manoeuvre -- this is what actually tells two gybes
-  //     shot back-to-back (a gybe set, mark-rounding tactics) apart from
-  //     one long single gybe, which a time gap alone can't.
+  //  2. A settled-pause split *within* an otherwise-continuous run: once a
+  //     manoeuvre has already finished turning, a gap of at least
+  //     MANOEUVRE_SETTLE_GAP_SECONDS is the photographer stopping and
+  //     waiting for the next one -- the shot right after the pause starts
+  //     the new burst, even if it isn't itself mid-turn yet (it may just be
+  //     the boat lining up before the next swing starts in earnest).
+  //  3. A same-instant split, for the rarer case with no real pause at all:
+  //     once one active turn (rate >= MANOEUVRE_ACTIVE_TURN_RATE deg/sec
+  //     between consecutive distinct capture timestamps) has finished and
+  //     the boat has settled, a *fresh* swing starting back up again is a
+  //     new manoeuvre, not a continuation of the last one.
+  // Together these are what actually tell two manoeuvres shot back-to-back
+  // (a gybe set, mark-rounding tactics) apart from one long single one,
+  // which a time gap alone can't -- signal 2 handles a real pause between
+  // them, signal 3 handles continuous shooting straight through both.
   // Burst duplicates (several photos sharing one capture timestamp, same
   // TWA) are collapsed to one "keyframe" per distinct timestamp before
   // walking the turn-rate signal -- otherwise every zero-gap duplicate pair
@@ -626,6 +643,11 @@
     for (let i = 1; i < keyframes.length; i++) {
       const gapSec = (new Date(keyframes[i].capturedAt) - new Date(keyframes[i - 1].capturedAt)) / 1000;
       if (gapSec > MANOEUVRE_GROUP_GAP_SECONDS) {
+        boundaries.add(keyframes[i].capturedAt);
+        prevActive = false; hadActiveInBurst = false;
+        continue;
+      }
+      if (hadActiveInBurst && gapSec >= MANOEUVRE_SETTLE_GAP_SECONDS) {
         boundaries.add(keyframes[i].capturedAt);
         prevActive = false; hadActiveInBurst = false;
         continue;
