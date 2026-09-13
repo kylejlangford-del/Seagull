@@ -92,6 +92,7 @@
   const el = {
     addBtn: document.getElementById('addBtn'),
     githubConnectBtn: document.getElementById('githubConnectBtn'),
+    batchCategorizeBtn: document.getElementById('batchCategorizeBtn'),
     importView: document.getElementById('importView'),
     galleryView: document.getElementById('galleryView'),
     emptyState: document.getElementById('emptyState'),
@@ -188,6 +189,16 @@
   // it isn't saved/published and survives switching day tabs, so a report
   // can mix shots from more than one day.
   let selectedForReport = new Set();
+  // Batch categorize: pick a contiguous run of cards (click one, shift-click
+  // another) and apply one category to the whole run in one go, instead of
+  // opening the category dropdown on each card individually. Mirrors the
+  // report-selection Set above -- pure UI state, not part of existingManifest.
+  // batchAnchorId is the last plain (non-shift) click; a shift-click always
+  // measures the range from that fixed anchor to the new card, like a file
+  // manager, rather than from wherever the previous shift-click landed.
+  let batchCategorizeMode = false;
+  let batchSelection = new Set();
+  let batchAnchorId = null;
   let currentGalleryOrder = []; // the shots currently shown in the grid, in their displayed order — lets the lightbox step next/prev
   // When opening a collapsed manoeuvre-group card, prev/next should stay
   // scoped to just that group's own shots rather than the whole category —
@@ -615,7 +626,16 @@
     el.emptyState.classList.toggle('is-hidden', hasShots);
     el.dateTabs.classList.toggle('is-hidden', !hasShots);
     el.categoryChips.classList.toggle('is-hidden', !hasShots);
-    if (!hasShots) { el.shotGrid.innerHTML = ''; return; }
+    // A shot can leave existingManifest (deleted, or from an underneath
+    // publish) while still sitting in the batch selection from an earlier
+    // render -- drop anything that's no longer a real shot before the count
+    // in the batch bar or the highlight logic below sees it.
+    if (batchSelection.size) {
+      const liveIds = new Set(shots.map(s => s.id));
+      batchSelection.forEach(id => { if (!liveIds.has(id)) batchSelection.delete(id); });
+      if (batchAnchorId && !liveIds.has(batchAnchorId)) batchAnchorId = null;
+    }
+    if (!hasShots) { el.shotGrid.innerHTML = ''; updateBatchBar(); return; }
 
     const byDate = new Map();
     shots.forEach(s => {
@@ -640,7 +660,11 @@
         sub.textContent = note;
         tab.appendChild(sub);
       }
-      tab.addEventListener('click', () => { selectedDateKey = key; selectedCategory = 'all'; renderGallery(); updateSyncPanelForDay(); });
+      tab.addEventListener('click', () => {
+        selectedDateKey = key; selectedCategory = 'all';
+        if (batchCategorizeMode) { batchSelection.clear(); batchAnchorId = null; updateBatchBar(); }
+        renderGallery(); updateSyncPanelForDay();
+      });
       el.dateTabs.appendChild(tab);
     });
 
@@ -669,8 +693,14 @@
     // Manoeuvre Sequence view only: collapse each tack/gybe burst down to a
     // single card (the earliest shot in it) with a header and a "N photos"
     // badge instead of one card per photo — opening it starts at that first
-    // shot and steps forward through the rest in chronological order.
+    // shot and steps forward through the rest in chronological order. Those
+    // grouped cards don't have per-shot controls (see renderManoeuvreGroupCard),
+    // so a range selection across them would be ambiguous -- batch mode
+    // isn't offered here at all.
     if (selectedCategory === 'manoeuvre') {
+      if (batchCategorizeMode) { batchCategorizeMode = false; batchSelection.clear(); batchAnchorId = null; }
+      updateBatchCategorizeBtn();
+      updateBatchBar();
       manoeuvreGroups(filtered).forEach(group => {
         const header = document.createElement('div');
         const isGybe = /^Gybe/.test(group.label);
@@ -682,6 +712,8 @@
       return;
     }
 
+    updateBatchCategorizeBtn();
+    updateBatchBar();
     sorted.forEach(shot => el.shotGrid.appendChild(renderShotCard(shot)));
   }
 
@@ -747,7 +779,17 @@
     imgWrap.appendChild(reportCheck);
 
     imgWrap.classList.add('is-clickable');
-    imgWrap.addEventListener('click', () => openLightbox(shot, null));
+    // Batch categorize: while active, clicking a card selects it (or extends
+    // the range from the last plain click, on shift-click) instead of
+    // opening the lightbox -- see handleBatchCardClick.
+    if (batchCategorizeMode) {
+      imgWrap.classList.add('is-batch-mode');
+      if (batchSelection.has(shot.id)) imgWrap.classList.add('is-batch-selected');
+    }
+    imgWrap.addEventListener('click', (e) => {
+      if (batchCategorizeMode) { handleBatchCardClick(shot, e); return; }
+      openLightbox(shot, null);
+    });
 
     card.appendChild(imgWrap);
     applyFrameToImg(img, shot, 'grid');
@@ -2305,6 +2347,76 @@
     renderGallery();
   }
 
+  // ---------- batch categorize: select a run of cards, apply one category to all of them ----------
+  function toggleBatchCategorizeMode() {
+    batchCategorizeMode = !batchCategorizeMode;
+    batchSelection.clear();
+    batchAnchorId = null;
+    updateBatchCategorizeBtn();
+    updateBatchBar();
+    renderGallery();
+  }
+
+  // A plain click always starts a fresh single-card selection and becomes
+  // the new anchor. A shift-click measures the range from that anchor to the
+  // clicked card, in the grid's current display order (currentGalleryOrder,
+  // i.e. whatever the date tab + category filter is currently showing) --
+  // the same "click one end, shift-click the other" convention as a file
+  // manager. If the anchor has scrolled out of the current view/filter
+  // (or there isn't one yet), a shift-click just falls back to a fresh
+  // single-card selection rather than erroring.
+  function handleBatchCardClick(shot, event) {
+    const order = currentGalleryOrder;
+    const idx = order.findIndex(s => s.id === shot.id);
+    const anchorIdx = batchAnchorId ? order.findIndex(s => s.id === batchAnchorId) : -1;
+    if (event.shiftKey && anchorIdx !== -1 && idx !== -1) {
+      const lo = Math.min(anchorIdx, idx), hi = Math.max(anchorIdx, idx);
+      batchSelection = new Set(order.slice(lo, hi + 1).map(s => s.id));
+    } else {
+      batchSelection = new Set([shot.id]);
+      batchAnchorId = shot.id;
+    }
+    updateBatchBar();
+    renderGallery();
+  }
+
+  // One publish for the whole batch, rather than one per shot -- looping
+  // setShotCategory here would fire a separate immediate GitHub publish for
+  // every selected photo and risk racing itself, so this mutates
+  // existingManifest directly and calls markManifestDirty() once at the end.
+  function applyBatchCategory(category) {
+    if (batchSelection.size === 0) return;
+    let changed = 0;
+    batchSelection.forEach(id => {
+      const shot = existingManifest.shots.find(s => s.id === id);
+      if (shot && shot.category !== category) { shot.category = category; changed++; }
+    });
+    if (changed > 0) markManifestDirty();
+    batchSelection.clear();
+    batchAnchorId = null;
+    updateBatchBar();
+    renderGallery();
+  }
+
+  function clearBatchSelection() {
+    if (batchSelection.size === 0) return;
+    batchSelection.clear();
+    batchAnchorId = null;
+    updateBatchBar();
+    renderGallery();
+  }
+
+  function updateBatchCategorizeBtn() {
+    if (!el.batchCategorizeBtn) return;
+    const unavailable = selectedCategory === 'manoeuvre';
+    el.batchCategorizeBtn.disabled = unavailable;
+    el.batchCategorizeBtn.setAttribute('aria-pressed', batchCategorizeMode ? 'true' : 'false');
+    el.batchCategorizeBtn.textContent = batchCategorizeMode ? 'Done selecting' : 'Select photos to categorize';
+  }
+  if (el.batchCategorizeBtn) {
+    el.batchCategorizeBtn.addEventListener('click', () => toggleBatchCategorizeMode());
+  }
+
   // Unlike category, a comment is free text typed one keystroke at a time —
   // re-rendering the whole grid on every keystroke (like setShotCategory
   // does) would blow away focus and cursor position mid-type, so this just
@@ -2726,6 +2838,79 @@
     const n = selectedForReport.size;
     elReport.bar.classList.toggle('is-hidden', n === 0);
     elReport.count.textContent = `${n} selected`;
+  }
+
+  // Floating bar for the batch-categorize picker above -- built the same way
+  // as the report bar, but docked bottom-center so it never collides with
+  // that one (bottom-left) or the camera-sync panel (bottom-right). Only
+  // shown once at least one card is selected.
+  const elBatch = {};
+
+  function injectBatchBarStyles() {
+    if (document.getElementById('batchBarStyles')) return;
+    const style = document.createElement('style');
+    style.id = 'batchBarStyles';
+    style.textContent = `
+      #batchBar { position: fixed; left: 50%; transform: translateX(-50%); bottom: 16px; z-index: 9999;
+        background: #0b1622; border: 1px solid #2a3038; border-radius: 10px; padding: 10px 14px;
+        display: flex; align-items: center; gap: 10px; box-shadow: 0 6px 24px rgba(0,0,0,.4);
+        font-family: inherit; color: #e7edf3; }
+      #batchBar.is-hidden { display: none; }
+      #batchBar .batchBar__count { font-size: 13px; font-weight: 600; white-space: nowrap; }
+      #batchBar select.batchBar__category { background: #101316; color: #e8ebef; border: 1px solid #454c55;
+        border-radius: 6px; padding: 6px 8px; font-size: 12.5px; max-width: 200px; }
+      #batchBar button.batchBar__apply { background: #1f6f3c; color: #fff; border: none; border-radius: 6px;
+        padding: 7px 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+      #batchBar button.batchBar__apply:disabled { background: #2a3038; color: #77808a; cursor: default; }
+      #batchBar button.batchBar__clear { background: transparent; color: #9aa4af; border: 1px solid #3a4048;
+        border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+      .shot-card__image-wrap.is-batch-mode.is-clickable { cursor: pointer; }
+      .shot-card__image-wrap.is-batch-selected { outline: 3px solid var(--accent); outline-offset: -3px; }
+      .shot-card__image-wrap.is-batch-selected::after { content: ''; position: absolute; inset: 0;
+        z-index: 1; background: rgba(71, 231, 219, 0.18); pointer-events: none; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function buildBatchBarDom() {
+    if (document.getElementById('batchBar')) return;
+    injectBatchBarStyles();
+    const bar = document.createElement('div');
+    bar.id = 'batchBar';
+    bar.className = 'is-hidden';
+    bar.innerHTML = `
+      <span class="batchBar__count" id="batchBarCount">0 selected</span>
+      <select class="batchBar__category" id="batchBarCategorySelect">
+        <option value="" disabled selected>Set category&hellip;</option>
+        ${CATEGORIES.map(c => `<option value="${c.value}">${c.label}</option>`).join('')}
+      </select>
+      <button type="button" class="batchBar__apply" id="batchBarApplyBtn" disabled>Apply</button>
+      <button type="button" class="batchBar__clear" id="batchBarClearBtn">Clear</button>
+    `;
+    document.body.appendChild(bar);
+    elBatch.bar = bar;
+    elBatch.count = bar.querySelector('#batchBarCount');
+    elBatch.categorySelect = bar.querySelector('#batchBarCategorySelect');
+    elBatch.applyBtn = bar.querySelector('#batchBarApplyBtn');
+    elBatch.clearBtn = bar.querySelector('#batchBarClearBtn');
+    elBatch.categorySelect.addEventListener('change', () => {
+      elBatch.applyBtn.disabled = !elBatch.categorySelect.value;
+    });
+    elBatch.applyBtn.addEventListener('click', () => {
+      if (!elBatch.categorySelect.value) return;
+      applyBatchCategory(elBatch.categorySelect.value);
+      elBatch.categorySelect.value = '';
+      elBatch.applyBtn.disabled = true;
+    });
+    elBatch.clearBtn.addEventListener('click', () => clearBatchSelection());
+  }
+
+  function updateBatchBar() {
+    if (!elBatch.bar) return;
+    const n = batchSelection.size;
+    elBatch.bar.classList.toggle('is-hidden', !batchCategorizeMode || n === 0);
+    elBatch.count.textContent = `${n} selected`;
+    if (n === 0) { elBatch.categorySelect.value = ''; elBatch.applyBtn.disabled = true; }
   }
 
   // Fetches a photo (same-origin repo path or cross-origin Cloudflare R2
@@ -3334,5 +3519,6 @@
 
   updateGithubConnectBtn();
   buildReportBarDom();
+  buildBatchBarDom();
   loadManifest().then(initSyncPanel);
 })();
