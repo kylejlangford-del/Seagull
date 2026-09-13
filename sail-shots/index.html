@@ -1,17 +1,16 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="theme-color" content="#07111d" />
+<html lang="en"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#07111d">
   <title>Sail Shots Â· Seagull Lab</title>
-  <link rel="stylesheet" href="./styles.css?v=20260910c" />
+  <link rel="stylesheet" href="./styles.css?v=20260910c">
 </head>
 <body>
   <div id="app">
     <header class="topbar">
       <a class="brand" href="../" aria-label="Back to Seagull Lab">
-        <img src="../assets/seagull-lab-logo.png" alt="Seagull Lab" />
+        <img src="../assets/seagull-lab-logo.png" alt="Seagull Lab">
       </a>
       <div class="title-block"><span>AC40</span><strong>Sail Shots</strong></div>
       <div class="header-actions">
@@ -29,10 +28,10 @@
       <section id="galleryView">
         <div id="emptyState" class="empty-state is-hidden">
           <span>No sail shots yet</span>
-          <strong>Tap &ldquo;Add Shots&rdquo; above to bring in your first batch of photos.</strong>
+          <strong>Tap “Add Shots” above to bring in your first batch of photos.</strong>
         </div>
         <div class="gallery-toolbar">
-          <div id="galleryChangesBar" class="gallery-changes-bar is-hidden">
+          <button id="batchCategorizeBtn" class="ghost-button" type="button" aria-pressed="false">Select photos to categorize</button><div id="galleryChangesBar" class="gallery-changes-bar is-hidden">
             <span class="gallery-changes-bar__label">Unpublished changes</span>
             <button id="galleryDiscardChanges" class="text-link" type="button">Discard</button>
             <button id="galleryDownloadChanges" class="ghost-button" type="button">Download updated manifest.json</button>
@@ -47,10 +46,10 @@
       <section id="importView" class="import-view is-hidden">
         <div class="import-step">
           <div class="import-step__head"><span class="import-step__num">1</span><h2>Boat data file</h2></div>
-          <p class="import-step__hint">Upload the CSV exported from the boat &mdash; a header row plus one row per timestamp. (Not a CSV yet? Send the raw file to Claude in chat first and ask for a CSV conversion, then come back here.)</p>
+          <p class="import-step__hint">Upload the CSV exported from the boat — a header row plus one row per timestamp. (Not a CSV yet? Send the raw file to Claude in chat first and ask for a CSV conversion, then come back here.)</p>
           <label class="file-drop" id="csvDrop">
-            <input id="csvInput" type="file" accept=".csv,text/csv" />
-            <span id="csvDropLabel">Choose CSV file&hellip;</span>
+            <input id="csvInput" type="file" accept=".csv,text/csv">
+            <span id="csvDropLabel">Choose CSV file…</span>
           </label>
           <div id="csvSummary" class="import-summary is-hidden"></div>
 
@@ -75,7 +74,7 @@
               <div id="variablePicker" class="col-toggle-row"></div>
               <div class="col-toggle-actions">
                 <button id="varsAll" class="text-link" type="button">Select all</button>
-                <span class="dot">&middot;</span>
+                <span class="dot">·</span>
                 <button id="varsNone" class="text-link" type="button">Clear</button>
               </div>
             </div>
@@ -86,25 +85,25 @@
           <div class="import-step__head"><span class="import-step__num">2</span><h2>Photos</h2></div>
           <p class="import-step__hint">Select the photos to add. Each is matched to the nearest boat-data row using the time the photo was taken (read from the photo itself).</p>
           <label class="file-drop" id="photoDrop">
-            <input id="photoInput" type="file" accept="image/*" multiple />
-            <span id="photoDropLabel">Choose photos&hellip;</span>
+            <input id="photoInput" type="file" accept="image/*" multiple="">
+            <span id="photoDropLabel">Choose photos…</span>
           </label>
           <label class="field-inline field-inline--stack">
             <span>Sail codes / notes for today</span>
-            <input id="dayNotesInput" type="text" placeholder="e.g. M1-3, J2-4" />
+            <input id="dayNotesInput" type="text" placeholder="e.g. M1-3, J2-4">
           </label>
         </div>
 
         <div id="previewStep" class="import-step is-hidden">
           <div class="import-step__head"><span class="import-step__num">3</span><h2>Preview matches</h2></div>
-          <p class="import-step__hint">Check the matches before publishing. An amber badge means the closest boat-data row was more than 30 minutes away &mdash; check the boat log and camera clocks agree. A red badge means no capture time or no match could be found at all.</p>
+          <p class="import-step__hint">Check the matches before publishing. An amber badge means the closest boat-data row was more than 30 minutes away — check the boat log and camera clocks agree. A red badge means no capture time or no match could be found at all.</p>
           <div id="previewList" class="preview-list"></div>
         </div>
 
         <div id="publishStep" class="import-step is-hidden">
           <div class="import-step__head"><span class="import-step__num">4</span><h2>Publish</h2></div>
-          <p class="import-step__hint">This page has no upload backend of its own, so publishing a new batch is two separate drops: <strong>1)</strong> drag the photo files themselves straight into the <code>seagull-sail-shots</code> bucket on the <a href="https://dash.cloudflare.com/a5dbe2d89b56ddebfcc019a860fe4067/r2/default/buckets/seagull-sail-shots" target="_blank" rel="noopener">Cloudflare R2 dashboard</a> &mdash; keep their filenames exactly as they are, that's how the site finds them. <strong>2)</strong> Download the manifest below and upload just that one file using GitHub's <strong>Add file &rarr; Upload files</strong> page inside the <code>sail-shots/</code> folder (replacing <code>manifest.json</code>) &mdash; it's small, so this step stays on GitHub. Or send the manifest and photo files to Claude in chat and ask for them to be published.</p>
-          <button id="downloadManifest" class="ghost-button" type="button" disabled>Download manifest.json</button>
+          <p class="import-step__hint">This page has no upload backend of its own, so publishing a new batch is two separate drops: <strong>1)</strong> drag the photo files themselves straight into the <code>seagull-sail-shots</code> bucket on the <a href="https://dash.cloudflare.com/a5dbe2d89b56ddebfcc019a860fe4067/r2/default/buckets/seagull-sail-shots" target="_blank" rel="noopener">Cloudflare R2 dashboard</a> — keep their filenames exactly as they are, that's how the site finds them. <strong>2)</strong> Download the manifest below and upload just that one file using GitHub's <strong>Add file → Upload files</strong> page inside the <code>sail-shots/</code> folder (replacing <code>manifest.json</code>) — it's small, so this step stays on GitHub. Or send the manifest and photo files to Claude in chat and ask for them to be published.</p>
+          <button id="downloadManifest" class="ghost-button" type="button" disabled="">Download manifest.json</button>
         </div>
       </section>
     </main>
@@ -112,9 +111,9 @@
 
   <div id="lightbox" class="lightbox is-hidden">
     <button id="lightboxDelete" class="lightbox__delete" type="button">Delete photo</button>
-    <button id="lightboxClose" class="lightbox__close" type="button" aria-label="Close">&times;</button>
-    <button id="lightboxPrev" class="lightbox__nav lightbox__nav--prev" type="button" aria-label="Previous photo">&lsaquo;</button>
-    <button id="lightboxNext" class="lightbox__nav lightbox__nav--next" type="button" aria-label="Next photo">&rsaquo;</button>
+    <button id="lightboxClose" class="lightbox__close" type="button" aria-label="Close">×</button>
+    <button id="lightboxPrev" class="lightbox__nav lightbox__nav--prev" type="button" aria-label="Previous photo">‹</button>
+    <button id="lightboxNext" class="lightbox__nav lightbox__nav--next" type="button" aria-label="Next photo">›</button>
     <div class="lightbox__inner">
       <div class="lightbox__body">
         <div class="lightbox__data">
@@ -141,8 +140,8 @@
               </div>
               <label id="frameRotateRow" class="lightbox__frame-slider is-hidden">
                 <span>Rotate</span>
-                <input id="frameRotateRange" type="range" min="-45" max="45" step="0.5" value="0" />
-                <span id="frameRotateValue">0&deg;</span>
+                <input id="frameRotateRange" type="range" min="-45" max="45" step="0.5" value="0">
+                <span id="frameRotateValue">0°</span>
               </label>
               <div id="frameCropHint" class="lightbox__frame-hint">Drag the box or pull a corner to crop. Drag inside it to move it.</div>
               <div id="frameStraightenHint" class="lightbox__frame-hint is-hidden">Use the grid to level the horizon or mast.</div>
@@ -150,7 +149,7 @@
           </div>
         </div>
         <div id="lightboxImageWrap" class="lightbox__image-wrap">
-          <img id="lightboxImg" alt="" />
+          <img id="lightboxImg" alt="">
           <div id="frameGrid" class="lightbox__frame-grid is-hidden"></div>
           <div id="frameCropBox" class="lightbox__frame-cropbox is-hidden">
             <div class="lightbox__frame-cropbox-grid"></div>
@@ -169,7 +168,7 @@
               <div class="lightbox__twist-actions">
                 <div class="lightbox__twist-points">
                   <span>Points</span>
-                  <button id="twistPointsMinus" class="twist-stepper-btn" type="button" aria-label="Fewer points">&minus;</button>
+                  <button id="twistPointsMinus" class="twist-stepper-btn" type="button" aria-label="Fewer points">−</button>
                   <span id="twistPointCountLabel">5</span>
                   <button id="twistPointsPlus" class="twist-stepper-btn" type="button" aria-label="More points">+</button>
                 </div>
@@ -190,6 +189,7 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="./app.js?v=pdfframe1789156270317"></script>
-</body>
-</html>
+  <script src="./app.js?v=batchcat1789330351267"></script>
+
+
+</body></html>
