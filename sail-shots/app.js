@@ -57,9 +57,20 @@
   const GYBE_TWA_THRESHOLD = 150; // |TWA| passing this close to dead-run during a turn => gybe, not a tack
 
   // Photos taken during the same manoeuvre land within a few seconds of each
-  // other (burst shooting); consecutive manoeuvres out on the water are
-  // reliably a minute-plus apart. 60s sits comfortably between the two.
+  // other (burst shooting). A gap bigger than this is always a hard split
+  // -- a separate shooting session, not just a pause mid-sequence -- but
+  // back-to-back manoeuvres (a tactical gybe set, a quick double-tack) can
+  // easily be shot with a settled pause well under this between them, so
+  // this alone isn't enough to tell two manoeuvres apart; see
+  // MANOEUVRE_ACTIVE_TURN_RATE below for the other half of that.
   const MANOEUVRE_GROUP_GAP_SECONDS = 60;
+  // Between two consecutive distinct capture timestamps in the same burst,
+  // this many degrees/second of TWA swing counts as "still turning" rather
+  // than holding a settled course. Used to split one time-gap cluster into
+  // separate manoeuvres: once a swing has finished and the boat has
+  // settled (however briefly), a fresh swing starting up again is a new
+  // manoeuvre, not a continuation of the last one.
+  const MANOEUVRE_ACTIVE_TURN_RATE = 4;
 
   // ---------- framing tuning (crop/zoom/straighten, all categories) ----------
   const FRAME_ROTATE_MIN = -45, FRAME_ROTATE_MAX = 45;
@@ -585,25 +596,80 @@
     return chip;
   }
 
+  // ---------- manoeuvre burst splitting (shared: Manoeuvre Sequence + Gybe Exit) ----------
+  // Splits an ascending-chronological run of same-category shots into
+  // distinct manoeuvre bursts. Two signals decide a split:
+  //  1. A hard split on any gap bigger than MANOEUVRE_GROUP_GAP_SECONDS --
+  //     always a separate shooting session.
+  //  2. A soft split *within* an otherwise-continuous run: once the boat's
+  //     TWA has swung through one active turn (rate >=
+  //     MANOEUVRE_ACTIVE_TURN_RATE deg/sec between consecutive distinct
+  //     capture timestamps) and then settled, a fresh swing starting up
+  //     again is a new manoeuvre -- this is what actually tells two gybes
+  //     shot back-to-back (a gybe set, mark-rounding tactics) apart from
+  //     one long single gybe, which a time gap alone can't.
+  // Burst duplicates (several photos sharing one capture timestamp, same
+  // TWA) are collapsed to one "keyframe" per distinct timestamp before
+  // walking the turn-rate signal -- otherwise every zero-gap duplicate pair
+  // would reset the "already turned once" state and shatter one continuous
+  // turn into a split every second. Returns an array of shot arrays, each
+  // one ascending chronologically, in ascending (earliest-burst-first)
+  // order; callers that want newest-first reverse it themselves.
+  function splitIntoManoeuvreBursts(ascendingShots) {
+    if (ascendingShots.length === 0) return [];
+    const keyframes = [];
+    let lastT = null;
+    ascendingShots.forEach(s => { if (s.capturedAt !== lastT) { keyframes.push(s); lastT = s.capturedAt; } });
+
+    const boundaries = new Set([keyframes[0].capturedAt]);
+    let prevActive = false, hadActiveInBurst = false;
+    for (let i = 1; i < keyframes.length; i++) {
+      const gapSec = (new Date(keyframes[i].capturedAt) - new Date(keyframes[i - 1].capturedAt)) / 1000;
+      if (gapSec > MANOEUVRE_GROUP_GAP_SECONDS) {
+        boundaries.add(keyframes[i].capturedAt);
+        prevActive = false; hadActiveInBurst = false;
+        continue;
+      }
+      const twaPrev = Number((keyframes[i - 1].row || {}).TWA_deg);
+      const twaCurr = Number((keyframes[i].row || {}).TWA_deg);
+      let active = false;
+      if (!Number.isNaN(twaPrev) && !Number.isNaN(twaCurr) && gapSec > 0) {
+        active = Math.abs(angDiff(twaPrev, twaCurr)) / gapSec >= MANOEUVRE_ACTIVE_TURN_RATE;
+      }
+      if (active && !prevActive) {
+        if (hadActiveInBurst) { boundaries.add(keyframes[i].capturedAt); hadActiveInBurst = false; }
+        hadActiveInBurst = true;
+      }
+      prevActive = active;
+    }
+
+    const sortedBoundaries = [...boundaries].sort();
+    const bursts = [];
+    let bi = 0, current = [];
+    ascendingShots.forEach(s => {
+      while (bi + 1 < sortedBoundaries.length && s.capturedAt >= sortedBoundaries[bi + 1]) { bi++; bursts.push(current); current = []; }
+      current.push(s);
+    });
+    if (current.length) bursts.push(current);
+    return bursts;
+  }
+
   // ---------- manoeuvre grouping (Manoeuvre Sequence category only) ----------
-  // Clusters the shots in one manoeuvre burst together and names each
-  // cluster in chronological order — "Tack 1", "Gybe 1", "Gybe 2", etc.,
-  // counted separately per type. A cluster is a run of shots with no gap
-  // bigger than MANOEUVRE_GROUP_GAP_SECONDS between consecutive capture
-  // times; whether it's a tack or a gybe is read off the average TWA across
-  // the cluster, using the same upwind/downwind split the auto-categorizer
-  // uses elsewhere (below DOWNWIND_TWA_THRESHOLD => upwind => tack).
-  // Returns an array of { label, shots }, one entry per cluster — each
-  // cluster's own shots sorted chronologically (earliest first, so opening
-  // the group starts at the first shot of that manoeuvre and steps forward
-  // through the rest). The array of groups itself is newest-group-first, to
-  // match the rest of the gallery's "sorted newest first" convention.
+  // Names each burst in chronological order — "Tack 1", "Gybe 1", "Gybe 2",
+  // etc., counted separately per type; whether a burst is a tack or a gybe
+  // is read off the average TWA across it, using the same upwind/downwind
+  // split the auto-categorizer uses elsewhere (below DOWNWIND_TWA_THRESHOLD
+  // => upwind => tack). Returns an array of { label, shots }, one entry per
+  // burst — each burst's own shots sorted chronologically (earliest first,
+  // so opening the group starts at the first shot of that manoeuvre and
+  // steps forward through the rest). The array of groups itself is
+  // newest-group-first, to match the rest of the gallery's "sorted newest
+  // first" convention.
   function manoeuvreGroups(shots) {
     const ascending = [...shots].sort((a, b) => new Date(a.capturedAt) - new Date(b.capturedAt));
     const groups = [];
-    let tackCount = 0, gybeCount = 0, clusterStart = 0;
-    const flushCluster = (endExclusive) => {
-      const cluster = ascending.slice(clusterStart, endExclusive);
+    let tackCount = 0, gybeCount = 0;
+    splitIntoManoeuvreBursts(ascending).forEach(cluster => {
       if (cluster.length === 0) return;
       const twas = cluster
         .map(s => Number((s.row || {})['TWA_deg']))
@@ -611,39 +677,26 @@
       const avgAbsTwa = twas.length ? twas.reduce((sum, v) => sum + Math.abs(v), 0) / twas.length : 0;
       const label = avgAbsTwa >= DOWNWIND_TWA_THRESHOLD ? `Gybe ${++gybeCount}` : `Tack ${++tackCount}`;
       groups.push({ label, shots: cluster });
-    };
-    for (let i = 1; i < ascending.length; i++) {
-      const gapSec = (new Date(ascending[i].capturedAt) - new Date(ascending[i - 1].capturedAt)) / 1000;
-      if (gapSec > MANOEUVRE_GROUP_GAP_SECONDS) { flushCluster(i); clusterStart = i; }
-    }
-    flushCluster(ascending.length);
+    });
     return groups.reverse();
   }
 
   // ---------- gybe-exit grouping (Gybe Exit category only) ----------
-  // Same clustering idea as manoeuvreGroups (a run of shots with no gap
-  // bigger than MANOEUVRE_GROUP_GAP_SECONDS between consecutive capture
-  // times becomes one cluster) but every shot here already carries the
-  // Gybe Exit category -- whether by the auto-categorizer or a manual/batch
-  // recategorize -- so there's no tack-vs-gybe guess to make off TWA; each
-  // cluster is just the next distinct gybe, numbered "Gybe 1", "Gybe 2", ...
-  // in chronological order. Same newest-group-first return order as
-  // manoeuvreGroups, and { label, shots } shape so renderManoeuvreGroupCard
-  // can render either kind of group unchanged.
+  // Same burst-splitting as manoeuvreGroups, but every shot here already
+  // carries the Gybe Exit category -- whether by the auto-categorizer or a
+  // manual/batch recategorize -- so there's no tack-vs-gybe guess to make
+  // off TWA; each burst is just the next distinct gybe, numbered "Gybe 1",
+  // "Gybe 2", ... in chronological order. Same newest-group-first return
+  // order as manoeuvreGroups, and { label, shots } shape so
+  // renderManoeuvreGroupCard can render either kind of group unchanged.
   function gybeExitGroups(shots) {
     const ascending = [...shots].sort((a, b) => new Date(a.capturedAt) - new Date(b.capturedAt));
     const groups = [];
-    let gybeCount = 0, clusterStart = 0;
-    const flushCluster = (endExclusive) => {
-      const cluster = ascending.slice(clusterStart, endExclusive);
+    let gybeCount = 0;
+    splitIntoManoeuvreBursts(ascending).forEach(cluster => {
       if (cluster.length === 0) return;
       groups.push({ label: `Gybe ${++gybeCount}`, shots: cluster });
-    };
-    for (let i = 1; i < ascending.length; i++) {
-      const gapSec = (new Date(ascending[i].capturedAt) - new Date(ascending[i - 1].capturedAt)) / 1000;
-      if (gapSec > MANOEUVRE_GROUP_GAP_SECONDS) { flushCluster(i); clusterStart = i; }
-    }
-    flushCluster(ascending.length);
+    });
     return groups.reverse();
   }
 
