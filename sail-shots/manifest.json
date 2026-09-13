@@ -11108,7 +11108,7 @@
       "capturedAt": "2026-09-13T11:48:09.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-13 13:48:07+02:00",
         "ts": "1789300087.0",
@@ -11147,7 +11147,7 @@
       "capturedAt": "2026-09-13T11:50:33.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-13 13:50:31+02:00",
         "ts": "1789300231.0",
@@ -11186,7 +11186,7 @@
       "capturedAt": "2026-09-13T11:51:21.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-13 13:51:19+02:00",
         "ts": "1789300279.0",
@@ -11225,7 +11225,7 @@
       "capturedAt": "2026-09-13T11:53:06.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "other",
+      "category": "gybe-exit",
       "row": {
         "Datetime": "2026-09-13 13:53:04+02:00",
         "ts": "1789300384.0",
