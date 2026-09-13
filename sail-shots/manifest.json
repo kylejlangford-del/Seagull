@@ -11225,7 +11225,7 @@
       "capturedAt": "2026-09-13T11:53:06.000Z",
       "capturedAtSource": "exif",
       "gapSeconds": 0,
-      "category": "downwind",
+      "category": "upwind",
       "row": {
         "Datetime": "2026-09-13 13:53:04+02:00",
         "ts": "1789300384.0",
