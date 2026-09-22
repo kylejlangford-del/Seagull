@@ -6,19 +6,19 @@
   const DEFAULT_RIGHT_GAP_M = 678;
   const DEFAULT_LINE_LENGTH_M = 0.24 * NM_TO_M;
   const DEFAULT_COURSE_WIDTH_M = DEFAULT_LEFT_GAP_M + DEFAULT_LINE_LENGTH_M + DEFAULT_RIGHT_GAP_M;
-  const LEFT_GAP_SHARE = DEFAULT_LEFT_GAP_M / (DEFAULT_LEFT_GAP_M + DEFAULT_RIGHT_GAP_M);
-  const RIGHT_GAP_SHARE = 1 - LEFT_GAP_SHARE;
 
-  const defaults = { tws: 13, manualSpeed: 34, courseWidthM: DEFAULT_COURSE_WIDTH_M, lineLengthM: DEFAULT_LINE_LENGTH_M, mode: '90', unit: 'm' };
+  const defaults = { tws: 13, manualSpeed: 34, courseWidthM: DEFAULT_COURSE_WIDTH_M, lineLengthM: DEFAULT_LINE_LENGTH_M, startBoxWidthM: DEFAULT_RIGHT_GAP_M, mode: '90', unit: 'm' };
   let mode = defaults.mode;
   let unit = defaults.unit;
 
   // Canonical geometry state, always held in exact metres. Display fields are
   // formatted FROM this state; they are never read back to derive it, so
   // switching units (or re-rendering) can never round-trip precision away.
-  const state = { courseWidthM: DEFAULT_COURSE_WIDTH_M, lineLengthM: DEFAULT_LINE_LENGTH_M };
+  // startBoxWidthM is a direct input (right/starboard gap); the port/left gap
+  // is always the remainder of the available space, never a separate input.
+  const state = { courseWidthM: DEFAULT_COURSE_WIDTH_M, lineLengthM: DEFAULT_LINE_LENGTH_M, startBoxWidthM: DEFAULT_RIGHT_GAP_M };
 
-  const ids = ['tws','manualSpeed','courseWidth','courseWidthUnit','courseWidthMeta','lineDistance','lineDistanceUnit','lineDistanceMeta','validation','boatSpeed','speedLabel','speedMeta','lineTime','stbdTime','portTime','midTime','lineMeta','stbdMeta','portMeta','midMeta','stbdDistance','portDistance','midDistance','visualLine','visualPort','visualStbd','visualPortTime','visualStbdTime','visualLineTime','visualMid','visualMidTime','dimPort','dimLine','dimStbd','dimMid','dimMidRest','courseArrow','resetBtn','tab90','tab2board','twsField','manualSpeedField','unitM','unitNm','referenceTable'];
+  const ids = ['tws','manualSpeed','courseWidth','courseWidthUnit','courseWidthMeta','lineDistance','lineDistanceUnit','lineDistanceMeta','startBoxWidth','startBoxWidthUnit','startBoxWidthMeta','validation','boatSpeed','speedLabel','speedMeta','lineTime','stbdTime','portTime','midTime','lineMeta','stbdMeta','portMeta','midMeta','stbdDistance','portDistance','midDistance','visualLine','visualPort','visualStbd','visualPortTime','visualStbdTime','visualLineTime','visualMid','visualMidTime','dimPort','dimLine','dimStbd','dimMid','dimMidRest','courseArrow','resetBtn','tab90','tab2board','twsField','manualSpeedField','unitM','unitNm','referenceTable'];
   const el = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
 
   function finiteNumber(node, fallback = 0){ const v = Number(node.value); return Number.isFinite(v) ? v : fallback; }
@@ -43,17 +43,21 @@
     return SPEED_TABLE[0][1];
   }
 
-  function boundaryGeometry(courseWidthM,lineLengthM){
+  function boundaryGeometry(courseWidthM,lineLengthM,startBoxWidthM){
+    // Starboard (right) gap is a direct input: the distance from the right
+    // end of the start line to the starboard boundary. Port (left) gap is
+    // always whatever course width is left over.
     const availableGap = courseWidthM - lineLengthM;
     return {
-      portGapM: availableGap * LEFT_GAP_SHARE,
-      stbdGapM: availableGap * RIGHT_GAP_SHARE
+      portGapM: availableGap - startBoxWidthM,
+      stbdGapM: startBoxWidthM
     };
   }
 
   function refreshDistanceFields(){
     el.courseWidth.value = formatInputValue(state.courseWidthM);
     el.lineDistance.value = formatInputValue(state.lineLengthM);
+    el.startBoxWidth.value = formatInputValue(state.startBoxWidthM);
   }
 
   function setUnit(nextUnit){
@@ -65,8 +69,10 @@
     refreshDistanceFields();
     el.courseWidthUnit.textContent = unitLabel();
     el.lineDistanceUnit.textContent = unitLabel();
+    el.startBoxWidthUnit.textContent = unitLabel();
     el.courseWidth.step = unit === 'nm' ? '0.001' : '0.01';
     el.lineDistance.step = unit === 'nm' ? '0.001' : '0.01';
+    el.startBoxWidth.step = unit === 'nm' ? '0.001' : '0.01';
     el.unitM.classList.toggle('is-active',unit==='m');
     el.unitNm.classList.toggle('is-active',unit==='nm');
     update();
@@ -79,6 +85,11 @@
 
   function onLineDistanceInput(){
     state.lineLengthM = Math.max(0, toMetres(finiteNumber(el.lineDistance, fromMetres(state.lineLengthM))));
+    update();
+  }
+
+  function onStartBoxWidthInput(){
+    state.startBoxWidthM = Math.max(0, toMetres(finiteNumber(el.startBoxWidth, fromMetres(state.startBoxWidthM))));
     update();
   }
 
@@ -120,7 +131,8 @@
     const manualSpeed=Math.max(0,finiteNumber(el.manualSpeed,defaults.manualSpeed));
     const courseWidthM=state.courseWidthM;
     const lineLengthM=state.lineLengthM;
-    const geometry=boundaryGeometry(courseWidthM,lineLengthM);
+    const startBoxWidthM=state.startBoxWidthM;
+    const geometry=boundaryGeometry(courseWidthM,lineLengthM,startBoxWidthM);
     const messages=[];
     if(mode==='90'&&(tws<7||tws>17)) messages.push('The 90° TWA reference table covers 7–17 kn TWS; outside that range the nearest endpoint speed is used.');
     if(mode==='2board'&&manualSpeed<=0) messages.push('Enter a boat speed greater than 0 kn.');
@@ -139,6 +151,7 @@
     el.validation.textContent=messages.join(' ');
     el.courseWidthMeta.textContent=`${courseWidthM.toFixed(2)} m = ${(courseWidthM/NM_TO_M).toFixed(3)} NM`;
     el.lineDistanceMeta.textContent=`${lineLengthM.toFixed(2)} m = ${(lineLengthM/NM_TO_M).toFixed(3)} NM`;
+    el.startBoxWidthMeta.textContent=`${startBoxWidthM.toFixed(2)} m = ${(startBoxWidthM/NM_TO_M).toFixed(3)} NM`;
     el.boatSpeed.textContent=`${speedKn.toFixed(1)} kn`;
     el.lineTime.textContent=formatSeconds(lineS); el.stbdTime.textContent=formatSeconds(stbdS); el.portTime.textContent=formatSeconds(portS); el.midTime.textContent=formatSeconds(midS);
     el.lineMeta.textContent=`${formatDistance(lineLengthM)} @ ${speedKn.toFixed(1)} kn`;
@@ -156,13 +169,14 @@
   ['tws','manualSpeed'].forEach(id=>el[id].addEventListener('input',update));
   el.courseWidth.addEventListener('input',onCourseWidthInput);
   el.lineDistance.addEventListener('input',onLineDistanceInput);
+  el.startBoxWidth.addEventListener('input',onStartBoxWidthInput);
   el.tab90.addEventListener('click',()=>setMode('90')); el.tab2board.addEventListener('click',()=>setMode('2board'));
   el.unitM.addEventListener('click',()=>setUnit('m')); el.unitNm.addEventListener('click',()=>setUnit('nm'));
   el.resetBtn.addEventListener('click',()=>{
     mode=defaults.mode; unit=defaults.unit;
-    state.courseWidthM=defaults.courseWidthM; state.lineLengthM=defaults.lineLengthM;
+    state.courseWidthM=defaults.courseWidthM; state.lineLengthM=defaults.lineLengthM; state.startBoxWidthM=defaults.startBoxWidthM;
     el.tws.value=defaults.tws; el.manualSpeed.value=defaults.manualSpeed;
-    el.courseWidthUnit.textContent='m'; el.lineDistanceUnit.textContent='m'; el.courseWidth.step='0.01'; el.lineDistance.step='0.01';
+    el.courseWidthUnit.textContent='m'; el.lineDistanceUnit.textContent='m'; el.startBoxWidthUnit.textContent='m'; el.courseWidth.step='0.01'; el.lineDistance.step='0.01'; el.startBoxWidth.step='0.01';
     el.unitM.classList.add('is-active'); el.unitNm.classList.remove('is-active');
     refreshDistanceFields();
     setMode('90');
