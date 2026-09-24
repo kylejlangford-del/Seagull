@@ -513,6 +513,10 @@ function onResize() {
 
 function animate() {
   requestAnimationFrame(animate);
-  controls.update();
+  // Only let OrbitControls drive the camera in external mode. It recomputes
+  // camera position/rotation from its own internal target/spherical state on
+  // every call, which was silently overriding the onboard rig's manual
+  // pan/tilt rotation from updateOnboardCamera() each frame.
+  if (controls.enabled) controls.update();
   if (modelReady) renderer.render(scene, camera);
 }
