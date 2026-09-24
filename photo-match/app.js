@@ -207,9 +207,6 @@ function initScene() {
   const diagAmbient = new THREE.AmbientLight(0xffffff, 5.0);
   scene.add(diagAmbient);
 
-  const diagAmbient = new THREE.AmbientLight(0xffffff, 5.0);
-  scene.add(diagAmbient);
-
   createWaterGuide();
 
   window.addEventListener('resize', onResize);
