@@ -76,8 +76,7 @@
             </div>
 
             <div id="onboardPresets" class="preset-row">
-              <button class="mini-button preset-button active" data-preset="bow-leeward" type="button">Bow &middot; leeward</button>
-              <button class="mini-button preset-button" data-preset="bow-windward" type="button">Bow &middot; windward</button>
+              <button class="mini-button preset-button active" data-preset="bow" type="button">Bow</button>
               <button class="mini-button preset-button" data-preset="stern" type="button">Stern</button>
             </div>
 
@@ -195,6 +194,20 @@
               <input id="trim" type="range" min="-8" max="8" value="0" step="0.2" />
               <div class="range-hints"><span>bow down</span><span>bow up</span></div>
             </div>
+          </section>
+
+          <section class="control-section">
+            <div class="section-heading">
+              <span>Saved matches</span>
+              <small id="matchLogCount">0 saved</small>
+            </div>
+
+            <button class="mini-button" id="saveMatchBtn" type="button">Save this match</button>
+            <p class="control-hint">Captures the photo + model overlay and the four numbers above as a PNG, and adds it to the list below.</p>
+
+            <div id="matchLogList" class="match-log-list"></div>
+
+            <button class="mini-button" id="downloadAllBtn" type="button" hidden>Download all (PNGs + CSV)</button>
           </section>
 
           <div class="controls-bottom-spacer"></div>
