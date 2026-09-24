@@ -254,6 +254,7 @@ function loadModel() {
       setupCantAssemblies();
 
       modelReady = true;
+      window.__diag = { modelMeshes, camera, boatRoot, THREE };
       applyCameraMode();
       updateGeometry();
       ui.loading.classList.add('hidden');
