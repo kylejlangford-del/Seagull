@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07111d" />
+  <title>Photo Match · Seagull Lab</title>
+  <link rel="stylesheet" href="./styles.css?v=20260924" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <a class="brand" href="../" aria-label="Back to Seagull Lab">
+        <img src="../assets/seagull-lab-logo.png" alt="Seagull Lab" />
+      </a>
+
+      <div class="title-block">
+        <span>AC40</span>
+        <strong>Photo Match</strong>
+      </div>
+
+      <div class="header-actions">
+        <button class="ghost-button" id="resetBtn" type="button">Reset</button>
+        <a class="ghost-button" href="../">Home</a>
+      </div>
+    </header>
+
+    <main class="workspace workspace--two">
+      <aside class="controls-panel">
+        <div class="controls-scroll">
+          <section class="control-section">
+            <div class="section-heading"><span>Photo</span></div>
+
+            <label class="upload-row" for="photoInput">
+              <span id="photoFileName">No photo loaded</span>
+              <span class="upload-button">Upload</span>
+            </label>
+            <input id="photoInput" type="file" accept="image/*" hidden />
+
+            <div class="control-row">
+              <div class="control-label">
+                <label for="modelOpacity">Model opacity</label>
+                <output id="modelOpacityValue">60%</output>
+              </div>
+              <input id="modelOpacity" type="range" min="0" max="100" value="60" step="5" />
+            </div>
+
+            <label class="switch-line switch-line--block">
+              <input id="wireframeToggle" type="checkbox" />
+              <span>Wireframe overlay</span>
+            </label>
+
+            <label class="switch-line switch-line--block">
+              <input id="waterlineToggle" type="checkbox" checked />
+              <span>Show sea-level guide</span>
+            </label>
+          </section>
+
+          <section class="control-section">
+            <div class="section-heading"><span>Camera</span></div>
+
+            <div class="segmented" id="cameraMode">
+              <button data-mode="onboard" class="active" type="button">Onboard</button>
+              <button data-mode="external" type="button">External</button>
+            </div>
+
+            <div id="onboardPresets" class="preset-row">
+              <button class="mini-button preset-button active" data-preset="bow-leeward" type="button">Bow &middot; leeward</button>
+              <button class="mini-button preset-button" data-preset="bow-windward" type="button">Bow &middot; windward</button>
+              <button class="mini-button preset-button" data-preset="stern" type="button">Stern</button>
+            </div>
+
+            <div id="externalPresets" class="preset-row" hidden>
+              <button class="mini-button preset-button active" data-view="beam" type="button">Beam</button>
+              <button class="mini-button preset-button" data-view="bow-on" type="button">Bow-on</button>
+              <button class="mini-button preset-button" data-view="stern-on" type="button">Stern-on</button>
+              <button class="mini-button preset-button" data-view="three-quarter" type="button">3/4</button>
+              <button class="mini-button preset-button" data-view="elevated" type="button">Elevated</button>
+            </div>
+
+            <div id="onboardControls">
+              <div class="control-row">
+                <div class="control-label">
+                  <label for="camAlong">Fore &ndash; aft</label>
+                  <output id="camAlongValue">0.00 m</output>
+                </div>
+                <input id="camAlong" type="range" min="-3" max="3" value="0" step="0.05" />
+              </div>
+
+              <div class="control-row">
+                <div class="control-label">
+                  <label for="camHeight">Height above deck</label>
+                  <output id="camHeightValue">0.00 m</output>
+                </div>
+                <input id="camHeight" type="range" min="-0.5" max="2" value="0" step="0.02" />
+              </div>
+
+              <div class="control-row">
+                <div class="control-label">
+                  <label for="camAthwart">Athwartships offset</label>
+                  <output id="camAthwartValue">0.00 m</output>
+                </div>
+                <input id="camAthwart" type="range" min="-1.5" max="1.5" value="0" step="0.02" />
+              </div>
+
+              <div class="control-row">
+                <div class="control-label">
+                  <label for="camPan">Pan</label>
+                  <output id="camPanValue">0.0&deg;</output>
+                </div>
+                <input id="camPan" type="range" min="-90" max="90" value="0" step="0.5" />
+              </div>
+
+              <div class="control-row">
+                <div class="control-label">
+                  <label for="camTilt">Tilt</label>
+                  <output id="camTiltValue">0.0&deg;</output>
+                </div>
+                <input id="camTilt" type="range" min="-60" max="60" value="0" step="0.5" />
+              </div>
+            </div>
+
+            <div class="control-row">
+              <div class="control-label">
+                <label for="camFov">Field of view</label>
+                <output id="camFovValue">100&deg;</output>
+            </div>
+              <input id="camFov" type="range" min="20" max="140" value="100" step="1" />
+            </div>
+
+            <p class="control-hint" id="cameraHint">
+              Drag in the viewer to orbit &middot; scroll to zoom (external mode only). Onboard mode keeps the camera bolted to the hull &mdash; it follows heel, trim and ride height automatically.
+            </p>
+          </section>
+
+          <section class="control-section">
+            <div class="section-heading"><span>Foil cant</span></div>
+
+            <div class="control-row">
+              <div class="control-label">
+                <label for="cantPort">Cant port</label>
+                <output id="cantPortValue">55.0&deg;</output>
+              </div>
+              <input id="cantPort" type="range" min="50" max="126" value="55" step="0.5" />
+            </div>
+
+            <div class="control-row">
+              <div class="control-label">
+                <label for="cantStbd">Cant starboard</label>
+                <output id="cantStbdValue">55.0&deg;</output>
+              </div>
+              <input id="cantStbd" type="range" min="50" max="126" value="55" step="0.5" />
+            </div>
+          </section>
+
+          <section class="control-section">
+            <div class="section-heading">
+              <span>Boat pose</span>
+              <small>Fine-tuning &mdash; adjust after cant is close</small>
+            </div>
+
+            <div class="control-row">
+              <div class="control-label">
+                <label for="ridePosition">Ride height</label>
+                <output id="ridePositionValue">0.00 m</output>
+              </div>
+              <input id="ridePosition" type="range" min="-1.5" max="1.5" value="0" step="0.02" />
+            </div>
+
+            <div class="control-row">
+              <div class="control-label">
+                <label for="heel">Heel</label>
+                <output id="heelValue">0.0&deg;</output>
+              </div>
+              <input id="heel" type="range" min="-15" max="15" value="0" step="0.2" />
+              <div class="range-hints"><span>port down</span><span>starboard down</span></div>
+            </div>
+
+            <div class="control-row">
+              <div class="control-label">
+                <label for="trim">Trim</label>
+                <output id="trimValue">0.0&deg;</output>
+              </div>
+              <input id="trim" type="range" min="-8" max="8" value="0" step="0.2" />
+              <div class="range-hints"><span>bow down</span><span>bow up</span></div>
+            </div>
+          </section>
+
+          <div class="controls-bottom-spacer"></div>
+        </div>
+      </aside>
+
+      <section class="viewer-panel">
+        <div class="viewport-wrap">
+          <div id="viewportBox" class="viewport-box">
+            <div id="photoLayer" class="photo-layer"></div>
+            <div id="scene"></div>
+          </div>
+        </div>
+
+        <div class="kpi-strip kpi-strip--headline">
+          <div class="kpi kpi--headline">
+            <span class="kpi__label">Cant port</span>
+            <strong id="outCantPort">55.0&deg;</strong>
+          </div>
+          <div class="kpi kpi--headline">
+            <span class="kpi__label">Cant starboard</span>
+            <strong id="outCantStbd">55.0&deg;</strong>
+          </div>
+          <div class="kpi kpi--headline">
+            <span class="kpi__label">Sink port</span>
+            <strong id="outSinkPort">&mdash;</strong>
+            <small>foil centre &rarr; water</small>
+          </div>
+          <div class="kpi kpi--headline">
+            <span class="kpi__label">Sink starboard</span>
+            <strong id="outSinkStbd">&mdash;</strong>
+            <small>foil centre &rarr; water</small>
+          </div>
+        </div>
+
+        <div id="loadingOverlay" class="loading-overlay">
+          <div class="loader"></div>
+          <strong>Loading AC40 model</strong>
+          <span>Same model as AC40 Geometry</span>
+        </div>
+      </section>
+    </main>
+
+    <div id="fatalError" class="fatal-error" hidden>
+      <strong>Could not load the 3D model.</strong>
+      <span>Expected <code>ac40-model.gltf</code> in the <code>ac40-geometry</code> folder next to this one.</span>
+    </div>
+  </div>
+
+  <script type="module" src="./app.js?v=20260924"></script>
+</body>
+</html>
