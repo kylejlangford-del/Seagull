@@ -93,7 +93,7 @@ const state = {
   camFov: defaults.camFov,
 
   // Reference-photo pan/zoom, set by dragging/scrolling the photo directly
-  // in the viewer (onboard mode only). Independent of the Reset button â
+  // in the viewer (onboard mode only). Independent of the Reset button Ã¢ÂÂ
   // resetting the boat/camera calibration shouldn't throw away photo
   // alignment work.
   photoOffsetX: 0,
@@ -105,7 +105,7 @@ const state = {
 // bow at larger X; Y = up; Z = athwartships, starboard positive). Derived
 // from the hull's bounding box (bow tip near X=11.8, deck near Y=1.0 at the
 // bow) plus a real-world estimate of the mount: 1.15m out beyond the bow
-// (on the bowsprit) and 0.38m above the deck there â matching a bolted-on
+// (on the bowsprit) and 0.38m above the deck there Ã¢ÂÂ matching a bolted-on
 // bow cam mounted as far forward as the boat allows. There is only one
 // physical bow camera (it doesn't move between tacks), so there's only one
 // onboard "Bow" preset below, not a leeward/windward pair.
@@ -189,11 +189,20 @@ function initScene() {
   fill.position.set(-6, 5, -6);
   scene.add(fill);
 
-  // Cyan rim light traces the stern contour — a second, colour-coded cue
+  // Cyan rim light traces the stern contour â a second, colour-coded cue
   // for which end is the stern even in silhouette.
   const rim = new THREE.DirectionalLight(0x47e7db, 2.0);
   rim.position.set(-9, 2, -12);
   scene.add(rim);
+
+  // Nose fill: stationed out ahead of the bow, shining back along the
+  // hull. The bow-mounted onboard camera looks almost straight down the
+  // boat's own forward axis, so it mostly sees the hull's forward and
+  // underside surfaces — exactly the faces the overhead key light barely
+  // reaches. Without this they render as a near-black silhouette.
+  const nose = new THREE.DirectionalLight(0xdfeeff, 1.7);
+  nose.position.set(20, 3, 2);
+  scene.add(nose);
 
   createWaterGuide();
 
@@ -299,21 +308,21 @@ function setupCantAssemblies() {
 }
 
 function bindUI() {
-  bindRange(ui.cantPort, ui.cantPortValue, (v) => { state.cantPort = v; return `${v.toFixed(1)}Â°`; });
-  bindRange(ui.cantStbd, ui.cantStbdValue, (v) => { state.cantStbd = v; return `${v.toFixed(1)}Â°`; });
-  bindRange(ui.heel, ui.heelValue, (v) => { state.heel = v; return `${signed(v, 1)}Â°`; });
-  bindRange(ui.trim, ui.trimValue, (v) => { state.trim = v; return `${signed(v, 1)}Â°`; });
+  bindRange(ui.cantPort, ui.cantPortValue, (v) => { state.cantPort = v; return `${v.toFixed(1)}ÃÂ°`; });
+  bindRange(ui.cantStbd, ui.cantStbdValue, (v) => { state.cantStbd = v; return `${v.toFixed(1)}ÃÂ°`; });
+  bindRange(ui.heel, ui.heelValue, (v) => { state.heel = v; return `${signed(v, 1)}ÃÂ°`; });
+  bindRange(ui.trim, ui.trimValue, (v) => { state.trim = v; return `${signed(v, 1)}ÃÂ°`; });
   bindRange(ui.ridePosition, ui.ridePositionValue, (v) => { state.ridePosition = v; return `${signed(v, 2)} m`; });
 
   bindRange(ui.camAlong, ui.camAlongValue, (v) => { state.camAlong = v; return `${signed(v, 2)} m`; });
   bindRange(ui.camHeight, ui.camHeightValue, (v) => { state.camHeight = v; return `${signed(v, 2)} m`; });
   bindRange(ui.camAthwart, ui.camAthwartValue, (v) => { state.camAthwart = v; return `${signed(v, 2)} m`; });
-  bindRange(ui.camPan, ui.camPanValue, (v) => { state.camPan = v; return `${signed(v, 1)}Â°`; });
-  bindRange(ui.camTilt, ui.camTiltValue, (v) => { state.camTilt = v; return `${signed(v, 1)}Â°`; });
+  bindRange(ui.camPan, ui.camPanValue, (v) => { state.camPan = v; return `${signed(v, 1)}ÃÂ°`; });
+  bindRange(ui.camTilt, ui.camTiltValue, (v) => { state.camTilt = v; return `${signed(v, 1)}ÃÂ°`; });
 
   ui.camFov.addEventListener('input', () => {
     state.camFov = Number(ui.camFov.value);
-    ui.camFovValue.textContent = `${state.camFov.toFixed(0)}Â°`;
+    ui.camFovValue.textContent = `${state.camFov.toFixed(0)}ÃÂ°`;
     camera.fov = state.camFov;
     camera.updateProjectionMatrix();
   });
@@ -342,8 +351,8 @@ function bindUI() {
       controls.enabled = state.cameraMode === 'external';
       ui.viewportBox.classList.toggle('photo-draggable', state.cameraMode === 'onboard');
       ui.cameraHint.textContent = state.cameraMode === 'onboard'
-        ? 'Onboard mode keeps the camera bolted to the hull â it follows heel, trim and ride height automatically. Use the sliders to nudge the mount position and aim.'
-        : 'Drag to orbit, scroll to zoom. External mode is a free camera in space â for a chase-boat, drone or TV shot rather than a boat-mounted one.';
+        ? 'Onboard mode keeps the camera bolted to the hull Ã¢ÂÂ it follows heel, trim and ride height automatically. Use the sliders to nudge the mount position and aim.'
+        : 'Drag to orbit, scroll to zoom. External mode is a free camera in space Ã¢ÂÂ for a chase-boat, drone or TV shot rather than a boat-mounted one.';
       applyCameraMode();
     });
   });
@@ -429,7 +438,7 @@ function resetPhotoTransform() {
 // drag/scroll there instead) and only once a photo is loaded. Listening on
 // viewportBox rather than the photo layer itself means this still works
 // even though the WebGL canvas sits on top and receives the raw event
-// first â mousedown/wheel bubble up to this ancestor either way.
+// first Ã¢ÂÂ mousedown/wheel bubble up to this ancestor either way.
 let photoDrag = null;
 
 function bindPhotoInteraction() {
@@ -481,8 +490,8 @@ function applyOnboardPreset(name) {
   ui.camAlong.value = preset.along; ui.camAlongValue.textContent = `${signed(preset.along, 2)} m`;
   ui.camHeight.value = preset.height; ui.camHeightValue.textContent = `${signed(preset.height, 2)} m`;
   ui.camAthwart.value = preset.athwart; ui.camAthwartValue.textContent = `${signed(preset.athwart, 2)} m`;
-  ui.camPan.value = preset.pan; ui.camPanValue.textContent = `${signed(preset.pan, 1)}Â°`;
-  ui.camTilt.value = preset.tilt; ui.camTiltValue.textContent = `${signed(preset.tilt, 1)}Â°`;
+  ui.camPan.value = preset.pan; ui.camPanValue.textContent = `${signed(preset.pan, 1)}ÃÂ°`;
+  ui.camTilt.value = preset.tilt; ui.camTiltValue.textContent = `${signed(preset.tilt, 1)}ÃÂ°`;
 
   if (modelReady) updateGeometry();
 }
@@ -517,7 +526,7 @@ function updateOnboardCamera() {
   camera.position.copy(pos);
 
   // Base heading looks toward the stern (-X, toward the mast/cockpit), since
-  // the rig is mounted near the bow looking aft-and-across â matching a
+  // the rig is mounted near the bow looking aft-and-across Ã¢ÂÂ matching a
   // typical broadcast bow camera. Pan/tilt sliders offset from there.
   camera.rotation.order = 'YXZ';
   camera.rotation.set(
@@ -555,8 +564,8 @@ function updateOutputs() {
   stbdFoilMarker.getWorldPosition(tempV);
   const sinkStbd = tempV.y;
 
-  ui.outCantPort.textContent = `${state.cantPort.toFixed(1)}Â°`;
-  ui.outCantStbd.textContent = `${state.cantStbd.toFixed(1)}Â°`;
+  ui.outCantPort.textContent = `${state.cantPort.toFixed(1)}ÃÂ°`;
+  ui.outCantStbd.textContent = `${state.cantStbd.toFixed(1)}ÃÂ°`;
   ui.outSinkPort.textContent = formatSignedMeters(sinkPort);
   ui.outSinkStbd.textContent = formatSignedMeters(sinkStbd);
 }
@@ -594,10 +603,10 @@ function resetAll() {
     ridePosition: defaults.ridePosition
   });
 
-  ui.cantPort.value = defaults.cantPort; ui.cantPortValue.textContent = `${defaults.cantPort.toFixed(1)}Â°`;
-  ui.cantStbd.value = defaults.cantStbd; ui.cantStbdValue.textContent = `${defaults.cantStbd.toFixed(1)}Â°`;
-  ui.heel.value = defaults.heel; ui.heelValue.textContent = `${signed(defaults.heel, 1)}Â°`;
-  ui.trim.value = defaults.trim; ui.trimValue.textContent = `${signed(defaults.trim, 1)}Â°`;
+  ui.cantPort.value = defaults.cantPort; ui.cantPortValue.textContent = `${defaults.cantPort.toFixed(1)}ÃÂ°`;
+  ui.cantStbd.value = defaults.cantStbd; ui.cantStbdValue.textContent = `${defaults.cantStbd.toFixed(1)}ÃÂ°`;
+  ui.heel.value = defaults.heel; ui.heelValue.textContent = `${signed(defaults.heel, 1)}ÃÂ°`;
+  ui.trim.value = defaults.trim; ui.trimValue.textContent = `${signed(defaults.trim, 1)}ÃÂ°`;
   ui.ridePosition.value = defaults.ridePosition; ui.ridePositionValue.textContent = `${signed(defaults.ridePosition, 2)} m`;
 
   applyOnboardPreset('bow');
@@ -612,8 +621,8 @@ function signed(value, decimals = 1) {
 }
 
 function formatSignedMeters(value) {
-  if (!Number.isFinite(value)) return 'â';
-  return `${value < 0 ? 'â' : ''}${Math.abs(value).toFixed(2)} m`;
+  if (!Number.isFinite(value)) return 'Ã¢ÂÂ';
+  return `${value < 0 ? 'Ã¢ÂÂ' : ''}${Math.abs(value).toFixed(2)} m`;
 }
 
 function onResize() {
@@ -656,7 +665,7 @@ function persistMatchLog() {
   try {
     localStorage.setItem(MATCH_LOG_KEY, JSON.stringify(matchLog));
   } catch (err) {
-    // Storage full or unavailable â the in-page list still works for this
+    // Storage full or unavailable Ã¢ÂÂ the in-page list still works for this
     // session, it just won't survive a reload. Not fatal either way.
     console.warn('Could not persist match log', err);
   }
@@ -688,7 +697,7 @@ function renderMatchLog() {
 
     const nums = document.createElement('span');
     nums.className = 'match-log-nums';
-    nums.textContent = `CP ${entry.cantPort} Â· CS ${entry.cantStbd} Â· SP ${entry.sinkPort} Â· SS ${entry.sinkStbd}`;
+    nums.textContent = `CP ${entry.cantPort} ÃÂ· CS ${entry.cantStbd} ÃÂ· SP ${entry.sinkPort} ÃÂ· SS ${entry.sinkStbd}`;
     meta.appendChild(nums);
 
     item.appendChild(meta);
@@ -699,7 +708,7 @@ function renderMatchLog() {
     const dlBtn = document.createElement('button');
     dlBtn.type = 'button';
     dlBtn.title = 'Download this match';
-    dlBtn.textContent = 'â';
+    dlBtn.textContent = 'Ã¢ÂÂ';
     dlBtn.addEventListener('click', () => downloadMatchEntry(entry));
     actions.appendChild(dlBtn);
 
@@ -707,7 +716,7 @@ function renderMatchLog() {
     rmBtn.type = 'button';
     rmBtn.className = 'match-log-remove';
     rmBtn.title = 'Remove this match';
-    rmBtn.textContent = 'Ã';
+    rmBtn.textContent = 'ÃÂ';
     rmBtn.addEventListener('click', () => removeMatchEntry(entry.id));
     actions.appendChild(rmBtn);
 
@@ -792,7 +801,7 @@ function captureMatchSnapshot() {
 
   ctx.fillStyle = '#edf5fb';
   ctx.font = '600 14px Inter, ui-sans-serif, sans-serif';
-  const line1 = `Cant  P ${state.cantPort.toFixed(1)}Â°   S ${state.cantStbd.toFixed(1)}Â°`;
+  const line1 = `Cant  P ${state.cantPort.toFixed(1)}ÃÂ°   S ${state.cantStbd.toFixed(1)}ÃÂ°`;
   ctx.fillText(line1, 14, height + captionHeight / 2 - 11);
 
   ctx.fillStyle = '#8fa2b5';
@@ -814,8 +823,8 @@ function saveMatch() {
     id: `${stamp.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
     label: labelSource,
     timestamp: stamp.toLocaleString(),
-    cantPort: `${state.cantPort.toFixed(1)}Â°`,
-    cantStbd: `${state.cantStbd.toFixed(1)}Â°`,
+    cantPort: `${state.cantPort.toFixed(1)}ÃÂ°`,
+    cantStbd: `${state.cantStbd.toFixed(1)}ÃÂ°`,
     sinkPort: ui.outSinkPort.textContent,
     sinkStbd: ui.outSinkStbd.textContent,
     filenameBase,
