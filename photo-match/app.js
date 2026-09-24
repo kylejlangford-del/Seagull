@@ -56,7 +56,12 @@ const ui = {
   onboardControls: $('onboardControls'),
   onboardPresets: $('onboardPresets'),
   externalPresets: $('externalPresets'),
-  cameraHint: $('cameraHint')
+  cameraHint: $('cameraHint'),
+
+  saveMatchBtn: $('saveMatchBtn'),
+  matchLogList: $('matchLogList'),
+  matchLogCount: $('matchLogCount'),
+  downloadAllBtn: $('downloadAllBtn')
 };
 
 const defaults = {
@@ -68,8 +73,8 @@ const defaults = {
   camAlong: 0,
   camHeight: 0,
   camAthwart: 0,
-  camPan: -35,
-  camTilt: -15,
+  camPan: 0,
+  camTilt: -4,
   camFov: 100
 };
 
@@ -99,14 +104,15 @@ const state = {
 // Onboard rig base position, in boat-local coordinates (X = fore/aft,
 // bow at larger X; Y = up; Z = athwartships, starboard positive). Derived
 // from the hull's bounding box (bow tip near X=11.8, deck near Y=1.0 at the
-// bow) plus a real-world estimate of the mount: ~1.05m out beyond the bow
-// (on the bowsprit) and ~0.40m above the deck there — matching a bolted-on
-// bow cam mounted as far forward as the boat allows.
-const ONBOARD_BASE = new THREE.Vector3(12.85, 1.4, 0);
+// bow) plus a real-world estimate of the mount: 1.15m out beyond the bow
+// (on the bowsprit) and 0.38m above the deck there — matching a bolted-on
+// bow cam mounted as far forward as the boat allows. There is only one
+// physical bow camera (it doesn't move between tacks), so there's only one
+// onboard "Bow" preset below, not a leeward/windward pair.
+const ONBOARD_BASE = new THREE.Vector3(12.95, 1.38, 0);
 
 const ONBOARD_PRESETS = {
-  'bow-leeward': { along: 0, height: 0, athwart: 0, pan: -35, tilt: -15 },
-  'bow-windward': { along: 0, height: 0, athwart: 0, pan: 35, tilt: -15 },
+  'bow': { along: 0, height: 0, athwart: 0, pan: 0, tilt: -4 },
   'stern': { along: -9.2, height: 0.4, athwart: 0, pan: 0, tilt: -6 }
 };
 
@@ -118,6 +124,9 @@ const EXTERNAL_PRESETS = {
   'three-quarter': new THREE.Vector3(17, 5.5, 11),
   'elevated': new THREE.Vector3(9, 15, 13)
 };
+
+const MATCH_LOG_KEY = 'seagull-photomatch-log-v1';
+let matchLog = [];
 
 let renderer, scene, camera, controls;
 let boatRoot, modelScene, portCantGroup, stbdCantGroup;
@@ -131,6 +140,7 @@ const tempV = new THREE.Vector3();
 
 initScene();
 bindUI();
+loadMatchLog();
 loadModel();
 animate();
 
@@ -343,6 +353,9 @@ function bindUI() {
   ui.photoInput.addEventListener('change', onPhotoSelected);
 
   ui.resetBtn.addEventListener('click', resetAll);
+
+  ui.saveMatchBtn.addEventListener('click', saveMatch);
+  ui.downloadAllBtn.addEventListener('click', downloadAllMatches);
 
   bindPhotoInteraction();
 }
@@ -573,8 +586,8 @@ function resetAll() {
   ui.trim.value = defaults.trim; ui.trimValue.textContent = `${signed(defaults.trim, 1)}°`;
   ui.ridePosition.value = defaults.ridePosition; ui.ridePositionValue.textContent = `${signed(defaults.ridePosition, 2)} m`;
 
-  applyOnboardPreset('bow-leeward');
-  document.querySelectorAll('#onboardPresets .preset-button').forEach((b) => b.classList.toggle('active', b.dataset.preset === 'bow-leeward'));
+  applyOnboardPreset('bow');
+  document.querySelectorAll('#onboardPresets .preset-button').forEach((b) => b.classList.toggle('active', b.dataset.preset === 'bow'));
 
   if (modelReady) updateGeometry();
 }
@@ -606,4 +619,222 @@ function animate() {
   // pan/tilt rotation from updateOnboardCamera() each frame.
   if (controls.enabled) controls.update();
   if (modelReady) renderer.render(scene, camera);
+}
+
+// ---------------------------------------------------------------------
+// Saved matches: capture the current photo + model overlay as one PNG
+// (with the four headline numbers burned into a caption bar) and keep a
+// running list of them in the page, so several photos can be worked
+// through before sending the results out.
+// ---------------------------------------------------------------------
+
+function loadMatchLog() {
+  try {
+    const raw = localStorage.getItem(MATCH_LOG_KEY);
+    matchLog = raw ? JSON.parse(raw) : [];
+  } catch (err) {
+    matchLog = [];
+  }
+  renderMatchLog();
+}
+
+function persistMatchLog() {
+  try {
+    localStorage.setItem(MATCH_LOG_KEY, JSON.stringify(matchLog));
+  } catch (err) {
+    // Storage full or unavailable — the in-page list still works for this
+    // session, it just won't survive a reload. Not fatal either way.
+    console.warn('Could not persist match log', err);
+  }
+}
+
+function renderMatchLog() {
+  ui.matchLogCount.textContent = matchLog.length === 1 ? '1 saved' : `${matchLog.length} saved`;
+  ui.downloadAllBtn.hidden = matchLog.length === 0;
+  ui.matchLogList.innerHTML = '';
+
+  for (const entry of matchLog) {
+    const item = document.createElement('div');
+    item.className = 'match-log-item';
+    item.dataset.id = entry.id;
+
+    const thumb = document.createElement('img');
+    thumb.className = 'match-log-thumb';
+    thumb.src = entry.dataURL;
+    thumb.alt = '';
+    item.appendChild(thumb);
+
+    const meta = document.createElement('div');
+    meta.className = 'match-log-meta';
+
+    const label = document.createElement('strong');
+    label.className = 'match-log-label';
+    label.textContent = entry.label;
+    meta.appendChild(label);
+
+    const nums = document.createElement('span');
+    nums.className = 'match-log-nums';
+    nums.textContent = `CP ${entry.cantPort} · CS ${entry.cantStbd} · SP ${entry.sinkPort} · SS ${entry.sinkStbd}`;
+    meta.appendChild(nums);
+
+    item.appendChild(meta);
+
+    const actions = document.createElement('div');
+    actions.className = 'match-log-actions';
+
+    const dlBtn = document.createElement('button');
+    dlBtn.type = 'button';
+    dlBtn.title = 'Download this match';
+    dlBtn.textContent = '↓';
+    dlBtn.addEventListener('click', () => downloadMatchEntry(entry));
+    actions.appendChild(dlBtn);
+
+    const rmBtn = document.createElement('button');
+    rmBtn.type = 'button';
+    rmBtn.className = 'match-log-remove';
+    rmBtn.title = 'Remove this match';
+    rmBtn.textContent = '×';
+    rmBtn.addEventListener('click', () => removeMatchEntry(entry.id));
+    actions.appendChild(rmBtn);
+
+    item.appendChild(actions);
+    ui.matchLogList.appendChild(item);
+  }
+}
+
+function removeMatchEntry(id) {
+  matchLog = matchLog.filter((e) => e.id !== id);
+  persistMatchLog();
+  renderMatchLog();
+}
+
+function downloadMatchEntry(entry) {
+  const a = document.createElement('a');
+  a.href = entry.dataURL;
+  a.download = `${entry.filenameBase}.png`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function sanitizeFilename(name) {
+  const cleaned = (name || 'photo-match').replace(/[^a-z0-9._-]+/gi, '-').replace(/^-+|-+$/g, '');
+  return cleaned || 'photo-match';
+}
+
+// Renders the current photo (with its drag/zoom transform) and the WebGL
+// model overlay into one canvas, exactly as they're stacked in the viewer,
+// plus a caption bar with the four headline numbers burned in so the image
+// is self-contained once it's sent elsewhere.
+function captureMatchSnapshot() {
+  const rect = ui.viewportBox.getBoundingClientRect();
+  const width = Math.max(1, Math.round(rect.width));
+  const height = Math.max(1, Math.round(rect.height));
+  const captionHeight = 54;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height + captionHeight;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#030a12';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  if (photoLoaded && ui.photoImg.complete && ui.photoImg.naturalWidth) {
+    const img = ui.photoImg;
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const containerAspect = width / height;
+    const imageAspect = iw / ih;
+    let drawW, drawH;
+    if (imageAspect > containerAspect) {
+      drawH = height;
+      drawW = height * imageAspect;
+    } else {
+      drawW = width;
+      drawH = width / imageAspect;
+    }
+    const drawX = (width - drawW) / 2;
+    const drawY = (height - drawH) / 2;
+
+    const cx = width / 2;
+    const cy = height / 2;
+    ctx.save();
+    ctx.translate(cx + state.photoOffsetX, cy + state.photoOffsetY);
+    ctx.scale(state.photoScale, state.photoScale);
+    ctx.translate(-cx, -cy);
+    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+    ctx.restore();
+  }
+
+  if (renderer && modelReady) {
+    renderer.render(scene, camera);
+    ctx.drawImage(renderer.domElement, 0, 0, width, height);
+  }
+
+  ctx.fillStyle = 'rgba(6,16,27,0.88)';
+  ctx.fillRect(0, height, width, captionHeight);
+  ctx.textBaseline = 'middle';
+
+  ctx.fillStyle = '#edf5fb';
+  ctx.font = '600 14px Inter, ui-sans-serif, sans-serif';
+  const line1 = `Cant  P ${state.cantPort.toFixed(1)}°   S ${state.cantStbd.toFixed(1)}°`;
+  ctx.fillText(line1, 14, height + captionHeight / 2 - 11);
+
+  ctx.fillStyle = '#8fa2b5';
+  ctx.font = '400 12px Inter, ui-sans-serif, sans-serif';
+  const line2 = `Sink  P ${ui.outSinkPort.textContent}   S ${ui.outSinkStbd.textContent}`;
+  ctx.fillText(line2, 14, height + captionHeight / 2 + 11);
+
+  return canvas.toDataURL('image/png');
+}
+
+function saveMatch() {
+  const dataURL = captureMatchSnapshot();
+  const labelSource = photoLoaded ? ui.photoFileName.textContent : 'no photo';
+  const stamp = new Date();
+  const baseName = sanitizeFilename(labelSource.replace(/\.[a-z0-9]+$/i, ''));
+  const filenameBase = `${baseName}-${stamp.getTime()}`;
+
+  const entry = {
+    id: `${stamp.getTime()}-${Math.random().toString(36).slice(2, 8)}`,
+    label: labelSource,
+    timestamp: stamp.toLocaleString(),
+    cantPort: `${state.cantPort.toFixed(1)}°`,
+    cantStbd: `${state.cantStbd.toFixed(1)}°`,
+    sinkPort: ui.outSinkPort.textContent,
+    sinkStbd: ui.outSinkStbd.textContent,
+    filenameBase,
+    dataURL
+  };
+
+  matchLog.unshift(entry);
+  persistMatchLog();
+  renderMatchLog();
+}
+
+function downloadAllMatches() {
+  if (!matchLog.length) return;
+
+  matchLog.forEach((entry, i) => {
+    setTimeout(() => downloadMatchEntry(entry), i * 250);
+  });
+
+  const header = ['label', 'timestamp', 'cant_port', 'cant_stbd', 'sink_port', 'sink_stbd'];
+  const rows = matchLog.map((e) => [e.label, e.timestamp, e.cantPort, e.cantStbd, e.sinkPort, e.sinkStbd]);
+  const csv = [header, ...rows]
+    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    .join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+
+  setTimeout(() => {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `photo-match-log-${Date.now()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }, matchLog.length * 250 + 200);
 }
