@@ -12,8 +12,10 @@ const ui = {
   scene: $('scene'),
   viewportBox: $('viewportBox'),
   photoLayer: $('photoLayer'),
+  photoImg: $('photoImg'),
   photoInput: $('photoInput'),
   photoFileName: $('photoFileName'),
+  resetPhotoBtn: $('resetPhotoBtn'),
   loading: $('loadingOverlay'),
   fatal: $('fatalError'),
   resetBtn: $('resetBtn'),
@@ -83,7 +85,15 @@ const state = {
   camAthwart: defaults.camAthwart,
   camPan: defaults.camPan,
   camTilt: defaults.camTilt,
-  camFov: defaults.camFov
+  camFov: defaults.camFov,
+
+  // Reference-photo pan/zoom, set by dragging/scrolling the photo directly
+  // in the viewer (onboard mode only). Independent of the Reset button —
+  // resetting the boat/camera calibration shouldn't throw away photo
+  // alignment work.
+  photoOffsetX: 0,
+  photoOffsetY: 0,
+  photoScale: 1
 };
 
 // Onboard rig base position, in boat-local coordinates (X = fore/aft,
@@ -115,6 +125,7 @@ let portFoilMarker, stbdFoilMarker;
 let waterPlane, waterGrid;
 let modelReady = false;
 let modelMeshes = [];
+let photoLoaded = false;
 
 const tempV = new THREE.Vector3();
 
@@ -170,9 +181,9 @@ function createWaterGuide() {
   const geometry = new THREE.PlaneGeometry(60, 46, 1, 1);
   geometry.rotateX(-Math.PI / 2);
   const material = new THREE.MeshBasicMaterial({
-    color: 0x12384c,
+    color: 0x1c5876,
     transparent: true,
-    opacity: 0.16,
+    opacity: 0.26,
     side: THREE.DoubleSide,
     depthWrite: false
   });
@@ -180,10 +191,14 @@ function createWaterGuide() {
   waterPlane.position.set(6, 0, 0);
   scene.add(waterPlane);
 
-  waterGrid = new THREE.GridHelper(60, 40, 0x69fff2, 0x2c5468);
-  waterGrid.position.set(6, 0.004, 0);
+  // Brighter, higher-contrast grid than the water plane alone so the sea
+  // level is easy to read against a loaded reference photo, not just a
+  // faint tint. Center lines (boat's own X/Z axes through the origin) are
+  // brighter still so the waterline reference is unambiguous.
+  waterGrid = new THREE.GridHelper(60, 30, 0x9dfff2, 0x4a90b8);
+  waterGrid.position.set(6, 0.006, 0);
   waterGrid.material.transparent = true;
-  waterGrid.material.opacity = 0.22;
+  waterGrid.material.opacity = 0.5;
   scene.add(waterGrid);
 }
 
@@ -301,6 +316,7 @@ function bindUI() {
       ui.externalPresets.hidden = state.cameraMode === 'onboard';
       ui.onboardControls.hidden = state.cameraMode !== 'onboard';
       controls.enabled = state.cameraMode === 'external';
+      ui.viewportBox.classList.toggle('photo-draggable', state.cameraMode === 'onboard');
       ui.cameraHint.textContent = state.cameraMode === 'onboard'
         ? 'Onboard mode keeps the camera bolted to the hull — it follows heel, trim and ride height automatically. Use the sliders to nudge the mount position and aim.'
         : 'Drag to orbit, scroll to zoom. External mode is a free camera in space — for a chase-boat, drone or TV shot rather than a boat-mounted one.';
@@ -327,6 +343,8 @@ function bindUI() {
   ui.photoInput.addEventListener('change', onPhotoSelected);
 
   ui.resetBtn.addEventListener('click', resetAll);
+
+  bindPhotoInteraction();
 }
 
 function bindRange(input, output, setter) {
@@ -345,14 +363,83 @@ function onPhotoSelected(e) {
   reader.onload = () => {
     const img = new Image();
     img.onload = () => {
-      ui.photoLayer.style.backgroundImage = `url("${reader.result}")`;
+      ui.photoImg.src = reader.result;
       ui.viewportBox.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
       ui.photoFileName.textContent = file.name;
+
+      // A freshly loaded photo starts centred and unzoomed; the reference
+      // photo's own aspect ratio already matches the viewport, so this is
+      // an exact fit before the user drags/scrolls to fine-tune it.
+      state.photoOffsetX = 0;
+      state.photoOffsetY = 0;
+      state.photoScale = 1;
+      applyPhotoTransform();
+
+      photoLoaded = true;
+      ui.photoLayer.classList.add('has-photo');
+      ui.viewportBox.classList.add('has-photo');
       onResize();
     };
     img.src = reader.result;
   };
   reader.readAsDataURL(file);
+}
+
+function applyPhotoTransform() {
+  ui.photoImg.style.transform =
+    `translate(${state.photoOffsetX}px, ${state.photoOffsetY}px) scale(${state.photoScale})`;
+}
+
+function resetPhotoTransform() {
+  state.photoOffsetX = 0;
+  state.photoOffsetY = 0;
+  state.photoScale = 1;
+  applyPhotoTransform();
+}
+
+// Drag directly on the viewer to reposition the reference photo, scroll to
+// zoom it. Only active in onboard mode (external mode's OrbitControls owns
+// drag/scroll there instead) and only once a photo is loaded. Listening on
+// viewportBox rather than the photo layer itself means this still works
+// even though the WebGL canvas sits on top and receives the raw event
+// first — mousedown/wheel bubble up to this ancestor either way.
+let photoDrag = null;
+
+function bindPhotoInteraction() {
+  ui.viewportBox.addEventListener('mousedown', (e) => {
+    if (state.cameraMode !== 'onboard' || !photoLoaded) return;
+    photoDrag = {
+      startX: e.clientX,
+      startY: e.clientY,
+      baseX: state.photoOffsetX,
+      baseY: state.photoOffsetY
+    };
+    ui.viewportBox.classList.add('dragging');
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (!photoDrag) return;
+    state.photoOffsetX = photoDrag.baseX + (e.clientX - photoDrag.startX);
+    state.photoOffsetY = photoDrag.baseY + (e.clientY - photoDrag.startY);
+    applyPhotoTransform();
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!photoDrag) return;
+    photoDrag = null;
+    ui.viewportBox.classList.remove('dragging');
+  });
+
+  ui.viewportBox.addEventListener('wheel', (e) => {
+    if (state.cameraMode !== 'onboard' || !photoLoaded) return;
+    e.preventDefault();
+    const factor = e.deltaY > 0 ? 0.92 : 1.08;
+    state.photoScale = Math.min(4, Math.max(0.4, state.photoScale * factor));
+    applyPhotoTransform();
+  }, { passive: false });
+
+  ui.resetPhotoBtn.addEventListener('click', resetPhotoTransform);
 }
 
 function applyOnboardPreset(name) {
