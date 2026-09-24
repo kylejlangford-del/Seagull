@@ -199,13 +199,10 @@ function initScene() {
   // hull. The bow-mounted onboard camera looks almost straight down the
   // boat's own forward axis, so it mostly sees the hull's forward and
   // underside surfaces — exactly the faces the overhead key light barely
-  // reaches. Without this they render as a near-black silhouette.
-  const nose = new THREE.DirectionalLight(0xdfeeff, 15);
+  // reaches.
+  const nose = new THREE.DirectionalLight(0xdfeeff, 2.4);
   nose.position.set(20, 3, 2);
   scene.add(nose);
-
-  const diagAmbient = new THREE.AmbientLight(0xffffff, 5.0);
-  scene.add(diagAmbient);
 
   createWaterGuide();
 
@@ -251,7 +248,6 @@ function loadModel() {
       setupCantAssemblies();
 
       modelReady = true;
-      window.__diag = { modelMeshes, camera, boatRoot, THREE };
       applyCameraMode();
       updateGeometry();
       ui.loading.classList.add('hidden');
@@ -277,6 +273,21 @@ function tuneMaterials(root) {
       mat.transparent = true;
       if ('metalness' in mat) mat.metalness = Math.min(mat.metalness ?? 0, 0.28);
       if ('roughness' in mat) mat.roughness = Math.max(mat.roughness ?? 0.45, 0.22);
+
+      // Several hull/rudder surfaces in the GLTF are baked pure black
+      // (0x000000). A perfectly black diffuse colour reflects none of the
+      // scene lighting no matter how bright it is — that's why the bow
+      // view looked like a flat silhouette regardless of light intensity.
+      // Lift very dark colours to a minimum lightness so they still read
+      // as a dark hull while actually responding to the lights above.
+      if (mat.color) {
+        const hsl = { h: 0, s: 0, l: 0 };
+        mat.color.getHSL(hsl);
+        if (hsl.l < 0.16) {
+          mat.color.setHSL(hsl.h, hsl.s, 0.16);
+        }
+      }
+
       mat.needsUpdate = true;
     }
   });
