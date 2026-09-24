@@ -245,11 +245,27 @@ input[type="range"]::-moz-range-thumb { width: 15px; height: 15px; border: 2px s
 .photo-layer {
   position: absolute;
   inset: 0;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
+  overflow: hidden;
   background-color: #030a12;
 }
+
+.photo-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: 50% 50%;
+  pointer-events: none;
+  user-select: none;
+  display: none;
+}
+
+.photo-layer.has-photo .photo-img { display: block; }
+.viewport-box.photo-draggable.has-photo { cursor: grab; }
+.viewport-box.photo-draggable.has-photo.dragging { cursor: grabbing; }
+
+#resetPhotoBtn { margin-top: 8px; margin-bottom: 18px; }
 
 #scene { position: absolute; inset: 0; }
 #scene canvas { display: block; width: 100%; height: 100%; outline: none; }
