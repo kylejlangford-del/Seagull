@@ -87,11 +87,12 @@ const state = {
 };
 
 // Onboard rig base position, in boat-local coordinates (X = fore/aft,
-// bow at larger X; Y = up; Z = athwartships, starboard positive). Estimated
-// from the hull's own bounding box (bow tip near X=11.8) to sit right out at
-// the bow, elevated above deck level so it clears the bow structure/tramp,
-// matching a bolted-on bow cam mounted as far forward as the boat allows.
-const ONBOARD_BASE = new THREE.Vector3(11.1, 1.6, 0);
+// bow at larger X; Y = up; Z = athwartships, starboard positive). Derived
+// from the hull's bounding box (bow tip near X=11.8, deck near Y=1.0 at the
+// bow) plus a real-world estimate of the mount: ~1.05m out beyond the bow
+// (on the bowsprit) and ~0.40m above the deck there — matching a bolted-on
+// bow cam mounted as far forward as the boat allows.
+const ONBOARD_BASE = new THREE.Vector3(12.85, 1.4, 0);
 
 const ONBOARD_PRESETS = {
   'bow-leeward': { along: 0, height: 0, athwart: 0, pan: -35, tilt: -15 },
