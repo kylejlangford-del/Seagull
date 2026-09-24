@@ -200,7 +200,7 @@ function initScene() {
   // boat's own forward axis, so it mostly sees the hull's forward and
   // underside surfaces — exactly the faces the overhead key light barely
   // reaches. Without this they render as a near-black silhouette.
-  const nose = new THREE.DirectionalLight(0xdfeeff, 3.2);
+  const nose = new THREE.DirectionalLight(0xdfeeff, 15);
   nose.position.set(20, 3, 2);
   scene.add(nose);
 
