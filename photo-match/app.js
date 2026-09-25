@@ -63,17 +63,6 @@ const ui = {
   cameraHint: $('cameraHint'),
 
   calibBlockHint: $('calibBlockHint'),
-  calibModeSpan: $('calibModeSpan'),
-  calibModeSingle: $('calibModeSingle'),
-  calibModeFull: $('calibModeFull'),
-  calibSideRow: $('calibSideRow'),
-  calibSidePort: $('calibSidePort'),
-  calibSideStbd: $('calibSideStbd'),
-  calibPinRow: $('calibPinRow'),
-  calibMarkPort: $('calibMarkPort'),
-  calibMarkStbd: $('calibMarkStbd'),
-  calibMarkPortLabel: $('calibMarkPortLabel'),
-  calibMarkStbdLabel: $('calibMarkStbdLabel'),
   calibFullGrid: $('calibFullGrid'),
   calibMarkPortKnuckle: $('calibMarkPortKnuckle'),
   calibMarkPortTip: $('calibMarkPortTip'),
@@ -152,29 +141,11 @@ const state = {
   // false on a camera-mode switch (see setCameraMode()).
   photoMoveMode: false,
 
-  // Foil-span calibration: two click-placed pins on the reference photo,
-  // each stored as a fraction of the photo image's own displayed rect (so
-  // they track it through drag/zoom, same trick as the photo transform
-  // itself), plus which pin (if any) the next viewport click will place.
-  //
-  // calibMode 'span' is the original mode: both foils are visible in the
-  // photo, and the two pins are the port tip and the starboard tip. Mode
-  // 'single' is for a photo showing only one foil (e.g. cropped, or the
-  // other side out of frame): both pins are placed on that SAME foil, one
-  // at the knuckle (where the strut bends into the horizontal tip section
-  // -- the existing port/stbd foil marker already sits there) and one at
-  // the true outer tip. calibSingleSide picks which foil is in the photo.
-  calibPortPx: null,
-  calibStbdPx: null,
-  calibPicking: null,
-  calibMode: 'span',
-  calibSingleSide: 'port',
-
-  // 'full' mode: instead of scaling/repositioning the photo to a fixed
-  // camera, solve for the camera itself (position, pan/tilt, and FOV) from
-  // however many of these four foil landmarks are visible and marked --
-  // works on any photo, including third-party broadcast shots where the
-  // camera's real mount and lens are unknown. See solveCameraFromMarks().
+  // "Solve camera" pins: up to four click-placed foil landmarks on the
+  // reference photo, each stored as a fraction of the photo image's own
+  // displayed rect (so they track it through drag/zoom, same trick as the
+  // photo transform itself). Solves for the onboard camera's own position,
+  // aim and field of view to match the photo -- see solveCameraFromMarks().
   calibFullMarks: { portKnuckle: null, portTip: null, stbdKnuckle: null, stbdTip: null },
   calibFullPicking: null
 };
@@ -431,8 +402,9 @@ function setupCantAssemblies() {
   stbdCantGroup.add(stbdFoilMarker);
 
   // True outer tip of each foil (the actual end of the mesh, further out
-  // than the knuckle markers above), for single-foil calibration -- see
-  // state.calibMode. Derived from the GLTF's own tip-region vertices.
+  // than the knuckle markers above), used by the "Solve camera" landmarks
+  // and the water-crossing guide. Derived from the GLTF's own tip-region
+  // vertices.
   portFoilTrueTip = new THREE.Object3D();
   portFoilTrueTip.position.set(
     6.465 - 6.911853,
@@ -575,29 +547,13 @@ function bindUI() {
   bindRange(ui.camPan, ui.camPanValue, (v) => { state.camPan = v; return `${signed(v, 1)}°`; });
   bindRange(ui.camTilt, ui.camTiltValue, (v) => { state.camTilt = v; return `${signed(v, 1)}°`; });
 
-  ui.calibMarkPort.addEventListener('click', () => startCalibPick('port'));
-  ui.calibMarkStbd.addEventListener('click', () => startCalibPick('stbd'));
-  ui.calibSolveBtn.addEventListener('click', () => {
-    if (state.calibMode === 'full') solveCameraFromMarks();
-    else solveCalibration();
-  });
+  ui.calibSolveBtn.addEventListener('click', solveCameraFromMarks);
   ui.calibClearBtn.addEventListener('click', clearCalibPins);
 
-  if (ui.calibModeSpan && ui.calibModeSingle) {
-    ui.calibModeSpan.addEventListener('click', () => setCalibMode('span'));
-    ui.calibModeSingle.addEventListener('click', () => setCalibMode('single'));
-    ui.calibSidePort.addEventListener('click', () => setCalibSingleSide('port'));
-    ui.calibSideStbd.addEventListener('click', () => setCalibSingleSide('stbd'));
-    updateCalibModeUI();
-  }
-
-  if (ui.calibModeFull) {
-    ui.calibModeFull.addEventListener('click', () => setCalibMode('full'));
-    ui.calibMarkPortKnuckle.addEventListener('click', () => startFullMarkPick('portKnuckle'));
-    ui.calibMarkPortTip.addEventListener('click', () => startFullMarkPick('portTip'));
-    ui.calibMarkStbdKnuckle.addEventListener('click', () => startFullMarkPick('stbdKnuckle'));
-    ui.calibMarkStbdTip.addEventListener('click', () => startFullMarkPick('stbdTip'));
-  }
+  ui.calibMarkPortKnuckle.addEventListener('click', () => startFullMarkPick('portKnuckle'));
+  ui.calibMarkPortTip.addEventListener('click', () => startFullMarkPick('portTip'));
+  ui.calibMarkStbdKnuckle.addEventListener('click', () => startFullMarkPick('stbdKnuckle'));
+  ui.calibMarkStbdTip.addEventListener('click', () => startFullMarkPick('stbdTip'));
 
   ui.camFov.addEventListener('input', () => {
     state.camFov = Number(ui.camFov.value);
@@ -725,12 +681,11 @@ function bindPhotoInteraction() {
   ui.viewportBox.addEventListener('mousedown', (e) => {
     if (!isPhotoDragEnabled() || !photoLoaded) return;
 
-    if (state.calibPicking || state.calibFullPicking) {
+    if (state.calibFullPicking) {
       const photoRect = ui.photoImg.getBoundingClientRect();
       const fx = (e.clientX - photoRect.left) / photoRect.width;
       const fy = (e.clientY - photoRect.top) / photoRect.height;
-      if (state.calibFullPicking) placeFullMark(state.calibFullPicking, fx, fy);
-      else placeCalibPin(state.calibPicking, fx, fy);
+      placeFullMark(state.calibFullPicking, fx, fy);
       e.preventDefault();
       return;
     }
@@ -767,7 +722,7 @@ function bindPhotoInteraction() {
   }, { passive: false });
 
   ui.viewportBox.addEventListener('mousemove', (e) => {
-    if ((!state.calibPicking && !state.calibFullPicking) || !photoLoaded) return;
+    if (!state.calibFullPicking || !photoLoaded) return;
     const photoRect = ui.photoImg.getBoundingClientRect();
     const fx = (e.clientX - photoRect.left) / photoRect.width;
     const fy = (e.clientY - photoRect.top) / photoRect.height;
@@ -775,7 +730,7 @@ function bindPhotoInteraction() {
   });
 
   ui.viewportBox.addEventListener('mouseleave', () => {
-    if (state.calibPicking || state.calibFullPicking) hideCalibLoupe();
+    if (state.calibFullPicking) hideCalibLoupe();
   });
 
   ui.resetPhotoBtn.addEventListener('click', resetPhotoTransform);
@@ -798,45 +753,18 @@ function bindPhotoInteraction() {
 }
 
 // ---------------------------------------------------------------------
-// Foil-span calibration: mark the port and starboard foil tips on the
-// loaded photo, then solve for the onboard camera's fore-aft mount
-// position (camAlong) that makes the model's own foil-tip markers
-// project to the same on-screen span. FOV and the other mount offsets
-// stay fixed -- 100 degrees is the real lens spec, so fore-aft position
-// is the one unknown this tool solves for.
+// "Solve camera" pin picking: click-to-place foil landmarks on the loaded
+// photo, then solveCameraFromMarks() (further below) fits the onboard
+// camera's own position, aim and field of view to match them.
 // ---------------------------------------------------------------------
 
-// Text for what pin "port" and pin "stbd" mean right now -- in 'span' mode
-// they're literally the port/starboard foil tips; in 'single' mode both
-// pins are on the one visible foil, so they're relabelled knuckle/outer tip.
-function calibPinLabel(which) {
-  if (state.calibMode === 'single') {
-    return which === 'port' ? 'knuckle' : 'outer tip';
-  }
-  return which === 'port' ? 'port foil tip' : 'starboard foil tip';
-}
-
-function startCalibPick(which) {
-  if (state.cameraMode !== 'onboard' || !photoLoaded) return;
-  state.calibPicking = which;
-  ui.calibMarkPort.classList.toggle('active', which === 'port');
-  ui.calibMarkStbd.classList.toggle('active', which === 'stbd');
-  ui.viewportBox.classList.add('calib-picking');
-  ui.calibHint.textContent = `Click the ${calibPinLabel(which)} on the photo.`;
-}
-
 function cancelCalibPicking() {
-  if (!state.calibPicking && !state.calibFullPicking) return;
-  state.calibPicking = null;
+  if (!state.calibFullPicking) return;
   state.calibFullPicking = null;
-  ui.calibMarkPort.classList.remove('active');
-  ui.calibMarkStbd.classList.remove('active');
-  if (ui.calibMarkPortKnuckle) {
-    ui.calibMarkPortKnuckle.classList.remove('active');
-    ui.calibMarkPortTip.classList.remove('active');
-    ui.calibMarkStbdKnuckle.classList.remove('active');
-    ui.calibMarkStbdTip.classList.remove('active');
-  }
+  ui.calibMarkPortKnuckle.classList.remove('active');
+  ui.calibMarkPortTip.classList.remove('active');
+  ui.calibMarkStbdKnuckle.classList.remove('active');
+  ui.calibMarkStbdTip.classList.remove('active');
   ui.viewportBox.classList.remove('calib-picking');
   hideCalibLoupe();
 }
@@ -883,114 +811,24 @@ function hideCalibLoupe() {
   if (ui.calibLoupe) ui.calibLoupe.classList.remove('is-visible');
 }
 
-function placeCalibPin(which, fx, fy) {
-  const px = { fx: Math.min(1, Math.max(0, fx)), fy: Math.min(1, Math.max(0, fy)) };
-  if (which === 'port') state.calibPortPx = px; else state.calibStbdPx = px;
-
-  const bothPlaced = state.calibPortPx && state.calibStbdPx;
-  ui.calibClearBtn.disabled = !(state.calibPortPx || state.calibStbdPx);
-  ui.calibSolveBtn.disabled = !bothPlaced;
-
-  if (bothPlaced) {
-    // Both tips down -- stop picking and let the solve button take over.
-    cancelCalibPicking();
-    ui.calibHint.textContent = state.calibMode === 'single'
-      ? 'Knuckle and outer tip marked. Click "Scale photo to match" to solve.'
-      : 'Both tips marked. Click "Scale photo to match" to solve.';
-  } else {
-    // Chain straight into picking the other tip so the second click on the
-    // photo places it too, instead of leaving picking mode off and letting
-    // that click fall through to the photo-drag handler (which looked like
-    // "only one pin ever appears").
-    startCalibPick(which === 'port' ? 'stbd' : 'port');
-  }
-
-  renderCalibPins();
-}
-
 function clearCalibPins() {
-  state.calibPortPx = null;
-  state.calibStbdPx = null;
   state.calibFullMarks = { portKnuckle: null, portTip: null, stbdKnuckle: null, stbdTip: null };
   cancelCalibPicking();
   ui.calibClearBtn.disabled = true;
   ui.calibSolveBtn.disabled = true;
-  ui.calibHint.textContent = calibModeHintText();
+  ui.calibHint.textContent = 'Click a mark button below, then click that point on the photo. Mark 2–4 of the foil knuckle/tip points — more points, spread across both foils, give a tighter camera fit. This solves for the camera’s own position, aim and field of view to match the photo.';
   renderCalibPins();
 }
 
-// The default (no pins placed yet) hint text for whichever calibration mode
-// is currently active -- factored out so clearCalibPins() and mode switches
-// both stay in sync without repeating the three strings.
-function calibModeHintText() {
-  if (state.calibMode === 'full') {
-    return 'Click a mark button below, then click that point on the photo. Mark 2–4 of the foil knuckle/tip points — more points, spread across both foils, give a tighter camera fit. This solves for the camera’s own position, aim and field of view to match the photo, instead of scaling the photo to a fixed camera.';
-  }
-  if (state.calibMode === 'single') {
-    return 'Click a "Mark" button, then click that point on the photo. With both the knuckle and the outer tip marked, this scales and repositions the photo so that span lands exactly on the model\'s current foil.';
-  }
-  return 'Click a "Mark" button, then click that foil tip on the photo. With both pins placed, this scales and repositions the photo so its marked span lands exactly on the model\'s current foil tips.';
-}
-
-// Switches between calibrating off both foil tips (photo shows the whole
-// span) and calibrating off two points on a single foil (photo shows only
-// one foil, e.g. cropped or the other side out of frame). Existing pins are
-// cleared on a switch since they'd otherwise be reinterpreted against the
-// wrong reference points.
-function setCalibMode(mode) {
-  if (state.calibMode === mode) return;
-  state.calibMode = mode;
-  clearCalibPins();
-  updateCalibModeUI();
-}
-
-function setCalibSingleSide(side) {
-  if (state.calibSingleSide === side) return;
-  state.calibSingleSide = side;
-  if (state.calibMode === 'single') clearCalibPins();
-  updateCalibModeUI();
-}
-
-function updateCalibModeUI() {
-  const single = state.calibMode === 'single';
-  const full = state.calibMode === 'full';
-  ui.calibModeSpan.classList.toggle('active', !single && !full);
-  ui.calibModeSingle.classList.toggle('active', single);
-  if (ui.calibModeFull) ui.calibModeFull.classList.toggle('active', full);
-
-  ui.calibSideRow.classList.toggle('is-hidden', !single);
-  ui.calibSidePort.classList.toggle('active', state.calibSingleSide === 'port');
-  ui.calibSideStbd.classList.toggle('active', state.calibSingleSide === 'stbd');
-
-  if (ui.calibPinRow) ui.calibPinRow.classList.toggle('is-hidden', full);
-  if (ui.calibFullGrid) ui.calibFullGrid.classList.toggle('is-hidden', !full);
-
-  if (single) {
-    const side = state.calibSingleSide === 'port' ? 'port' : 'starboard';
-    ui.calibMarkPortLabel.textContent = 'Mark knuckle';
-    ui.calibMarkStbdLabel.textContent = 'Mark outer tip';
-    ui.calibBlockHint.textContent = `Only the ${side} foil is visible -- mark its knuckle (where the strut bends into the tip) and its outer tip to scale and anchor the photo.`;
-  } else if (full) {
-    ui.calibBlockHint.textContent = 'Works on any photo, even one where the camera’s real position and lens are unknown (e.g. a broadcast shot) — mark 2–4 foil points and this solves for the camera itself.';
-  } else {
-    ui.calibMarkPortLabel.textContent = 'Mark port tip';
-    ui.calibMarkStbdLabel.textContent = 'Mark stbd tip';
-    ui.calibBlockHint.textContent = 'Mark both foil tips on the photo to scale and anchor it to the model.';
-  }
-
-  ui.calibSolveBtn.textContent = full ? 'Solve camera' : 'Scale photo to match';
-}
-
-// Re-anchors the two pin dots to their stored fraction of the photo
+// Re-anchors the pin dots to their stored fraction of the photo
 // image's own on-screen rect, so they stay glued to the photo through
 // drag/zoom and window resizes.
 function renderCalibPins() {
   if (!ui.calibPinLayer) return;
   ui.calibPinLayer.innerHTML = '';
 
-  const hasSpanPins = state.calibPortPx || state.calibStbdPx;
   const hasFullMarks = FULL_MARK_ORDER.some((k) => state.calibFullMarks[k]);
-  if (!hasSpanPins && !hasFullMarks) return;
+  if (!hasFullMarks) return;
 
   const boxRect = ui.viewportBox.getBoundingClientRect();
   const photoRect = ui.photoImg.getBoundingClientRect();
@@ -1004,8 +842,6 @@ function renderCalibPins() {
     el.style.top = `${(photoRect.top - boxRect.top) + px.fy * photoRect.height}px`;
     ui.calibPinLayer.appendChild(el);
   };
-  addPin(state.calibPortPx, 'port');
-  addPin(state.calibStbdPx, 'stbd');
   addPin(state.calibFullMarks.portKnuckle, 'port-knuckle');
   addPin(state.calibFullMarks.portTip, 'port-tip');
   addPin(state.calibFullMarks.stbdKnuckle, 'stbd-knuckle');
@@ -1023,104 +859,20 @@ function calibPinToBoxPx(px, boxRect, photoRect) {
   };
 }
 
-function solveCalibration() {
-  if (!modelReady || !state.calibPortPx || !state.calibStbdPx) return;
-
-  const boxRect = ui.viewportBox.getBoundingClientRect();
-  const boxWidth = boxRect.width;
-  const boxHeight = boxRect.height;
-  const photoRect = ui.photoImg.getBoundingClientRect();
-  const portPx = calibPinToBoxPx(state.calibPortPx, boxRect, photoRect);
-  const stbdPx = calibPinToBoxPx(state.calibStbdPx, boxRect, photoRect);
-  const photoSpan = Math.hypot(stbdPx.x - portPx.x, stbdPx.y - portPx.y);
-  if (photoSpan < 1) return;
-
-  // The model's own foil-tip markers, projected through the onboard camera
-  // exactly as it's currently set (fore-aft, height, pan, tilt) -- no
-  // camera search here. We're scaling and repositioning the PHOTO to match
-  // the model's current rendering, not moving the camera to match the
-  // photo, so the camera stays exactly where the sliders above put it.
-  boatRoot.updateMatrixWorld(true);
-  camera.updateMatrixWorld(true);
-  const portWorld = new THREE.Vector3();
-  const stbdWorld = new THREE.Vector3();
-  if (state.calibMode === 'single') {
-    // Both pins are on the one visible foil: pin "port" = knuckle, pin
-    // "stbd" = outer tip (see calibPinLabel), both taken from whichever
-    // side's foil is actually in the photo.
-    const knuckleMarker = state.calibSingleSide === 'port' ? portFoilMarker : stbdFoilMarker;
-    const tipMarker = state.calibSingleSide === 'port' ? portFoilTrueTip : stbdFoilTrueTip;
-    knuckleMarker.getWorldPosition(portWorld);
-    tipMarker.getWorldPosition(stbdWorld);
-  } else {
-    portFoilMarker.getWorldPosition(portWorld);
-    stbdFoilMarker.getWorldPosition(stbdWorld);
-  }
-
-  const projectToBoxPx = (worldPos) => {
-    const p = worldPos.clone().project(camera);
-    return {
-      x: (p.x * 0.5 + 0.5) * boxWidth,
-      y: (1 - (p.y * 0.5 + 0.5)) * boxHeight
-    };
-  };
-  const modelPortPx = projectToBoxPx(portWorld);
-  const modelStbdPx = projectToBoxPx(stbdWorld);
-  const modelSpan = Math.hypot(modelStbdPx.x - modelPortPx.x, modelStbdPx.y - modelPortPx.y);
-  const modelMid = {
-    x: (modelPortPx.x + modelStbdPx.x) / 2,
-    y: (modelPortPx.y + modelStbdPx.y) / 2
-  };
-
-  // Scale the photo so its marked span exactly matches the model's current
-  // foil-tip span, then reposition it so the marked midpoint lands exactly
-  // on the model's foil-tip midpoint -- a similarity fit (uniform scale +
-  // translate) through those two reference points, the same idea as
-  // anchoring a photo overlay to two known points.
-  const oldScale = state.photoScale;
-  const newScale = Math.min(4, Math.max(0.4, oldScale * (modelSpan / photoSpan)));
-
-  // fx/fy fractions are invariant under the photo's own uniform scale +
-  // translate transform, so this recovers the marked midpoint's position in
-  // the photo's untransformed local box -- i.e. viewport-box coordinates
-  // before any pan/zoom is applied. The transform is
-  // translate(ox, oy) scale(s) about the box's own centre (transform-origin
-  // 50% 50%), which places a local point p at
-  // s * (p - centre) + (ox, oy) + centre -- solved below for (ox, oy) so
-  // that point lands on the model's foil-tip midpoint.
-  const localMidX = ((state.calibPortPx.fx + state.calibStbdPx.fx) / 2) * boxWidth;
-  const localMidY = ((state.calibPortPx.fy + state.calibStbdPx.fy) / 2) * boxHeight;
-
-  state.photoScale = newScale;
-  state.photoOffsetX = modelMid.x - newScale * (localMidX - boxWidth / 2) - boxWidth / 2;
-  state.photoOffsetY = modelMid.y - newScale * (localMidY - boxHeight / 2) - boxHeight / 2;
-  applyPhotoTransform();
-
-  const finalSpan = photoSpan * (newScale / oldScale);
-  const clamped = Math.abs(finalSpan - modelSpan) > 1;
-  ui.calibHint.textContent = clamped
-    ? `Scaled photo to ${newScale.toFixed(2)}× (hit the zoom limit -- span now ${finalSpan.toFixed(0)}px vs model's ${modelSpan.toFixed(0)}px). Adjust cant/heel/trim or camera and solve again.`
-    : `Scaled photo to ${newScale.toFixed(2)}× and anchored it to the model's foil tips (span ${finalSpan.toFixed(0)}px).`;
-}
-
 // ---------------------------------------------------------------------
-// "Solve camera" mode: instead of scaling the photo to a camera whose
-// position/lens is already known (the two modes above), mark 2-4
+// "Solve camera" mode: mark 2-4
 // recognizable foil landmarks and solve for the onboard camera's own
 // position, pan, tilt AND field of view that best reproduces those points
 // -- works on any photo, including third-party broadcast shots where the
 // real camera mount and lens are unknown. Uses a Levenberg-Marquardt
 // nonlinear least-squares fit (numeric Jacobian) against pixel
 // reprojection error, reusing the exact same onboard-camera rig and
-// projection math the sliders/solveCalibration() already use.
+// projection math the sliders already use.
 // ---------------------------------------------------------------------
 
 function startFullMarkPick(key) {
   if (state.cameraMode !== 'onboard' || !photoLoaded) return;
   state.calibFullPicking = key;
-  state.calibPicking = null;
-  ui.calibMarkPort.classList.remove('active');
-  ui.calibMarkStbd.classList.remove('active');
   ui.calibMarkPortKnuckle.classList.toggle('active', key === 'portKnuckle');
   ui.calibMarkPortTip.classList.toggle('active', key === 'portTip');
   ui.calibMarkStbdKnuckle.classList.toggle('active', key === 'stbdKnuckle');
