@@ -64,6 +64,7 @@ const ui = {
   calibClearBtn: $('calibClearBtn'),
   calibHint: $('calibHint'),
   calibPinLayer: $('calibPinLayer'),
+  calibLoupe: $('calibLoupe'),
 
   saveMatchBtn: $('saveMatchBtn'),
   matchLogList: $('matchLogList'),
@@ -524,6 +525,18 @@ function bindPhotoInteraction() {
     applyPhotoTransform();
   }, { passive: false });
 
+  ui.viewportBox.addEventListener('mousemove', (e) => {
+    if (!state.calibPicking || !photoLoaded) return;
+    const photoRect = ui.photoImg.getBoundingClientRect();
+    const fx = (e.clientX - photoRect.left) / photoRect.width;
+    const fy = (e.clientY - photoRect.top) / photoRect.height;
+    positionCalibLoupe(e.clientX, e.clientY, fx, fy);
+  });
+
+  ui.viewportBox.addEventListener('mouseleave', () => {
+    if (state.calibPicking) hideCalibLoupe();
+  });
+
   ui.resetPhotoBtn.addEventListener('click', resetPhotoTransform);
 }
 
@@ -551,6 +564,49 @@ function cancelCalibPicking() {
   ui.calibMarkPort.classList.remove('active');
   ui.calibMarkStbd.classList.remove('active');
   ui.viewportBox.classList.remove('calib-picking');
+  hideCalibLoupe();
+}
+
+// Magnifying loupe -- a small zoomed-in crop of the photo, centred on the
+// cursor's current photo-fraction position, shown while a pin is being
+// placed so the click can land on the exact pixel. Same pattern as the
+// mast-calibration loupe on the RC44 site's Sail Shots tool.
+function positionCalibLoupe(clientX, clientY, fx, fy) {
+  if (!ui.calibLoupe || !ui.photoImg.naturalWidth) return;
+  const boxRect = ui.viewportBox.getBoundingClientRect();
+  let lx = clientX - boxRect.left + 20;
+  let ly = clientY - boxRect.top - 170;
+  if (ly < 0) ly = clientY - boxRect.top + 20;
+  if (lx + 150 > boxRect.width) lx = clientX - boxRect.left - 170;
+  ui.calibLoupe.style.left = `${lx}px`;
+  ui.calibLoupe.style.top = `${ly}px`;
+  ui.calibLoupe.classList.add('is-visible');
+
+  const lctx = ui.calibLoupe.getContext('2d');
+  lctx.clearRect(0, 0, 150, 150);
+
+  // fx/fy are fractions of the photo's own displayed (dragged/zoomed) box,
+  // the same coordinate space pin placement already uses. The viewport box
+  // is set to the photo's own aspect ratio on load, so object-fit: cover
+  // never crops it -- fx/fy map linearly onto the source bitmap regardless
+  // of the photo's current pan/zoom transform.
+  const zoom = 4;
+  const srcW = 150 / zoom, srcH = 150 / zoom;
+  const sx = fx * ui.photoImg.naturalWidth - srcW / 2;
+  const sy = fy * ui.photoImg.naturalHeight - srcH / 2;
+  lctx.imageSmoothingEnabled = false;
+  lctx.drawImage(ui.photoImg, sx, sy, srcW, srcH, 0, 0, 150, 150);
+
+  lctx.strokeStyle = 'rgba(255,255,255,.85)';
+  lctx.lineWidth = 1;
+  lctx.beginPath();
+  lctx.moveTo(75, 0); lctx.lineTo(75, 150);
+  lctx.moveTo(0, 75); lctx.lineTo(150, 75);
+  lctx.stroke();
+}
+
+function hideCalibLoupe() {
+  if (ui.calibLoupe) ui.calibLoupe.classList.remove('is-visible');
 }
 
 function placeCalibPin(which, fx, fy) {
