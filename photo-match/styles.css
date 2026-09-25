@@ -12,6 +12,7 @@
   --safe: #53e7b0;
   --warn: #ffcb6b;
   --danger: #ff6677;
+  --violet: #b98dfb;
 }
 
 * { box-sizing: border-box; }
@@ -337,6 +338,10 @@ input[type="range"]::-moz-range-thumb { width: 15px; height: 15px; border: 2px s
 }
 .calib-pin--port { background: var(--warn); }
 .calib-pin--stbd { background: var(--danger); }
+.calib-pin--port-knuckle { background: var(--warn); }
+.calib-pin--port-tip { background: var(--accent); }
+.calib-pin--stbd-knuckle { background: var(--danger); }
+.calib-pin--stbd-tip { background: var(--violet); }
 
 .viewport-box.calib-picking { cursor: crosshair; }
 
@@ -365,6 +370,18 @@ input[type="range"]::-moz-range-thumb { width: 15px; height: 15px; border: 2px s
 .pin-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 .pin-dot--port { background: var(--warn); }
 .pin-dot--stbd { background: var(--danger); }
+.pin-dot--port-knuckle { background: var(--warn); }
+.pin-dot--port-tip { background: var(--accent); }
+.pin-dot--stbd-knuckle { background: var(--danger); }
+.pin-dot--stbd-tip { background: var(--violet); }
+
+.calib-full-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.calib-full-grid .mini-button { width: 100%; }
 
 .mini-button--primary {
   color: #072026;
