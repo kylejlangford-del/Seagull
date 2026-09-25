@@ -243,6 +243,7 @@ let modelMeshes = [];
 let photoLoaded = false;
 
 const tempV = new THREE.Vector3();
+const tempV2 = new THREE.Vector3();
 
 initScene();
 bindUI();
@@ -449,36 +450,43 @@ function setupCantAssemblies() {
 }
 
 // A canted foil below 90 degrees rakes outward toward (or through) the
-// water in a way that's easy to misjudge in perspective -- the raked foil
-// line itself doesn't read as "vertical" to the eye, and a tip only a few
-// centimetres from the surface can look the same as one a metre clear.
-// For whichever foil is currently below 90 degrees, these guides draw an
-// unambiguous true-vertical drop line from the tip straight to the water
-// plane, plus a ring marking exactly where that line crosses it -- both
-// rendered on top of the hull (depthTest off) so they're never hidden
-// behind the model.
-function buildFoilWaterGuide() {
-  const group = new THREE.Group();
-  group.visible = false;
+// water in a way that's easy to misjudge in perspective. Two different
+// reference lines matter here, so each guide draws both:
+//  - the TIP line: the real foil rake, followed from the knuckle straight
+//    through the outer tip and on to the water plane -- i.e. where the
+//    physical foil itself actually meets the surface. Drawn in accent cyan.
+//  - the VERTICAL line: a true plumb line dropped straight down from the
+//    tip to the water plane. Because the raked foil line doesn't read as
+//    "vertical" to the eye in perspective, this gives an unambiguous
+//    vertical reference alongside it. Drawn in violet.
+// Both end in a ring marking exactly where they cross the water, and both
+// render on top of the hull (depthTest off) so they're never hidden behind
+// the model.
+const WATER_GUIDE_COLOR_TIP = 0x47e7db;
+const WATER_GUIDE_COLOR_TIP_NEAR = 0xffcb6b;
+const WATER_GUIDE_COLOR_VERTICAL = 0xb98dfb;
 
-  const lineGeom = new THREE.BufferGeometry();
-  lineGeom.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(6), 3));
-  const lineMat = new THREE.LineDashedMaterial({
-    color: 0x47e7db,
+function buildWaterGuideLine(color) {
+  const geom = new THREE.BufferGeometry();
+  geom.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(6), 3));
+  const mat = new THREE.LineDashedMaterial({
+    color,
     dashSize: 0.06,
     gapSize: 0.05,
     transparent: true,
     opacity: 0.92,
     depthTest: false
   });
-  const line = new THREE.Line(lineGeom, lineMat);
+  const line = new THREE.Line(geom, mat);
   line.renderOrder = 999;
-  group.add(line);
+  return line;
+}
 
+function buildWaterGuideRing(color) {
   const ringGeom = new THREE.RingGeometry(0.09, 0.16, 32);
   ringGeom.rotateX(-Math.PI / 2);
   const ringMat = new THREE.MeshBasicMaterial({
-    color: 0x47e7db,
+    color,
     transparent: true,
     opacity: 0.85,
     side: THREE.DoubleSide,
@@ -486,9 +494,20 @@ function buildFoilWaterGuide() {
   });
   const ring = new THREE.Mesh(ringGeom, ringMat);
   ring.renderOrder = 999;
-  group.add(ring);
+  return ring;
+}
 
-  return { group, line, ring };
+function buildFoilWaterGuide() {
+  const group = new THREE.Group();
+  group.visible = false;
+
+  const tipLine = buildWaterGuideLine(WATER_GUIDE_COLOR_TIP);
+  const tipRing = buildWaterGuideRing(WATER_GUIDE_COLOR_TIP);
+  const verticalLine = buildWaterGuideLine(WATER_GUIDE_COLOR_VERTICAL);
+  const verticalRing = buildWaterGuideRing(WATER_GUIDE_COLOR_VERTICAL);
+  group.add(tipLine, tipRing, verticalLine, verticalRing);
+
+  return { group, tipLine, tipRing, verticalLine, verticalRing };
 }
 
 function createFoilWaterGuides() {
@@ -498,36 +517,55 @@ function createFoilWaterGuides() {
   scene.add(stbdWaterGuide.group);
 }
 
-function updateSideWaterGuide(cantDeg, tipObj, guide) {
-  if (!guide || !tipObj) return;
+function setWaterGuideLine(line, from, to) {
+  const positions = line.geometry.attributes.position;
+  positions.setXYZ(0, from.x, from.y, from.z);
+  positions.setXYZ(1, to.x, to.y, to.z);
+  positions.needsUpdate = true;
+  line.computeLineDistances();
+}
+
+function updateSideWaterGuide(cantDeg, knuckleObj, tipObj, guide) {
+  if (!guide || !tipObj || !knuckleObj) return;
   if (cantDeg >= 90 || !ui.waterlineToggle.checked) {
     guide.group.visible = false;
     return;
   }
 
   tipObj.getWorldPosition(tempV);
-  const x = tempV.x, y = tempV.y, z = tempV.z;
-  const nearSurface = Math.abs(y) < 0.08;
-  const color = nearSurface ? 0xffcb6b : 0x47e7db;
+  knuckleObj.getWorldPosition(tempV2);
+  const tip = tempV.clone();
+  const knuckle = tempV2;
+
+  const nearSurface = Math.abs(tip.y) < 0.08;
+  const tipColor = nearSurface ? WATER_GUIDE_COLOR_TIP_NEAR : WATER_GUIDE_COLOR_TIP;
 
   guide.group.visible = true;
 
-  const positions = guide.line.geometry.attributes.position;
-  positions.setXYZ(0, x, y, z);
-  positions.setXYZ(1, x, 0, z);
-  positions.needsUpdate = true;
-  guide.line.computeLineDistances();
-  guide.line.material.color.setHex(color);
+  // Tip line: extend the real knuckle->tip rake line on to the water plane
+  // (t=1 is the tip itself; solving for y=0 gives where that same line, at
+  // that same rake, actually crosses the surface).
+  const dy = knuckle.y - tip.y;
+  const t = Math.abs(dy) > 1e-6 ? knuckle.y / dy : 1;
+  const tipCross = knuckle.clone().lerp(tip, t);
+  tipCross.y = 0;
+  setWaterGuideLine(guide.tipLine, tip, tipCross);
+  guide.tipLine.material.color.setHex(tipColor);
+  guide.tipRing.position.set(tipCross.x, 0.004, tipCross.z);
+  guide.tipRing.material.color.setHex(tipColor);
+  guide.tipRing.material.opacity = nearSurface ? 0.95 : 0.75;
 
-  guide.ring.position.set(x, 0.004, z);
-  guide.ring.material.color.setHex(color);
-  guide.ring.material.opacity = nearSurface ? 0.95 : 0.75;
+  // Vertical line: a true plumb line straight down from the tip, for an
+  // unambiguous "vertical" reference next to the raked tip line above.
+  const vertCross = new THREE.Vector3(tip.x, 0, tip.z);
+  setWaterGuideLine(guide.verticalLine, tip, vertCross);
+  guide.verticalRing.position.set(vertCross.x, 0.004, vertCross.z);
 }
 
 function updateFoilWaterGuides() {
   if (!modelReady) return;
-  updateSideWaterGuide(state.cantPort, portFoilTrueTip, portWaterGuide);
-  updateSideWaterGuide(state.cantStbd, stbdFoilTrueTip, stbdWaterGuide);
+  updateSideWaterGuide(state.cantPort, portFoilMarker, portFoilTrueTip, portWaterGuide);
+  updateSideWaterGuide(state.cantStbd, stbdFoilMarker, stbdFoilTrueTip, stbdWaterGuide);
 }
 
 function bindUI() {
