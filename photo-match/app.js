@@ -525,6 +525,13 @@ function setWaterGuideLine(line, from, to) {
   line.computeLineDistances();
 }
 
+// Beyond this, a genuine knuckle->tip crossing point is too far an
+// extrapolation from the tip to be a useful "where it meets the water"
+// marker (a near-horizontal rake can otherwise send it shooting off to an
+// unhelpful, offscreen point) -- in that case the rake-line marker is
+// simply skipped and only the always-present vertical reference is shown.
+const WATER_GUIDE_RAKE_CAP = 3.0;
+
 function updateSideWaterGuide(cantDeg, knuckleObj, tipObj, guide) {
   if (!guide || !tipObj || !knuckleObj) return;
   if (cantDeg >= 90 || !ui.waterlineToggle.checked) {
@@ -535,31 +542,43 @@ function updateSideWaterGuide(cantDeg, knuckleObj, tipObj, guide) {
   tipObj.getWorldPosition(tempV);
   knuckleObj.getWorldPosition(tempV2);
   const tip = tempV.clone();
-  const knuckle = tempV2;
+  const knuckle = tempV2.clone();
 
   const nearSurface = Math.abs(tip.y) < 0.08;
   const tipColor = nearSurface ? WATER_GUIDE_COLOR_TIP_NEAR : WATER_GUIDE_COLOR_TIP;
 
   guide.group.visible = true;
 
-  // Tip line: extend the real knuckle->tip rake line on to the water plane
-  // (t=1 is the tip itself; solving for y=0 gives where that same line, at
-  // that same rake, actually crosses the surface).
+  // Rake line: the real foil member, from the knuckle through the outer
+  // tip, solved for where that true (possibly extended) line crosses the
+  // water plane -- i.e. where the physical foil itself meets the surface,
+  // not a synthetic straight-down guess.
   const dy = knuckle.y - tip.y;
-  const t = Math.abs(dy) > 1e-6 ? knuckle.y / dy : 1;
-  const tipCross = knuckle.clone().lerp(tip, t);
-  tipCross.y = 0;
-  setWaterGuideLine(guide.tipLine, tip, tipCross);
-  guide.tipLine.material.color.setHex(tipColor);
-  guide.tipRing.position.set(tipCross.x, 0.004, tipCross.z);
-  guide.tipRing.material.color.setHex(tipColor);
-  guide.tipRing.material.opacity = nearSurface ? 0.95 : 0.75;
+  let rakeShown = false;
+  if (Math.abs(dy) > 1e-6) {
+    const t = knuckle.y / dy;
+    const rakeCross = knuckle.clone().lerp(tip, t);
+    rakeCross.y = 0;
+    if (rakeCross.distanceTo(tip) <= WATER_GUIDE_RAKE_CAP) {
+      setWaterGuideLine(guide.tipLine, tip, rakeCross);
+      guide.tipLine.material.color.setHex(tipColor);
+      guide.tipRing.position.set(rakeCross.x, 0.004, rakeCross.z);
+      guide.tipRing.material.color.setHex(tipColor);
+      guide.tipRing.material.opacity = nearSurface ? 0.95 : 0.75;
+      rakeShown = true;
+    }
+  }
+  guide.tipLine.visible = rakeShown;
+  guide.tipRing.visible = rakeShown;
 
-  // Vertical line: a true plumb line straight down from the tip, for an
-  // unambiguous "vertical" reference next to the raked tip line above.
+  // Vertical line: a true plumb line straight down from the tip -- an
+  // unambiguous "vertical" reference alongside the rake line above, always
+  // shown whenever this foil is below 90 degrees.
   const vertCross = new THREE.Vector3(tip.x, 0, tip.z);
   setWaterGuideLine(guide.verticalLine, tip, vertCross);
   guide.verticalRing.position.set(vertCross.x, 0.004, vertCross.z);
+  guide.verticalLine.visible = true;
+  guide.verticalRing.visible = true;
 }
 
 function updateFoilWaterGuides() {
