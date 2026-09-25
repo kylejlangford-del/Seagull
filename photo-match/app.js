@@ -612,14 +612,22 @@ function hideCalibLoupe() {
 function placeCalibPin(which, fx, fy) {
   const px = { fx: Math.min(1, Math.max(0, fx)), fy: Math.min(1, Math.max(0, fy)) };
   if (which === 'port') state.calibPortPx = px; else state.calibStbdPx = px;
-  cancelCalibPicking();
 
   const bothPlaced = state.calibPortPx && state.calibStbdPx;
   ui.calibClearBtn.disabled = !(state.calibPortPx || state.calibStbdPx);
   ui.calibSolveBtn.disabled = !bothPlaced;
-  ui.calibHint.textContent = bothPlaced
-    ? 'Both tips marked. Click "Scale photo to match" to solve.'
-    : `Marked. Now mark the ${which === 'port' ? 'starboard' : 'port'} foil tip.`;
+
+  if (bothPlaced) {
+    // Both tips down -- stop picking and let the solve button take over.
+    cancelCalibPicking();
+    ui.calibHint.textContent = 'Both tips marked. Click "Scale photo to match" to solve.';
+  } else {
+    // Chain straight into picking the other tip so the second click on the
+    // photo places it too, instead of leaving picking mode off and letting
+    // that click fall through to the photo-drag handler (which looked like
+    // "only one pin ever appears").
+    startCalibPick(which === 'port' ? 'stbd' : 'port');
+  }
 
   renderCalibPins();
 }
