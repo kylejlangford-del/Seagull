@@ -87,18 +87,35 @@ const ui = {
   downloadAllBtn: $('downloadAllBtn')
 };
 
+// Fixed, calibrated AC40 bow-camera preset: on centreline, ~1.10m forward
+// of the ONBOARD_BASE mount reference, ~0.38m below it, aimed straight aft
+// (pan 0) and pitched down 4 degrees, at the camera's real 100-degree FOV.
+// This is the page's initial state AND what "Reset" restores -- from here
+// the user should normally only touch foil cant / ride height / heel /
+// trim to match a given photo, not the camera itself.
+const DEFAULT_CAMERA = {
+  mode: 'onboard',
+  mount: 'bow',
+  foreAft: -1.10,
+  heightAboveDeck: -0.38,
+  athwartshipsOffset: 0.00,
+  panDeg: 0.0,
+  tiltDeg: -4.0,
+  fovDeg: 100.0
+};
+
 const defaults = {
   cantPort: 55,
   cantStbd: 55,
   heel: 0,
   trim: 0,
   ridePosition: 0,
-  camAlong: 0,
-  camHeight: 0,
-  camAthwart: 0,
-  camPan: 0,
-  camTilt: -4,
-  camFov: 100
+  camAlong: DEFAULT_CAMERA.foreAft,
+  camHeight: DEFAULT_CAMERA.heightAboveDeck,
+  camAthwart: DEFAULT_CAMERA.athwartshipsOffset,
+  camPan: DEFAULT_CAMERA.panDeg,
+  camTilt: DEFAULT_CAMERA.tiltDeg,
+  camFov: DEFAULT_CAMERA.fovDeg
 };
 
 const state = {
@@ -153,15 +170,23 @@ const state = {
 // Onboard rig base position, in boat-local coordinates (X = fore/aft,
 // bow at larger X; Y = up; Z = athwartships, starboard positive). Derived
 // from the hull's bounding box (bow tip near X=11.8, deck near Y=1.0 at the
-// bow) plus a real-world estimate of the mount: 1.15m out beyond the bow
-// (on the bowsprit) and 0.38m above the deck there — matching a bolted-on
-// bow cam mounted as far forward as the boat allows. There is only one
-// physical bow camera (it doesn't move between tacks), so there's only one
-// onboard "Bow" preset below, not a leeward/windward pair.
+// bow) plus a real-world estimate of the mount, on the bowsprit ahead of
+// the bow. camAlong/camHeight/camAthwart (see DEFAULT_CAMERA above) are
+// OFFSETS from this fixed reference point, not absolute positions -- the
+// calibrated bow preset below sits 1.10m aft of it and 0.38m below it, not
+// at (0, 0, 0) exactly on it. There is only one physical bow camera (it
+// doesn't move between tacks), so there's only one onboard "Bow" preset
+// below, not a leeward/windward pair.
 const ONBOARD_BASE = new THREE.Vector3(12.95, 1.38, 0);
 
 const ONBOARD_PRESETS = {
-  'bow': { along: 0, height: 0, athwart: 0, pan: 0, tilt: -4 },
+  'bow': {
+    along: DEFAULT_CAMERA.foreAft,
+    height: DEFAULT_CAMERA.heightAboveDeck,
+    athwart: DEFAULT_CAMERA.athwartshipsOffset,
+    pan: DEFAULT_CAMERA.panDeg,
+    tilt: DEFAULT_CAMERA.tiltDeg
+  },
   'stern': { along: -9.2, height: 0.4, athwart: 0, pan: 0, tilt: -6 }
 };
 
@@ -469,21 +494,7 @@ function bindUI() {
   });
 
   document.querySelectorAll('#cameraMode button').forEach((button) => {
-    button.addEventListener('click', () => {
-      document.querySelectorAll('#cameraMode button').forEach((b) => b.classList.remove('active'));
-      button.classList.add('active');
-      state.cameraMode = button.dataset.mode;
-      ui.onboardPresets.hidden = state.cameraMode !== 'onboard';
-      ui.externalPresets.hidden = state.cameraMode === 'onboard';
-      ui.onboardControls.hidden = state.cameraMode !== 'onboard';
-      if (state.cameraMode !== 'onboard') cancelCalibPicking();
-      controls.enabled = state.cameraMode === 'external';
-      ui.viewportBox.classList.toggle('photo-draggable', state.cameraMode === 'onboard');
-      ui.cameraHint.textContent = state.cameraMode === 'onboard'
-        ? 'Onboard mode keeps the camera bolted to the hull — it follows heel, trim and ride height automatically. Use the sliders to nudge the mount position and aim.'
-        : 'Drag to orbit, scroll to zoom. External mode is a free camera in space — for a chase-boat, drone or TV shot rather than a boat-mounted one.';
-      applyCameraMode();
-    });
+    button.addEventListener('click', () => setCameraMode(button.dataset.mode));
   });
 
   document.querySelectorAll('#onboardPresets .preset-button').forEach((button) => {
@@ -1218,6 +1229,24 @@ function applyExternalPreset(view) {
   controls.update();
 }
 
+// Switches between onboard (rigidly hull-mounted) and external (free)
+// camera modes -- pulled out of its own click handler so resetAll() can
+// force the page back to onboard mode too, not just reset the sliders.
+function setCameraMode(mode) {
+  document.querySelectorAll('#cameraMode button').forEach((b) => b.classList.toggle('active', b.dataset.mode === mode));
+  state.cameraMode = mode;
+  ui.onboardPresets.hidden = state.cameraMode !== 'onboard';
+  ui.externalPresets.hidden = state.cameraMode === 'onboard';
+  ui.onboardControls.hidden = state.cameraMode !== 'onboard';
+  if (state.cameraMode !== 'onboard') cancelCalibPicking();
+  controls.enabled = state.cameraMode === 'external';
+  ui.viewportBox.classList.toggle('photo-draggable', state.cameraMode === 'onboard');
+  ui.cameraHint.textContent = state.cameraMode === 'onboard'
+    ? 'Onboard mode keeps the camera bolted to the hull — it follows heel, trim and ride height automatically. Use the sliders to nudge the mount position and aim.'
+    : 'Drag to orbit, scroll to zoom. External mode is a free camera in space — for a chase-boat, drone or TV shot rather than a boat-mounted one.';
+  applyCameraMode();
+}
+
 function applyCameraMode() {
   if (!modelReady) return;
 
@@ -1323,8 +1352,19 @@ function resetAll() {
   ui.trim.value = defaults.trim; ui.trimValue.textContent = `${signed(defaults.trim, 1)}°`;
   ui.ridePosition.value = defaults.ridePosition; ui.ridePositionValue.textContent = `${signed(defaults.ridePosition, 2)} m`;
 
+  // Full camera reset: back to onboard/bow AND the calibrated default
+  // mount/aim/FOV -- not just the mount offsets applyOnboardPreset('bow')
+  // covers, since FOV (and the mode itself, if the user had switched to
+  // External) are part of the fixed default preset too.
+  setCameraMode('onboard');
   applyOnboardPreset('bow');
   document.querySelectorAll('#onboardPresets .preset-button').forEach((b) => b.classList.toggle('active', b.dataset.preset === 'bow'));
+
+  state.camFov = defaults.camFov;
+  ui.camFov.value = defaults.camFov;
+  ui.camFovValue.textContent = `${defaults.camFov.toFixed(0)}°`;
+  camera.fov = defaults.camFov;
+  camera.updateProjectionMatrix();
 
   if (modelReady) updateGeometry();
 }
