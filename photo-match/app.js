@@ -18,6 +18,8 @@ const ui = {
   resetPhotoBtn: $('resetPhotoBtn'),
   movePhotoToggle: $('movePhotoToggle'),
   photoDragHint: $('photoDragHint'),
+  photoZoom: $('photoZoom'),
+  photoZoomValue: $('photoZoomValue'),
   loading: $('loadingOverlay'),
   fatal: $('fatalError'),
   resetBtn: $('resetBtn'),
@@ -692,6 +694,14 @@ function applyPhotoTransform() {
   ui.photoImg.style.transform =
     `translate(${state.photoOffsetX}px, ${state.photoOffsetY}px) scale(${state.photoScale})`;
   renderCalibPins();
+
+  // Keep the zoom slider in sync with every path that can change
+  // photoScale -- scroll-to-zoom, the reset button, and the foil-span
+  // calibration solve -- not just its own input event.
+  if (ui.photoZoom) {
+    ui.photoZoom.value = state.photoScale;
+    ui.photoZoomValue.textContent = `${state.photoScale.toFixed(2)}×`;
+  }
 }
 
 function resetPhotoTransform() {
@@ -769,6 +779,14 @@ function bindPhotoInteraction() {
   });
 
   ui.resetPhotoBtn.addEventListener('click', resetPhotoTransform);
+
+  if (ui.photoZoom) {
+    ui.photoZoom.addEventListener('input', () => {
+      state.photoScale = Number(ui.photoZoom.value);
+      ui.photoZoomValue.textContent = `${state.photoScale.toFixed(2)}×`;
+      applyPhotoTransform();
+    });
+  }
 
   if (ui.movePhotoToggle) {
     ui.movePhotoToggle.addEventListener('click', () => {
