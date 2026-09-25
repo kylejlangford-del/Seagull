@@ -58,6 +58,13 @@ const ui = {
   externalPresets: $('externalPresets'),
   cameraHint: $('cameraHint'),
 
+  calibMarkPort: $('calibMarkPort'),
+  calibMarkStbd: $('calibMarkStbd'),
+  calibSolveBtn: $('calibSolveBtn'),
+  calibClearBtn: $('calibClearBtn'),
+  calibHint: $('calibHint'),
+  calibPinLayer: $('calibPinLayer'),
+
   saveMatchBtn: $('saveMatchBtn'),
   matchLogList: $('matchLogList'),
   matchLogCount: $('matchLogCount'),
@@ -98,7 +105,15 @@ const state = {
   // alignment work.
   photoOffsetX: 0,
   photoOffsetY: 0,
-  photoScale: 1
+  photoScale: 1,
+
+  // Foil-span calibration: two click-placed pins on the reference photo,
+  // each stored as a fraction of the photo image's own displayed rect (so
+  // they track it through drag/zoom, same trick as the photo transform
+  // itself), plus which pin (if any) the next viewport click will place.
+  calibPortPx: null,
+  calibStbdPx: null,
+  calibPicking: null
 };
 
 // Onboard rig base position, in boat-local coordinates (X = fore/aft,
@@ -335,6 +350,11 @@ function bindUI() {
   bindRange(ui.camPan, ui.camPanValue, (v) => { state.camPan = v; return `${signed(v, 1)}°`; });
   bindRange(ui.camTilt, ui.camTiltValue, (v) => { state.camTilt = v; return `${signed(v, 1)}°`; });
 
+  ui.calibMarkPort.addEventListener('click', () => startCalibPick('port'));
+  ui.calibMarkStbd.addEventListener('click', () => startCalibPick('stbd'));
+  ui.calibSolveBtn.addEventListener('click', solveCalibration);
+  ui.calibClearBtn.addEventListener('click', clearCalibPins);
+
   ui.camFov.addEventListener('input', () => {
     state.camFov = Number(ui.camFov.value);
     ui.camFovValue.textContent = `${state.camFov.toFixed(0)}°`;
@@ -363,6 +383,7 @@ function bindUI() {
       ui.onboardPresets.hidden = state.cameraMode !== 'onboard';
       ui.externalPresets.hidden = state.cameraMode === 'onboard';
       ui.onboardControls.hidden = state.cameraMode !== 'onboard';
+      if (state.cameraMode !== 'onboard') cancelCalibPicking();
       controls.enabled = state.cameraMode === 'external';
       ui.viewportBox.classList.toggle('photo-draggable', state.cameraMode === 'onboard');
       ui.cameraHint.textContent = state.cameraMode === 'onboard'
@@ -426,6 +447,8 @@ function onPhotoSelected(e) {
       state.photoScale = 1;
       applyPhotoTransform();
 
+      clearCalibPins();
+
       photoLoaded = true;
       ui.photoLayer.classList.add('has-photo');
       ui.viewportBox.classList.add('has-photo');
@@ -439,6 +462,7 @@ function onPhotoSelected(e) {
 function applyPhotoTransform() {
   ui.photoImg.style.transform =
     `translate(${state.photoOffsetX}px, ${state.photoOffsetY}px) scale(${state.photoScale})`;
+  renderCalibPins();
 }
 
 function resetPhotoTransform() {
@@ -459,6 +483,16 @@ let photoDrag = null;
 function bindPhotoInteraction() {
   ui.viewportBox.addEventListener('mousedown', (e) => {
     if (state.cameraMode !== 'onboard' || !photoLoaded) return;
+
+    if (state.calibPicking) {
+      const photoRect = ui.photoImg.getBoundingClientRect();
+      const fx = (e.clientX - photoRect.left) / photoRect.width;
+      const fy = (e.clientY - photoRect.top) / photoRect.height;
+      placeCalibPin(state.calibPicking, fx, fy);
+      e.preventDefault();
+      return;
+    }
+
     photoDrag = {
       startX: e.clientX,
       startY: e.clientY,
@@ -491,6 +525,175 @@ function bindPhotoInteraction() {
   }, { passive: false });
 
   ui.resetPhotoBtn.addEventListener('click', resetPhotoTransform);
+}
+
+// ---------------------------------------------------------------------
+// Foil-span calibration: mark the port and starboard foil tips on the
+// loaded photo, then solve for the onboard camera's fore-aft mount
+// position (camAlong) that makes the model's own foil-tip markers
+// project to the same on-screen span. FOV and the other mount offsets
+// stay fixed -- 100 degrees is the real lens spec, so fore-aft position
+// is the one unknown this tool solves for.
+// ---------------------------------------------------------------------
+
+function startCalibPick(which) {
+  if (state.cameraMode !== 'onboard' || !photoLoaded) return;
+  state.calibPicking = which;
+  ui.calibMarkPort.classList.toggle('active', which === 'port');
+  ui.calibMarkStbd.classList.toggle('active', which === 'stbd');
+  ui.viewportBox.classList.add('calib-picking');
+  ui.calibHint.textContent = `Click the ${which === 'port' ? 'port' : 'starboard'} foil tip on the photo.`;
+}
+
+function cancelCalibPicking() {
+  if (!state.calibPicking) return;
+  state.calibPicking = null;
+  ui.calibMarkPort.classList.remove('active');
+  ui.calibMarkStbd.classList.remove('active');
+  ui.viewportBox.classList.remove('calib-picking');
+}
+
+function placeCalibPin(which, fx, fy) {
+  const px = { fx: Math.min(1, Math.max(0, fx)), fy: Math.min(1, Math.max(0, fy)) };
+  if (which === 'port') state.calibPortPx = px; else state.calibStbdPx = px;
+  cancelCalibPicking();
+
+  const bothPlaced = state.calibPortPx && state.calibStbdPx;
+  ui.calibClearBtn.disabled = !(state.calibPortPx || state.calibStbdPx);
+  ui.calibSolveBtn.disabled = !bothPlaced;
+  ui.calibHint.textContent = bothPlaced
+    ? 'Both tips marked. Click "Match camera position" to solve.'
+    : `Marked. Now mark the ${which === 'port' ? 'starboard' : 'port'} foil tip.`;
+
+  renderCalibPins();
+}
+
+function clearCalibPins() {
+  state.calibPortPx = null;
+  state.calibStbdPx = null;
+  cancelCalibPicking();
+  ui.calibClearBtn.disabled = true;
+  ui.calibSolveBtn.disabled = true;
+  ui.calibHint.textContent = 'Click a "Mark" button, then click that foil tip on the photo. With both pins placed, solving moves the fore-aft slider above to match the model\'s foil span to your marks.';
+  renderCalibPins();
+}
+
+// Re-anchors the two pin dots to their stored fraction of the photo
+// image's own on-screen rect, so they stay glued to the photo through
+// drag/zoom and window resizes.
+function renderCalibPins() {
+  if (!ui.calibPinLayer) return;
+  ui.calibPinLayer.innerHTML = '';
+  if (!state.calibPortPx && !state.calibStbdPx) return;
+
+  const boxRect = ui.viewportBox.getBoundingClientRect();
+  const photoRect = ui.photoImg.getBoundingClientRect();
+  if (!photoRect.width || !photoRect.height) return;
+
+  const addPin = (px, cls) => {
+    if (!px) return;
+    const el = document.createElement('div');
+    el.className = `calib-pin calib-pin--${cls}`;
+    el.style.left = `${(photoRect.left - boxRect.left) + px.fx * photoRect.width}px`;
+    el.style.top = `${(photoRect.top - boxRect.top) + px.fy * photoRect.height}px`;
+    ui.calibPinLayer.appendChild(el);
+  };
+  addPin(state.calibPortPx, 'port');
+  addPin(state.calibStbdPx, 'stbd');
+}
+
+// Converts a stored {fx, fy} pin (a fraction of the photo's own displayed
+// rect) into a pixel position in the viewport-box's own coordinate frame
+// -- the same frame the 3D scene renders into, since #scene and the photo
+// layer are both absolutely positioned to fill the viewport box exactly.
+function calibPinToBoxPx(px, boxRect, photoRect) {
+  return {
+    x: (photoRect.left - boxRect.left) + px.fx * photoRect.width,
+    y: (photoRect.top - boxRect.top) + px.fy * photoRect.height
+  };
+}
+
+function solveCalibration() {
+  if (!modelReady || !state.calibPortPx || !state.calibStbdPx) return;
+
+  const boxRect = ui.viewportBox.getBoundingClientRect();
+  const photoRect = ui.photoImg.getBoundingClientRect();
+  const portPx = calibPinToBoxPx(state.calibPortPx, boxRect, photoRect);
+  const stbdPx = calibPinToBoxPx(state.calibStbdPx, boxRect, photoRect);
+  const targetSpan = Math.hypot(stbdPx.x - portPx.x, stbdPx.y - portPx.y);
+  const boxWidth = boxRect.width;
+  const boxHeight = boxRect.height;
+
+  // The model's foil-tip markers, in world space, at the current cant /
+  // heel / trim / ride-height -- constant through the search below, since
+  // only the camera's fore-aft mount position changes.
+  boatRoot.updateMatrixWorld(true);
+  const portWorld = new THREE.Vector3();
+  const stbdWorld = new THREE.Vector3();
+  portFoilMarker.getWorldPosition(portWorld);
+  stbdFoilMarker.getWorldPosition(stbdWorld);
+
+  // Projects the two foil-tip world points through the onboard camera at
+  // a candidate fore-aft mount position and returns their on-screen pixel
+  // span, without touching the live renderer -- pure matrix math, so this
+  // is cheap enough to sample hundreds of times.
+  function spanForAlong(along) {
+    const pos = ONBOARD_BASE.clone();
+    pos.x += along;
+    pos.y += state.camHeight;
+    pos.z += state.camAthwart;
+    camera.position.copy(pos);
+    camera.rotation.order = 'YXZ';
+    camera.rotation.set(
+      THREE.MathUtils.degToRad(state.camTilt),
+      THREE.MathUtils.degToRad(90 + state.camPan),
+      0
+    );
+    camera.updateMatrixWorld(true);
+
+    const p1 = portWorld.clone().project(camera);
+    const p2 = stbdWorld.clone().project(camera);
+    const x1 = (p1.x * 0.5 + 0.5) * boxWidth;
+    const y1 = (1 - (p1.y * 0.5 + 0.5)) * boxHeight;
+    const x2 = (p2.x * 0.5 + 0.5) * boxWidth;
+    const y2 = (1 - (p2.y * 0.5 + 0.5)) * boxHeight;
+    return Math.hypot(x2 - x1, y2 - y1);
+  }
+
+  // Span-vs-position isn't guaranteed monotonic across the whole slider
+  // range (perspective can do odd things if the camera passes close to a
+  // foil), so scan coarsely for the closest match first, then refine
+  // around it with a ternary-style narrowing rather than assuming a
+  // single clean crossing to bisect.
+  const lo = -3, hi = 3, steps = 240;
+  let bestAlong = state.camAlong;
+  let bestDiff = Infinity;
+  for (let i = 0; i <= steps; i++) {
+    const along = lo + (hi - lo) * (i / steps);
+    const diff = Math.abs(spanForAlong(along) - targetSpan);
+    if (diff < bestDiff) { bestDiff = diff; bestAlong = along; }
+  }
+
+  let a = Math.max(lo, bestAlong - (hi - lo) / steps);
+  let b = Math.min(hi, bestAlong + (hi - lo) / steps);
+  for (let i = 0; i < 40; i++) {
+    const m1 = a + (b - a) / 3;
+    const m2 = b - (b - a) / 3;
+    const d1 = Math.abs(spanForAlong(m1) - targetSpan);
+    const d2 = Math.abs(spanForAlong(m2) - targetSpan);
+    if (d1 < d2) b = m2; else a = m1;
+  }
+  const solved = Math.min(hi, Math.max(lo, (a + b) / 2));
+
+  state.camAlong = Number(solved.toFixed(3));
+  ui.camAlong.value = state.camAlong;
+  ui.camAlongValue.textContent = `${signed(state.camAlong, 2)} m`;
+  updateGeometry();
+
+  const finalSpan = spanForAlong(state.camAlong);
+  ui.calibHint.textContent =
+    `Solved fore-aft position: ${signed(state.camAlong, 2)} m ` +
+    `(photo span ${targetSpan.toFixed(0)}px, model span now ${finalSpan.toFixed(0)}px).`;
 }
 
 function applyOnboardPreset(name) {
@@ -647,6 +850,7 @@ function onResize() {
   camera.aspect = width / height;
   camera.updateProjectionMatrix();
   renderer.setSize(width, height, false);
+  renderCalibPins();
 }
 
 function animate() {
