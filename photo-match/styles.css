@@ -382,6 +382,7 @@ input[type="range"]::-moz-range-thumb { width: 15px; height: 15px; border: 2px s
   margin-bottom: 8px;
 }
 .calib-full-grid .mini-button { width: 100%; }
+.calib-full-grid.is-hidden { display: none; }
 
 .mini-button--primary {
   color: #072026;
