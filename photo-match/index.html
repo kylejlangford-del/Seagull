@@ -45,8 +45,9 @@
             </label>
             <input id="photoInput" type="file" accept="image/*" hidden />
 
-            <p class="control-hint">Drag the photo in the viewer to reposition it, scroll to zoom (onboard mode only).</p>
+            <p class="control-hint" id="photoDragHint">Drag the photo in the viewer to reposition it, scroll to zoom.</p>
             <button class="mini-button" id="resetPhotoBtn" type="button">Reset photo position</button>
+            <button class="mini-button mini-button--toggle" id="movePhotoToggle" type="button" hidden>Move photo (drag/scroll)</button>
 
             <div class="control-row">
               <div class="control-label">
@@ -310,6 +311,6 @@
     </div>
   </div>
 
-  <script type="module" src="./app.js?v=20260925g"></script>
+  <script type="module" src="./app.js?v=20260925h"></script>
 </body>
 </html>
