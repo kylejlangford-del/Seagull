@@ -58,8 +58,16 @@ const ui = {
   externalPresets: $('externalPresets'),
   cameraHint: $('cameraHint'),
 
+  calibBlockHint: $('calibBlockHint'),
+  calibModeSpan: $('calibModeSpan'),
+  calibModeSingle: $('calibModeSingle'),
+  calibSideRow: $('calibSideRow'),
+  calibSidePort: $('calibSidePort'),
+  calibSideStbd: $('calibSideStbd'),
   calibMarkPort: $('calibMarkPort'),
   calibMarkStbd: $('calibMarkStbd'),
+  calibMarkPortLabel: $('calibMarkPortLabel'),
+  calibMarkStbdLabel: $('calibMarkStbdLabel'),
   calibSolveBtn: $('calibSolveBtn'),
   calibClearBtn: $('calibClearBtn'),
   calibHint: $('calibHint'),
@@ -112,9 +120,19 @@ const state = {
   // each stored as a fraction of the photo image's own displayed rect (so
   // they track it through drag/zoom, same trick as the photo transform
   // itself), plus which pin (if any) the next viewport click will place.
+  //
+  // calibMode 'span' is the original mode: both foils are visible in the
+  // photo, and the two pins are the port tip and the starboard tip. Mode
+  // 'single' is for a photo showing only one foil (e.g. cropped, or the
+  // other side out of frame): both pins are placed on that SAME foil, one
+  // at the knuckle (where the strut bends into the horizontal tip section
+  // -- the existing port/stbd foil marker already sits there) and one at
+  // the true outer tip. calibSingleSide picks which foil is in the photo.
   calibPortPx: null,
   calibStbdPx: null,
-  calibPicking: null
+  calibPicking: null,
+  calibMode: 'span',
+  calibSingleSide: 'port'
 };
 
 // Onboard rig base position, in boat-local coordinates (X = fore/aft,
@@ -147,6 +165,7 @@ let matchLog = [];
 let renderer, scene, camera, controls;
 let boatRoot, modelScene, portCantGroup, stbdCantGroup;
 let portFoilMarker, stbdFoilMarker;
+let portFoilTrueTip, stbdFoilTrueTip;
 let waterPlane, waterGrid;
 let modelReady = false;
 let modelMeshes = [];
@@ -336,6 +355,25 @@ function setupCantAssemblies() {
     3.06043 - 1.38292
   );
   stbdCantGroup.add(stbdFoilMarker);
+
+  // True outer tip of each foil (the actual end of the mesh, further out
+  // than the knuckle markers above), for single-foil calibration -- see
+  // state.calibMode. Derived from the GLTF's own tip-region vertices.
+  portFoilTrueTip = new THREE.Object3D();
+  portFoilTrueTip.position.set(
+    6.465 - 6.911853,
+    -2.265 - 0.35055,
+    -4.581 - (-1.38623)
+  );
+  portCantGroup.add(portFoilTrueTip);
+
+  stbdFoilTrueTip = new THREE.Object3D();
+  stbdFoilTrueTip.position.set(
+    6.465 - 6.911853,
+    -2.270 - 0.35055,
+    4.550 - 1.38292
+  );
+  stbdCantGroup.add(stbdFoilTrueTip);
 }
 
 function bindUI() {
@@ -355,6 +393,14 @@ function bindUI() {
   ui.calibMarkStbd.addEventListener('click', () => startCalibPick('stbd'));
   ui.calibSolveBtn.addEventListener('click', solveCalibration);
   ui.calibClearBtn.addEventListener('click', clearCalibPins);
+
+  if (ui.calibModeSpan && ui.calibModeSingle) {
+    ui.calibModeSpan.addEventListener('click', () => setCalibMode('span'));
+    ui.calibModeSingle.addEventListener('click', () => setCalibMode('single'));
+    ui.calibSidePort.addEventListener('click', () => setCalibSingleSide('port'));
+    ui.calibSideStbd.addEventListener('click', () => setCalibSingleSide('stbd'));
+    updateCalibModeUI();
+  }
 
   ui.camFov.addEventListener('input', () => {
     state.camFov = Number(ui.camFov.value);
@@ -549,13 +595,23 @@ function bindPhotoInteraction() {
 // is the one unknown this tool solves for.
 // ---------------------------------------------------------------------
 
+// Text for what pin "port" and pin "stbd" mean right now -- in 'span' mode
+// they're literally the port/starboard foil tips; in 'single' mode both
+// pins are on the one visible foil, so they're relabelled knuckle/outer tip.
+function calibPinLabel(which) {
+  if (state.calibMode === 'single') {
+    return which === 'port' ? 'knuckle' : 'outer tip';
+  }
+  return which === 'port' ? 'port foil tip' : 'starboard foil tip';
+}
+
 function startCalibPick(which) {
   if (state.cameraMode !== 'onboard' || !photoLoaded) return;
   state.calibPicking = which;
   ui.calibMarkPort.classList.toggle('active', which === 'port');
   ui.calibMarkStbd.classList.toggle('active', which === 'stbd');
   ui.viewportBox.classList.add('calib-picking');
-  ui.calibHint.textContent = `Click the ${which === 'port' ? 'port' : 'starboard'} foil tip on the photo.`;
+  ui.calibHint.textContent = `Click the ${calibPinLabel(which)} on the photo.`;
 }
 
 function cancelCalibPicking() {
@@ -620,7 +676,9 @@ function placeCalibPin(which, fx, fy) {
   if (bothPlaced) {
     // Both tips down -- stop picking and let the solve button take over.
     cancelCalibPicking();
-    ui.calibHint.textContent = 'Both tips marked. Click "Scale photo to match" to solve.';
+    ui.calibHint.textContent = state.calibMode === 'single'
+      ? 'Knuckle and outer tip marked. Click "Scale photo to match" to solve.'
+      : 'Both tips marked. Click "Scale photo to match" to solve.';
   } else {
     // Chain straight into picking the other tip so the second click on the
     // photo places it too, instead of leaving picking mode off and letting
@@ -638,8 +696,49 @@ function clearCalibPins() {
   cancelCalibPicking();
   ui.calibClearBtn.disabled = true;
   ui.calibSolveBtn.disabled = true;
-  ui.calibHint.textContent = 'Click a "Mark" button, then click that foil tip on the photo. With both pins placed, this scales and repositions the photo so its marked span lands exactly on the model\'s current foil tips.';
+  ui.calibHint.textContent = state.calibMode === 'single'
+    ? 'Click a "Mark" button, then click that point on the photo. With both the knuckle and the outer tip marked, this scales and repositions the photo so that span lands exactly on the model\'s current foil.'
+    : 'Click a "Mark" button, then click that foil tip on the photo. With both pins placed, this scales and repositions the photo so its marked span lands exactly on the model\'s current foil tips.';
   renderCalibPins();
+}
+
+// Switches between calibrating off both foil tips (photo shows the whole
+// span) and calibrating off two points on a single foil (photo shows only
+// one foil, e.g. cropped or the other side out of frame). Existing pins are
+// cleared on a switch since they'd otherwise be reinterpreted against the
+// wrong reference points.
+function setCalibMode(mode) {
+  if (state.calibMode === mode) return;
+  state.calibMode = mode;
+  clearCalibPins();
+  updateCalibModeUI();
+}
+
+function setCalibSingleSide(side) {
+  if (state.calibSingleSide === side) return;
+  state.calibSingleSide = side;
+  if (state.calibMode === 'single') clearCalibPins();
+  updateCalibModeUI();
+}
+
+function updateCalibModeUI() {
+  const single = state.calibMode === 'single';
+  ui.calibModeSpan.classList.toggle('active', !single);
+  ui.calibModeSingle.classList.toggle('active', single);
+  ui.calibSideRow.classList.toggle('is-hidden', !single);
+  ui.calibSidePort.classList.toggle('active', state.calibSingleSide === 'port');
+  ui.calibSideStbd.classList.toggle('active', state.calibSingleSide === 'stbd');
+
+  if (single) {
+    const side = state.calibSingleSide === 'port' ? 'port' : 'starboard';
+    ui.calibMarkPortLabel.textContent = 'Mark knuckle';
+    ui.calibMarkStbdLabel.textContent = 'Mark outer tip';
+    ui.calibBlockHint.textContent = `Only the ${side} foil is visible -- mark its knuckle (where the strut bends into the tip) and its outer tip to scale and anchor the photo.`;
+  } else {
+    ui.calibMarkPortLabel.textContent = 'Mark port tip';
+    ui.calibMarkStbdLabel.textContent = 'Mark stbd tip';
+    ui.calibBlockHint.textContent = 'Mark both foil tips on the photo to scale and anchor it to the model.';
+  }
 }
 
 // Re-anchors the two pin dots to their stored fraction of the photo
@@ -698,8 +797,18 @@ function solveCalibration() {
   camera.updateMatrixWorld(true);
   const portWorld = new THREE.Vector3();
   const stbdWorld = new THREE.Vector3();
-  portFoilMarker.getWorldPosition(portWorld);
-  stbdFoilMarker.getWorldPosition(stbdWorld);
+  if (state.calibMode === 'single') {
+    // Both pins are on the one visible foil: pin "port" = knuckle, pin
+    // "stbd" = outer tip (see calibPinLabel), both taken from whichever
+    // side's foil is actually in the photo.
+    const knuckleMarker = state.calibSingleSide === 'port' ? portFoilMarker : stbdFoilMarker;
+    const tipMarker = state.calibSingleSide === 'port' ? portFoilTrueTip : stbdFoilTrueTip;
+    knuckleMarker.getWorldPosition(portWorld);
+    tipMarker.getWorldPosition(stbdWorld);
+  } else {
+    portFoilMarker.getWorldPosition(portWorld);
+    stbdFoilMarker.getWorldPosition(stbdWorld);
+  }
 
   const projectToBoxPx = (worldPos) => {
     const p = worldPos.clone().project(camera);
