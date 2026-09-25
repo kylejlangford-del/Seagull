@@ -140,31 +140,11 @@
 
               <div class="calib-block">
                 <div class="calib-block__heading">
-                  <span>Foil-span calibration</span>
-                  <small id="calibBlockHint">Mark both foil tips on the photo to scale and anchor it to the model</small>
+                  <span>Solve camera</span>
+                  <small id="calibBlockHint">Mark 2&ndash;4 foil points on the photo to fit the camera to them</small>
                 </div>
 
-                <div class="calib-pin-row">
-                  <button class="mini-button mini-button--toggle active" id="calibModeSpan" type="button">Both foils visible</button>
-                  <button class="mini-button mini-button--toggle" id="calibModeSingle" type="button">Single foil</button>
-                  <button class="mini-button mini-button--toggle" id="calibModeFull" type="button">Solve camera</button>
-                </div>
-
-                <div class="calib-pin-row is-hidden" id="calibSideRow">
-                  <button class="mini-button mini-button--toggle active" id="calibSidePort" type="button">Port foil</button>
-                  <button class="mini-button mini-button--toggle" id="calibSideStbd" type="button">Starboard foil</button>
-                </div>
-
-                <div class="calib-pin-row" id="calibPinRow">
-                  <button class="mini-button mini-button--pin" id="calibMarkPort" type="button">
-                    <span class="pin-dot pin-dot--port"></span><span id="calibMarkPortLabel">Mark port tip</span>
-                  </button>
-                  <button class="mini-button mini-button--pin" id="calibMarkStbd" type="button">
-                    <span class="pin-dot pin-dot--stbd"></span><span id="calibMarkStbdLabel">Mark stbd tip</span>
-                  </button>
-                </div>
-
-                <div class="calib-full-grid is-hidden" id="calibFullGrid">
+                <div class="calib-full-grid" id="calibFullGrid">
                   <button class="mini-button mini-button--pin" id="calibMarkPortKnuckle" type="button">
                     <span class="pin-dot pin-dot--port-knuckle"></span><span>Port knuckle</span>
                   </button>
@@ -180,11 +160,11 @@
                 </div>
 
                 <div class="calib-pin-row">
-                  <button class="mini-button mini-button--primary" id="calibSolveBtn" type="button" disabled>Scale photo to match</button>
+                  <button class="mini-button mini-button--primary" id="calibSolveBtn" type="button" disabled>Solve camera</button>
                   <button class="mini-button" id="calibClearBtn" type="button" disabled>Clear pins</button>
                 </div>
 
-                <p class="control-hint" id="calibHint">Click a &ldquo;Mark&rdquo; button, then click that foil tip on the photo. With both pins placed, this scales and repositions the photo so its marked span lands exactly on the model&rsquo;s current foil tips &mdash; leaving the camera untouched.</p>
+                <p class="control-hint" id="calibHint">Click a mark button below, then click that point on the photo. Mark 2&ndash;4 of the foil knuckle/tip points &mdash; more points, spread across both foils, give a tighter camera fit. This solves for the camera&rsquo;s own position, aim and field of view to match the photo.</p>
               </div>
             </div>
 
@@ -319,6 +299,6 @@
     </div>
   </div>
 
-  <script type="module" src="./app.js?v=20260925p"></script>
+  <script type="module" src="./app.js?v=20260925q"></script>
 </body>
 </html>
