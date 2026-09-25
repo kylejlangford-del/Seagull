@@ -61,13 +61,20 @@ const ui = {
   calibBlockHint: $('calibBlockHint'),
   calibModeSpan: $('calibModeSpan'),
   calibModeSingle: $('calibModeSingle'),
+  calibModeFull: $('calibModeFull'),
   calibSideRow: $('calibSideRow'),
   calibSidePort: $('calibSidePort'),
   calibSideStbd: $('calibSideStbd'),
+  calibPinRow: $('calibPinRow'),
   calibMarkPort: $('calibMarkPort'),
   calibMarkStbd: $('calibMarkStbd'),
   calibMarkPortLabel: $('calibMarkPortLabel'),
   calibMarkStbdLabel: $('calibMarkStbdLabel'),
+  calibFullGrid: $('calibFullGrid'),
+  calibMarkPortKnuckle: $('calibMarkPortKnuckle'),
+  calibMarkPortTip: $('calibMarkPortTip'),
+  calibMarkStbdKnuckle: $('calibMarkStbdKnuckle'),
+  calibMarkStbdTip: $('calibMarkStbdTip'),
   calibSolveBtn: $('calibSolveBtn'),
   calibClearBtn: $('calibClearBtn'),
   calibHint: $('calibHint'),
@@ -132,7 +139,15 @@ const state = {
   calibStbdPx: null,
   calibPicking: null,
   calibMode: 'span',
-  calibSingleSide: 'port'
+  calibSingleSide: 'port',
+
+  // 'full' mode: instead of scaling/repositioning the photo to a fixed
+  // camera, solve for the camera itself (position, pan/tilt, and FOV) from
+  // however many of these four foil landmarks are visible and marked --
+  // works on any photo, including third-party broadcast shots where the
+  // camera's real mount and lens are unknown. See solveCameraFromMarks().
+  calibFullMarks: { portKnuckle: null, portTip: null, stbdKnuckle: null, stbdTip: null },
+  calibFullPicking: null
 };
 
 // Onboard rig base position, in boat-local coordinates (X = fore/aft,
@@ -391,7 +406,10 @@ function bindUI() {
 
   ui.calibMarkPort.addEventListener('click', () => startCalibPick('port'));
   ui.calibMarkStbd.addEventListener('click', () => startCalibPick('stbd'));
-  ui.calibSolveBtn.addEventListener('click', solveCalibration);
+  ui.calibSolveBtn.addEventListener('click', () => {
+    if (state.calibMode === 'full') solveCameraFromMarks();
+    else solveCalibration();
+  });
   ui.calibClearBtn.addEventListener('click', clearCalibPins);
 
   if (ui.calibModeSpan && ui.calibModeSingle) {
@@ -400,6 +418,14 @@ function bindUI() {
     ui.calibSidePort.addEventListener('click', () => setCalibSingleSide('port'));
     ui.calibSideStbd.addEventListener('click', () => setCalibSingleSide('stbd'));
     updateCalibModeUI();
+  }
+
+  if (ui.calibModeFull) {
+    ui.calibModeFull.addEventListener('click', () => setCalibMode('full'));
+    ui.calibMarkPortKnuckle.addEventListener('click', () => startFullMarkPick('portKnuckle'));
+    ui.calibMarkPortTip.addEventListener('click', () => startFullMarkPick('portTip'));
+    ui.calibMarkStbdKnuckle.addEventListener('click', () => startFullMarkPick('stbdKnuckle'));
+    ui.calibMarkStbdTip.addEventListener('click', () => startFullMarkPick('stbdTip'));
   }
 
   ui.camFov.addEventListener('input', () => {
@@ -531,11 +557,12 @@ function bindPhotoInteraction() {
   ui.viewportBox.addEventListener('mousedown', (e) => {
     if (state.cameraMode !== 'onboard' || !photoLoaded) return;
 
-    if (state.calibPicking) {
+    if (state.calibPicking || state.calibFullPicking) {
       const photoRect = ui.photoImg.getBoundingClientRect();
       const fx = (e.clientX - photoRect.left) / photoRect.width;
       const fy = (e.clientY - photoRect.top) / photoRect.height;
-      placeCalibPin(state.calibPicking, fx, fy);
+      if (state.calibFullPicking) placeFullMark(state.calibFullPicking, fx, fy);
+      else placeCalibPin(state.calibPicking, fx, fy);
       e.preventDefault();
       return;
     }
@@ -572,7 +599,7 @@ function bindPhotoInteraction() {
   }, { passive: false });
 
   ui.viewportBox.addEventListener('mousemove', (e) => {
-    if (!state.calibPicking || !photoLoaded) return;
+    if ((!state.calibPicking && !state.calibFullPicking) || !photoLoaded) return;
     const photoRect = ui.photoImg.getBoundingClientRect();
     const fx = (e.clientX - photoRect.left) / photoRect.width;
     const fy = (e.clientY - photoRect.top) / photoRect.height;
@@ -580,7 +607,7 @@ function bindPhotoInteraction() {
   });
 
   ui.viewportBox.addEventListener('mouseleave', () => {
-    if (state.calibPicking) hideCalibLoupe();
+    if (state.calibPicking || state.calibFullPicking) hideCalibLoupe();
   });
 
   ui.resetPhotoBtn.addEventListener('click', resetPhotoTransform);
@@ -615,10 +642,17 @@ function startCalibPick(which) {
 }
 
 function cancelCalibPicking() {
-  if (!state.calibPicking) return;
+  if (!state.calibPicking && !state.calibFullPicking) return;
   state.calibPicking = null;
+  state.calibFullPicking = null;
   ui.calibMarkPort.classList.remove('active');
   ui.calibMarkStbd.classList.remove('active');
+  if (ui.calibMarkPortKnuckle) {
+    ui.calibMarkPortKnuckle.classList.remove('active');
+    ui.calibMarkPortTip.classList.remove('active');
+    ui.calibMarkStbdKnuckle.classList.remove('active');
+    ui.calibMarkStbdTip.classList.remove('active');
+  }
   ui.viewportBox.classList.remove('calib-picking');
   hideCalibLoupe();
 }
@@ -693,13 +727,25 @@ function placeCalibPin(which, fx, fy) {
 function clearCalibPins() {
   state.calibPortPx = null;
   state.calibStbdPx = null;
+  state.calibFullMarks = { portKnuckle: null, portTip: null, stbdKnuckle: null, stbdTip: null };
   cancelCalibPicking();
   ui.calibClearBtn.disabled = true;
   ui.calibSolveBtn.disabled = true;
-  ui.calibHint.textContent = state.calibMode === 'single'
-    ? 'Click a "Mark" button, then click that point on the photo. With both the knuckle and the outer tip marked, this scales and repositions the photo so that span lands exactly on the model\'s current foil.'
-    : 'Click a "Mark" button, then click that foil tip on the photo. With both pins placed, this scales and repositions the photo so its marked span lands exactly on the model\'s current foil tips.';
+  ui.calibHint.textContent = calibModeHintText();
   renderCalibPins();
+}
+
+// The default (no pins placed yet) hint text for whichever calibration mode
+// is currently active -- factored out so clearCalibPins() and mode switches
+// both stay in sync without repeating the three strings.
+function calibModeHintText() {
+  if (state.calibMode === 'full') {
+    return 'Click a mark button below, then click that point on the photo. Mark 2–4 of the foil knuckle/tip points — more points, spread across both foils, give a tighter camera fit. This solves for the camera’s own position, aim and field of view to match the photo, instead of scaling the photo to a fixed camera.';
+  }
+  if (state.calibMode === 'single') {
+    return 'Click a "Mark" button, then click that point on the photo. With both the knuckle and the outer tip marked, this scales and repositions the photo so that span lands exactly on the model\'s current foil.';
+  }
+  return 'Click a "Mark" button, then click that foil tip on the photo. With both pins placed, this scales and repositions the photo so its marked span lands exactly on the model\'s current foil tips.';
 }
 
 // Switches between calibrating off both foil tips (photo shows the whole
@@ -723,22 +769,32 @@ function setCalibSingleSide(side) {
 
 function updateCalibModeUI() {
   const single = state.calibMode === 'single';
-  ui.calibModeSpan.classList.toggle('active', !single);
+  const full = state.calibMode === 'full';
+  ui.calibModeSpan.classList.toggle('active', !single && !full);
   ui.calibModeSingle.classList.toggle('active', single);
+  if (ui.calibModeFull) ui.calibModeFull.classList.toggle('active', full);
+
   ui.calibSideRow.classList.toggle('is-hidden', !single);
   ui.calibSidePort.classList.toggle('active', state.calibSingleSide === 'port');
   ui.calibSideStbd.classList.toggle('active', state.calibSingleSide === 'stbd');
+
+  if (ui.calibPinRow) ui.calibPinRow.classList.toggle('is-hidden', full);
+  if (ui.calibFullGrid) ui.calibFullGrid.classList.toggle('is-hidden', !full);
 
   if (single) {
     const side = state.calibSingleSide === 'port' ? 'port' : 'starboard';
     ui.calibMarkPortLabel.textContent = 'Mark knuckle';
     ui.calibMarkStbdLabel.textContent = 'Mark outer tip';
     ui.calibBlockHint.textContent = `Only the ${side} foil is visible -- mark its knuckle (where the strut bends into the tip) and its outer tip to scale and anchor the photo.`;
+  } else if (full) {
+    ui.calibBlockHint.textContent = 'Works on any photo, even one where the camera’s real position and lens are unknown (e.g. a broadcast shot) — mark 2–4 foil points and this solves for the camera itself.';
   } else {
     ui.calibMarkPortLabel.textContent = 'Mark port tip';
     ui.calibMarkStbdLabel.textContent = 'Mark stbd tip';
     ui.calibBlockHint.textContent = 'Mark both foil tips on the photo to scale and anchor it to the model.';
   }
+
+  ui.calibSolveBtn.textContent = full ? 'Solve camera' : 'Scale photo to match';
 }
 
 // Re-anchors the two pin dots to their stored fraction of the photo
@@ -747,7 +803,10 @@ function updateCalibModeUI() {
 function renderCalibPins() {
   if (!ui.calibPinLayer) return;
   ui.calibPinLayer.innerHTML = '';
-  if (!state.calibPortPx && !state.calibStbdPx) return;
+
+  const hasSpanPins = state.calibPortPx || state.calibStbdPx;
+  const hasFullMarks = FULL_MARK_ORDER.some((k) => state.calibFullMarks[k]);
+  if (!hasSpanPins && !hasFullMarks) return;
 
   const boxRect = ui.viewportBox.getBoundingClientRect();
   const photoRect = ui.photoImg.getBoundingClientRect();
@@ -763,6 +822,10 @@ function renderCalibPins() {
   };
   addPin(state.calibPortPx, 'port');
   addPin(state.calibStbdPx, 'stbd');
+  addPin(state.calibFullMarks.portKnuckle, 'port-knuckle');
+  addPin(state.calibFullMarks.portTip, 'port-tip');
+  addPin(state.calibFullMarks.stbdKnuckle, 'stbd-knuckle');
+  addPin(state.calibFullMarks.stbdTip, 'stbd-tip');
 }
 
 // Converts a stored {fx, fy} pin (a fraction of the photo's own displayed
@@ -854,6 +917,262 @@ function solveCalibration() {
   ui.calibHint.textContent = clamped
     ? `Scaled photo to ${newScale.toFixed(2)}× (hit the zoom limit -- span now ${finalSpan.toFixed(0)}px vs model's ${modelSpan.toFixed(0)}px). Adjust cant/heel/trim or camera and solve again.`
     : `Scaled photo to ${newScale.toFixed(2)}× and anchored it to the model's foil tips (span ${finalSpan.toFixed(0)}px).`;
+}
+
+// ---------------------------------------------------------------------
+// "Solve camera" mode: instead of scaling the photo to a camera whose
+// position/lens is already known (the two modes above), mark 2-4
+// recognizable foil landmarks and solve for the onboard camera's own
+// position, pan, tilt AND field of view that best reproduces those points
+// -- works on any photo, including third-party broadcast shots where the
+// real camera mount and lens are unknown. Uses a Levenberg-Marquardt
+// nonlinear least-squares fit (numeric Jacobian) against pixel
+// reprojection error, reusing the exact same onboard-camera rig and
+// projection math the sliders/solveCalibration() already use.
+// ---------------------------------------------------------------------
+
+const FULL_MARK_LABELS = {
+  portKnuckle: 'port foil knuckle',
+  portTip: 'port foil outer tip',
+  stbdKnuckle: 'starboard foil knuckle',
+  stbdTip: 'starboard foil outer tip'
+};
+const FULL_MARK_ORDER = ['portKnuckle', 'portTip', 'stbdKnuckle', 'stbdTip'];
+const FULL_SOLVE_LANDMARKS = {
+  portKnuckle: () => portFoilMarker,
+  portTip: () => portFoilTrueTip,
+  stbdKnuckle: () => stbdFoilMarker,
+  stbdTip: () => stbdFoilTrueTip
+};
+
+function startFullMarkPick(key) {
+  if (state.cameraMode !== 'onboard' || !photoLoaded) return;
+  state.calibFullPicking = key;
+  state.calibPicking = null;
+  ui.calibMarkPort.classList.remove('active');
+  ui.calibMarkStbd.classList.remove('active');
+  ui.calibMarkPortKnuckle.classList.toggle('active', key === 'portKnuckle');
+  ui.calibMarkPortTip.classList.toggle('active', key === 'portTip');
+  ui.calibMarkStbdKnuckle.classList.toggle('active', key === 'stbdKnuckle');
+  ui.calibMarkStbdTip.classList.toggle('active', key === 'stbdTip');
+  ui.viewportBox.classList.add('calib-picking');
+  ui.calibHint.textContent = `Click the ${FULL_MARK_LABELS[key]} on the photo.`;
+}
+
+function placeFullMark(key, fx, fy) {
+  const px = { fx: Math.min(1, Math.max(0, fx)), fy: Math.min(1, Math.max(0, fy)) };
+  state.calibFullMarks[key] = px;
+
+  const markedCount = FULL_MARK_ORDER.filter((k) => state.calibFullMarks[k]).length;
+  ui.calibClearBtn.disabled = markedCount === 0;
+  ui.calibSolveBtn.disabled = markedCount < 2;
+
+  const nextKey = FULL_MARK_ORDER.find((k) => !state.calibFullMarks[k]);
+  if (nextKey) {
+    // Chain into the next unmarked point, same as the span/single modes --
+    // keeps the click-click-click flow going without extra button presses.
+    startFullMarkPick(nextKey);
+    if (markedCount >= 2) {
+      ui.calibHint.textContent = `${markedCount} of 4 marked — click "Solve camera" now, or click the ${FULL_MARK_LABELS[nextKey]} to add another point for a tighter fit.`;
+    }
+  } else {
+    cancelCalibPicking();
+    ui.calibHint.textContent = 'All 4 points marked. Click "Solve camera" to fit the camera to them.';
+  }
+
+  renderCalibPins();
+}
+
+// Generic Levenberg-Marquardt least-squares minimizer with a numeric
+// (finite-difference) Jacobian -- residualFn(params) -> [r0, r1, ...] is
+// the only thing callers supply, so this has no knowledge of cameras or
+// pixels and could be reused for any other least-squares fit later.
+function levenbergMarquardt(residualFn, x0, opts = {}) {
+  const maxIter = opts.maxIter || 100;
+  const eps = opts.eps || 1e-10;
+  let lambda = opts.lambda || 1e-3;
+  let x = x0.slice();
+  let r = residualFn(x);
+  let cost = r.reduce((s, v) => s + v * v, 0);
+
+  for (let iter = 0; iter < maxIter; iter++) {
+    const n = x.length;
+    const m = r.length;
+
+    const J = Array.from({ length: m }, () => new Array(n).fill(0));
+    for (let j = 0; j < n; j++) {
+      const h = Math.max(1e-4, Math.abs(x[j]) * 1e-4);
+      const xph = x.slice();
+      xph[j] += h;
+      const rph = residualFn(xph);
+      for (let i = 0; i < m; i++) J[i][j] = (rph[i] - r[i]) / h;
+    }
+
+    const JtJ = Array.from({ length: n }, () => new Array(n).fill(0));
+    const Jtr = new Array(n).fill(0);
+    for (let a = 0; a < n; a++) {
+      for (let b = 0; b < n; b++) {
+        let s = 0;
+        for (let i = 0; i < m; i++) s += J[i][a] * J[i][b];
+        JtJ[a][b] = s;
+      }
+      let s = 0;
+      for (let i = 0; i < m; i++) s += J[i][a] * r[i];
+      Jtr[a] = s;
+    }
+
+    let improved = false;
+    for (let attempt = 0; attempt < 12 && !improved; attempt++) {
+      const A = JtJ.map((row, a) => row.map((v, b) => (a === b ? v + lambda * (JtJ[a][a] || 1e-6) : v)));
+      const b = Jtr.map((v) => -v);
+      const delta = solveLinearSystem(A, b);
+      if (!delta) { lambda *= 4; continue; }
+
+      const xNew = x.map((v, i) => v + delta[i]);
+      const rNew = residualFn(xNew);
+      const costNew = rNew.reduce((s, v) => s + v * v, 0);
+
+      if (costNew < cost) {
+        const rel = (cost - costNew) / Math.max(cost, 1e-12);
+        x = xNew; r = rNew; cost = costNew;
+        lambda = Math.max(lambda * 0.4, 1e-9);
+        improved = true;
+        if (rel < eps) return { x, cost, iterations: iter };
+      } else {
+        lambda *= 4;
+      }
+    }
+    if (!improved) break;
+  }
+  return { x, cost, iterations: maxIter };
+}
+
+// Small Gauss-Jordan solver with partial pivoting -- n is at most 6 here
+// (the camera parameters), so nothing fancier is needed.
+function solveLinearSystem(A, b) {
+  const n = b.length;
+  const M = A.map((row, i) => row.concat([b[i]]));
+  for (let col = 0; col < n; col++) {
+    let pivot = col;
+    for (let row = col + 1; row < n; row++) {
+      if (Math.abs(M[row][col]) > Math.abs(M[pivot][col])) pivot = row;
+    }
+    if (Math.abs(M[pivot][col]) < 1e-12) return null;
+    if (pivot !== col) { const tmp = M[col]; M[col] = M[pivot]; M[pivot] = tmp; }
+    for (let row = 0; row < n; row++) {
+      if (row === col) continue;
+      const factor = M[row][col] / M[col][col];
+      for (let c = col; c <= n; c++) M[row][c] -= factor * M[col][c];
+    }
+  }
+  return M.map((row, i) => row[n] / row[i]);
+}
+
+function solveCameraFromMarks() {
+  if (!modelReady) return;
+  const activeKeys = FULL_MARK_ORDER.filter((k) => state.calibFullMarks[k]);
+  if (activeKeys.length < 2) return;
+
+  const boxRect = ui.viewportBox.getBoundingClientRect();
+  const boxWidth = boxRect.width;
+  const boxHeight = boxRect.height;
+  const photoRect = ui.photoImg.getBoundingClientRect();
+
+  const targets = activeKeys.map((k) => calibPinToBoxPx(state.calibFullMarks[k], boxRect, photoRect));
+
+  // World-space positions of the matching model landmarks in the boat's
+  // CURRENT pose (cant/heel/trim/ride height) -- only the camera moves
+  // during the search below, the boat itself stays put.
+  boatRoot.updateMatrixWorld(true);
+  const worldPositions = activeKeys.map((k) => {
+    const v = new THREE.Vector3();
+    FULL_SOLVE_LANDMARKS[k]().getWorldPosition(v);
+    return v;
+  });
+
+  const paramNames = ['camAlong', 'camHeight', 'camAthwart', 'camPan', 'camTilt', 'camFov'];
+  const x0 = paramNames.map((p) => state[p]);
+
+  // Forward model: place the real onboard camera exactly as
+  // updateOnboardCamera() would for these 6 parameters, then project each
+  // landmark -- reuses the same rig/projection the sliders already drive,
+  // so the solved values slot straight back into them afterwards.
+  const applyParams = (p) => {
+    const [along, height, athwart, pan, tilt, fov] = p;
+    const pos = ONBOARD_BASE.clone();
+    pos.x += along; pos.y += height; pos.z += athwart;
+    camera.position.copy(pos);
+    camera.rotation.order = 'YXZ';
+    camera.rotation.set(
+      THREE.MathUtils.degToRad(tilt),
+      THREE.MathUtils.degToRad(90 + pan),
+      0
+    );
+    camera.fov = Math.min(140, Math.max(20, fov));
+    camera.updateProjectionMatrix();
+    camera.updateMatrixWorld(true);
+  };
+
+  const projectToBoxPx = (worldPos) => {
+    const p = worldPos.clone().project(camera);
+    return {
+      x: (p.x * 0.5 + 0.5) * boxWidth,
+      y: (1 - (p.y * 0.5 + 0.5)) * boxHeight
+    };
+  };
+
+  // Mild ridge regularization toward the sliders' current values, weighted
+  // low relative to a pixel error. This keeps the solve well-posed with
+  // only 2-3 points (otherwise underdetermined) without meaningfully
+  // distorting a well-constrained 4-point fit.
+  const regWeight = [0.4, 0.4, 0.4, 0.02, 0.02, 0.01];
+
+  const residualFn = (p) => {
+    applyParams(p);
+    const residuals = [];
+    for (let i = 0; i < activeKeys.length; i++) {
+      const proj = projectToBoxPx(worldPositions[i]);
+      residuals.push(proj.x - targets[i].x);
+      residuals.push(proj.y - targets[i].y);
+    }
+    for (let j = 0; j < p.length; j++) {
+      residuals.push(regWeight[j] * (p[j] - x0[j]));
+    }
+    return residuals;
+  };
+
+  const result = levenbergMarquardt(residualFn, x0, { maxIter: 150 });
+  const solved = result.x;
+
+  applyParams(solved);
+  state.camAlong = solved[0];
+  state.camHeight = solved[1];
+  state.camAthwart = solved[2];
+  state.camPan = solved[3];
+  state.camTilt = solved[4];
+  state.camFov = Math.min(140, Math.max(20, solved[5]));
+
+  ui.camAlong.value = state.camAlong; ui.camAlongValue.textContent = `${signed(state.camAlong, 2)} m`;
+  ui.camHeight.value = state.camHeight; ui.camHeightValue.textContent = `${signed(state.camHeight, 2)} m`;
+  ui.camAthwart.value = state.camAthwart; ui.camAthwartValue.textContent = `${signed(state.camAthwart, 2)} m`;
+  ui.camPan.value = state.camPan; ui.camPanValue.textContent = `${signed(state.camPan, 1)}°`;
+  ui.camTilt.value = state.camTilt; ui.camTiltValue.textContent = `${signed(state.camTilt, 1)}°`;
+  ui.camFov.value = state.camFov; ui.camFovValue.textContent = `${state.camFov.toFixed(0)}°`;
+
+  updateGeometry();
+
+  // RMS pixel reprojection error over just the point residuals (not the
+  // regularization terms) -- the number that actually says how well the
+  // solved camera explains the marked points.
+  const pointResiduals = residualFn(solved).slice(0, activeKeys.length * 2);
+  const rms = Math.sqrt(pointResiduals.reduce((s, v) => s + v * v, 0) / pointResiduals.length);
+  const under = activeKeys.length < 3;
+
+  ui.calibHint.textContent = `Solved from ${activeKeys.length} point${activeKeys.length === 1 ? '' : 's'}: `
+    + `FOV ${state.camFov.toFixed(1)}°, pan ${signed(state.camPan, 1)}°, tilt ${signed(state.camTilt, 1)}°, `
+    + `mount ${signed(state.camAlong, 2)}/${signed(state.camHeight, 2)}/${signed(state.camAthwart, 2)} m (fore-aft/height/athwart). `
+    + `RMS fit error ${rms.toFixed(1)}px.`
+    + (under ? ' Only 2 points marked — this is underdetermined (regularized toward the sliders’ starting values); mark 3–4 for a fully independent solve.' : '');
 }
 
 function applyOnboardPreset(name) {
