@@ -181,6 +181,26 @@ let renderer, scene, camera, controls;
 let boatRoot, modelScene, portCantGroup, stbdCantGroup;
 let portFoilMarker, stbdFoilMarker;
 let portFoilTrueTip, stbdFoilTrueTip;
+
+// Lookup tables for the "Solve camera" full-solve mode (see the block below
+// applyOnboardPreset for the rest of that feature) -- declared up here,
+// before initScene()/bindUI() run below, since renderCalibPins() (called
+// from onResize() during initScene()) references FULL_MARK_ORDER and a
+// const declared further down would still be in its temporal dead zone at
+// that point, crashing the whole module on load.
+const FULL_MARK_LABELS = {
+  portKnuckle: 'port foil knuckle',
+  portTip: 'port foil outer tip',
+  stbdKnuckle: 'starboard foil knuckle',
+  stbdTip: 'starboard foil outer tip'
+};
+const FULL_MARK_ORDER = ['portKnuckle', 'portTip', 'stbdKnuckle', 'stbdTip'];
+const FULL_SOLVE_LANDMARKS = {
+  portKnuckle: () => portFoilMarker,
+  portTip: () => portFoilTrueTip,
+  stbdKnuckle: () => stbdFoilMarker,
+  stbdTip: () => stbdFoilTrueTip
+};
 let waterPlane, waterGrid;
 let modelReady = false;
 let modelMeshes = [];
@@ -930,20 +950,6 @@ function solveCalibration() {
 // reprojection error, reusing the exact same onboard-camera rig and
 // projection math the sliders/solveCalibration() already use.
 // ---------------------------------------------------------------------
-
-const FULL_MARK_LABELS = {
-  portKnuckle: 'port foil knuckle',
-  portTip: 'port foil outer tip',
-  stbdKnuckle: 'starboard foil knuckle',
-  stbdTip: 'starboard foil outer tip'
-};
-const FULL_MARK_ORDER = ['portKnuckle', 'portTip', 'stbdKnuckle', 'stbdTip'];
-const FULL_SOLVE_LANDMARKS = {
-  portKnuckle: () => portFoilMarker,
-  portTip: () => portFoilTrueTip,
-  stbdKnuckle: () => stbdFoilMarker,
-  stbdTip: () => stbdFoilTrueTip
-};
 
 function startFullMarkPick(key) {
   if (state.cameraMode !== 'onboard' || !photoLoaded) return;
