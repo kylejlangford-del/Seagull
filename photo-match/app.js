@@ -89,21 +89,21 @@ const ui = {
   downloadAllBtn: $('downloadAllBtn')
 };
 
-// Fixed, calibrated AC40 bow-camera preset: on centreline, ~1.10m forward
-// of the ONBOARD_BASE mount reference, ~0.38m below it, aimed straight aft
-// (pan 0) and pitched down 4 degrees, at the camera's real 100-degree FOV.
+// Fixed, calibrated AC40 bow-camera preset: on centreline, ~0.75m forward
+// of the ONBOARD_BASE mount reference, ~0.36m below it, aimed straight aft
+// (pan 0, tilt 0) at the camera's real 58-degree FOV.
 // This is the page's initial state AND what "Reset" restores -- from here
 // the user should normally only touch foil cant / ride height / heel /
 // trim to match a given photo, not the camera itself.
 const DEFAULT_CAMERA = {
   mode: 'onboard',
   mount: 'bow',
-  foreAft: -1.10,
-  heightAboveDeck: -0.38,
+  foreAft: -0.75,
+  heightAboveDeck: -0.36,
   athwartshipsOffset: 0.00,
   panDeg: 0.0,
-  tiltDeg: -4.0,
-  fovDeg: 100.0
+  tiltDeg: 0.0,
+  fovDeg: 58.0
 };
 
 const defaults = {
