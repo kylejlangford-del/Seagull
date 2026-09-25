@@ -516,7 +516,7 @@ function updateSideWaterGuide(cantDeg, tipObj, guide) {
   positions.setXYZ(0, x, y, z);
   positions.setXYZ(1, x, 0, z);
   positions.needsUpdate = true;
-  guide.line.geometry.computeLineDistances();
+  guide.line.computeLineDistances();
   guide.line.material.color.setHex(color);
 
   guide.ring.position.set(x, 0.004, z);
