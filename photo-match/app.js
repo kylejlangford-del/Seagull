@@ -216,6 +216,7 @@ let renderer, scene, camera, controls;
 let boatRoot, modelScene, portCantGroup, stbdCantGroup;
 let portFoilMarker, stbdFoilMarker;
 let portFoilTrueTip, stbdFoilTrueTip;
+let portWaterGuide, stbdWaterGuide;
 
 // Lookup tables for the "Solve camera" full-solve mode (see the block below
 // applyOnboardPreset for the rest of that feature) -- declared up here,
@@ -351,6 +352,7 @@ function loadModel() {
 
       tuneMaterials(modelScene);
       setupCantAssemblies();
+      createFoilWaterGuides();
 
       modelReady = true;
       applyCameraMode();
@@ -446,6 +448,88 @@ function setupCantAssemblies() {
   stbdCantGroup.add(stbdFoilTrueTip);
 }
 
+// A canted foil below 90 degrees rakes outward toward (or through) the
+// water in a way that's easy to misjudge in perspective -- the raked foil
+// line itself doesn't read as "vertical" to the eye, and a tip only a few
+// centimetres from the surface can look the same as one a metre clear.
+// For whichever foil is currently below 90 degrees, these guides draw an
+// unambiguous true-vertical drop line from the tip straight to the water
+// plane, plus a ring marking exactly where that line crosses it -- both
+// rendered on top of the hull (depthTest off) so they're never hidden
+// behind the model.
+function buildFoilWaterGuide() {
+  const group = new THREE.Group();
+  group.visible = false;
+
+  const lineGeom = new THREE.BufferGeometry();
+  lineGeom.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(6), 3));
+  const lineMat = new THREE.LineDashedMaterial({
+    color: 0x47e7db,
+    dashSize: 0.06,
+    gapSize: 0.05,
+    transparent: true,
+    opacity: 0.92,
+    depthTest: false
+  });
+  const line = new THREE.Line(lineGeom, lineMat);
+  line.renderOrder = 999;
+  group.add(line);
+
+  const ringGeom = new THREE.RingGeometry(0.09, 0.16, 32);
+  ringGeom.rotateX(-Math.PI / 2);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: 0x47e7db,
+    transparent: true,
+    opacity: 0.85,
+    side: THREE.DoubleSide,
+    depthTest: false
+  });
+  const ring = new THREE.Mesh(ringGeom, ringMat);
+  ring.renderOrder = 999;
+  group.add(ring);
+
+  return { group, line, ring };
+}
+
+function createFoilWaterGuides() {
+  portWaterGuide = buildFoilWaterGuide();
+  stbdWaterGuide = buildFoilWaterGuide();
+  scene.add(portWaterGuide.group);
+  scene.add(stbdWaterGuide.group);
+}
+
+function updateSideWaterGuide(cantDeg, tipObj, guide) {
+  if (!guide || !tipObj) return;
+  if (cantDeg >= 90 || !ui.waterlineToggle.checked) {
+    guide.group.visible = false;
+    return;
+  }
+
+  tipObj.getWorldPosition(tempV);
+  const x = tempV.x, y = tempV.y, z = tempV.z;
+  const nearSurface = Math.abs(y) < 0.08;
+  const color = nearSurface ? 0xffcb6b : 0x47e7db;
+
+  guide.group.visible = true;
+
+  const positions = guide.line.geometry.attributes.position;
+  positions.setXYZ(0, x, y, z);
+  positions.setXYZ(1, x, 0, z);
+  positions.needsUpdate = true;
+  guide.line.geometry.computeLineDistances();
+  guide.line.material.color.setHex(color);
+
+  guide.ring.position.set(x, 0.004, z);
+  guide.ring.material.color.setHex(color);
+  guide.ring.material.opacity = nearSurface ? 0.95 : 0.75;
+}
+
+function updateFoilWaterGuides() {
+  if (!modelReady) return;
+  updateSideWaterGuide(state.cantPort, portFoilTrueTip, portWaterGuide);
+  updateSideWaterGuide(state.cantStbd, stbdFoilTrueTip, stbdWaterGuide);
+}
+
 function bindUI() {
   bindRange(ui.cantPort, ui.cantPortValue, (v) => { state.cantPort = v; return `${v.toFixed(1)}°`; });
   bindRange(ui.cantStbd, ui.cantStbdValue, (v) => { state.cantStbd = v; return `${v.toFixed(1)}°`; });
@@ -501,6 +585,7 @@ function bindUI() {
     const visible = ui.waterlineToggle.checked;
     waterPlane.visible = visible;
     waterGrid.visible = visible;
+    updateFoilWaterGuides();
   });
 
   document.querySelectorAll('#cameraMode button').forEach((button) => {
@@ -1345,6 +1430,7 @@ function updateGeometry() {
   if (state.cameraMode === 'onboard') updateOnboardCamera();
 
   updateOutputs();
+  updateFoilWaterGuides();
 }
 
 function updateOutputs() {
@@ -1552,18 +1638,29 @@ function sanitizeFilename(name) {
 // model overlay into one canvas, exactly as they're stacked in the viewer,
 // plus a caption bar with the four headline numbers burned in so the image
 // is self-contained once it's sent elsewhere.
+const SNAPSHOT_THEME = {
+  bg: '#06101b',
+  surface: '#0a1725',
+  line: 'rgba(132, 151, 174, 0.18)',
+  lineStrong: 'rgba(71, 231, 219, 0.30)',
+  text: '#edf5fb',
+  muted: '#8fa2b5',
+  accent: '#47e7db'
+};
+
 function captureMatchSnapshot() {
   const rect = ui.viewportBox.getBoundingClientRect();
   const width = Math.max(1, Math.round(rect.width));
   const height = Math.max(1, Math.round(rect.height));
-  const captionHeight = 54;
+  const captionHeight = 108;
+  const T = SNAPSHOT_THEME;
 
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height + captionHeight;
   const ctx = canvas.getContext('2d');
 
-  ctx.fillStyle = '#030a12';
+  ctx.fillStyle = T.bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   if (photoLoaded && ui.photoImg.complete && ui.photoImg.naturalWidth) {
@@ -1598,19 +1695,73 @@ function captureMatchSnapshot() {
     ctx.drawImage(renderer.domElement, 0, 0, width, height);
   }
 
-  ctx.fillStyle = 'rgba(6,16,27,0.88)';
+  // Soft vignette where the image meets the caption band, so the band's top
+  // edge reads cleanly against a bright photo or model instead of a hard seam.
+  const vignetteH = Math.min(64, height * 0.18);
+  if (vignetteH > 0) {
+    const vignette = ctx.createLinearGradient(0, height - vignetteH, 0, height);
+    vignette.addColorStop(0, 'rgba(6, 16, 27, 0)');
+    vignette.addColorStop(1, 'rgba(6, 16, 27, 0.72)');
+    ctx.fillStyle = vignette;
+    ctx.fillRect(0, height - vignetteH, width, vignetteH);
+  }
+
+  // Caption band, styled to match the app's own dark surface + headline KPI
+  // strip rather than a plain text overlay.
+  ctx.fillStyle = T.surface;
   ctx.fillRect(0, height, width, captionHeight);
-  ctx.textBaseline = 'middle';
+  ctx.fillStyle = T.lineStrong;
+  ctx.fillRect(0, height, width, 2);
 
-  ctx.fillStyle = '#edf5fb';
-  ctx.font = '600 14px Inter, ui-sans-serif, sans-serif';
-  const line1 = `Cant  P ${state.cantPort.toFixed(1)}°   S ${state.cantStbd.toFixed(1)}°`;
-  ctx.fillText(line1, 14, height + captionHeight / 2 - 11);
+  const padX = 16;
+  ctx.textBaseline = 'alphabetic';
 
-  ctx.fillStyle = '#8fa2b5';
-  ctx.font = '400 12px Inter, ui-sans-serif, sans-serif';
-  const line2 = `Sink  P ${ui.outSinkPort.textContent}   S ${ui.outSinkStbd.textContent}`;
-  ctx.fillText(line2, 14, height + captionHeight / 2 + 11);
+  ctx.textAlign = 'left';
+  ctx.fillStyle = T.accent;
+  ctx.font = '800 11px Inter, ui-sans-serif, sans-serif';
+  try { ctx.letterSpacing = '0.12em'; } catch (err) { /* not supported */ }
+  ctx.fillText('AC40 · PHOTO MATCH', padX, height + 21);
+  try { ctx.letterSpacing = '0px'; } catch (err) { /* not supported */ }
+
+  ctx.textAlign = 'right';
+  ctx.fillStyle = T.muted;
+  ctx.font = '400 11px Inter, ui-sans-serif, sans-serif';
+  const labelSource = photoLoaded ? ui.photoFileName.textContent : 'No photo loaded';
+  ctx.fillText(`${labelSource}  ·  ${new Date().toLocaleString()}`, width - padX, height + 21);
+
+  ctx.fillStyle = T.line;
+  ctx.fillRect(padX, height + 30, width - padX * 2, 1);
+
+  const kpis = [
+    { label: 'CANT PORT', value: `${state.cantPort.toFixed(1)}°` },
+    { label: 'CANT STARBOARD', value: `${state.cantStbd.toFixed(1)}°` },
+    { label: 'SINK PORT', value: ui.outSinkPort.textContent },
+    { label: 'SINK STARBOARD', value: ui.outSinkStbd.textContent }
+  ];
+  const colW = (width - padX * 2) / kpis.length;
+  ctx.textAlign = 'left';
+  kpis.forEach((kpi, i) => {
+    const colX = padX + colW * i;
+    if (i > 0) {
+      ctx.fillStyle = T.line;
+      ctx.fillRect(colX, height + 42, 1, captionHeight - 54);
+    }
+    const textX = colX + (i > 0 ? 16 : 0);
+
+    ctx.fillStyle = T.muted;
+    ctx.font = '700 9.5px Inter, ui-sans-serif, sans-serif';
+    try { ctx.letterSpacing = '0.05em'; } catch (err) { /* not supported */ }
+    ctx.fillText(kpi.label, textX, height + 58);
+    try { ctx.letterSpacing = '0px'; } catch (err) { /* not supported */ }
+
+    ctx.fillStyle = T.accent;
+    ctx.font = '800 19px Inter, ui-sans-serif, sans-serif';
+    ctx.fillText(kpi.value, textX, height + 84);
+  });
+
+  ctx.strokeStyle = T.line;
+  ctx.lineWidth = 1;
+  ctx.strokeRect(0.5, 0.5, canvas.width - 1, canvas.height - 1);
 
   return canvas.toDataURL('image/png');
 }
