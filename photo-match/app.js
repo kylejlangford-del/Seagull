@@ -618,7 +618,7 @@ function placeCalibPin(which, fx, fy) {
   ui.calibClearBtn.disabled = !(state.calibPortPx || state.calibStbdPx);
   ui.calibSolveBtn.disabled = !bothPlaced;
   ui.calibHint.textContent = bothPlaced
-    ? 'Both tips marked. Click "Match camera position" to solve.'
+    ? 'Both tips marked. Click "Scale photo to match" to solve.'
     : `Marked. Now mark the ${which === 'port' ? 'starboard' : 'port'} foil tip.`;
 
   renderCalibPins();
@@ -630,7 +630,7 @@ function clearCalibPins() {
   cancelCalibPicking();
   ui.calibClearBtn.disabled = true;
   ui.calibSolveBtn.disabled = true;
-  ui.calibHint.textContent = 'Click a "Mark" button, then click that foil tip on the photo. With both pins placed, solving moves the fore-aft slider above to match the model\'s foil span to your marks.';
+  ui.calibHint.textContent = 'Click a "Mark" button, then click that foil tip on the photo. With both pins placed, this scales and repositions the photo so its marked span lands exactly on the model\'s current foil tips.';
   renderCalibPins();
 }
 
@@ -673,83 +673,70 @@ function solveCalibration() {
   if (!modelReady || !state.calibPortPx || !state.calibStbdPx) return;
 
   const boxRect = ui.viewportBox.getBoundingClientRect();
+  const boxWidth = boxRect.width;
+  const boxHeight = boxRect.height;
   const photoRect = ui.photoImg.getBoundingClientRect();
   const portPx = calibPinToBoxPx(state.calibPortPx, boxRect, photoRect);
   const stbdPx = calibPinToBoxPx(state.calibStbdPx, boxRect, photoRect);
-  const targetSpan = Math.hypot(stbdPx.x - portPx.x, stbdPx.y - portPx.y);
-  const boxWidth = boxRect.width;
-  const boxHeight = boxRect.height;
+  const photoSpan = Math.hypot(stbdPx.x - portPx.x, stbdPx.y - portPx.y);
+  if (photoSpan < 1) return;
 
-  // The model's foil-tip markers, in world space, at the current cant /
-  // heel / trim / ride-height -- constant through the search below, since
-  // only the camera's fore-aft mount position changes.
+  // The model's own foil-tip markers, projected through the onboard camera
+  // exactly as it's currently set (fore-aft, height, pan, tilt) -- no
+  // camera search here. We're scaling and repositioning the PHOTO to match
+  // the model's current rendering, not moving the camera to match the
+  // photo, so the camera stays exactly where the sliders above put it.
   boatRoot.updateMatrixWorld(true);
+  camera.updateMatrixWorld(true);
   const portWorld = new THREE.Vector3();
   const stbdWorld = new THREE.Vector3();
   portFoilMarker.getWorldPosition(portWorld);
   stbdFoilMarker.getWorldPosition(stbdWorld);
 
-  // Projects the two foil-tip world points through the onboard camera at
-  // a candidate fore-aft mount position and returns their on-screen pixel
-  // span, without touching the live renderer -- pure matrix math, so this
-  // is cheap enough to sample hundreds of times.
-  function spanForAlong(along) {
-    const pos = ONBOARD_BASE.clone();
-    pos.x += along;
-    pos.y += state.camHeight;
-    pos.z += state.camAthwart;
-    camera.position.copy(pos);
-    camera.rotation.order = 'YXZ';
-    camera.rotation.set(
-      THREE.MathUtils.degToRad(state.camTilt),
-      THREE.MathUtils.degToRad(90 + state.camPan),
-      0
-    );
-    camera.updateMatrixWorld(true);
+  const projectToBoxPx = (worldPos) => {
+    const p = worldPos.clone().project(camera);
+    return {
+      x: (p.x * 0.5 + 0.5) * boxWidth,
+      y: (1 - (p.y * 0.5 + 0.5)) * boxHeight
+    };
+  };
+  const modelPortPx = projectToBoxPx(portWorld);
+  const modelStbdPx = projectToBoxPx(stbdWorld);
+  const modelSpan = Math.hypot(modelStbdPx.x - modelPortPx.x, modelStbdPx.y - modelPortPx.y);
+  const modelMid = {
+    x: (modelPortPx.x + modelStbdPx.x) / 2,
+    y: (modelPortPx.y + modelStbdPx.y) / 2
+  };
 
-    const p1 = portWorld.clone().project(camera);
-    const p2 = stbdWorld.clone().project(camera);
-    const x1 = (p1.x * 0.5 + 0.5) * boxWidth;
-    const y1 = (1 - (p1.y * 0.5 + 0.5)) * boxHeight;
-    const x2 = (p2.x * 0.5 + 0.5) * boxWidth;
-    const y2 = (1 - (p2.y * 0.5 + 0.5)) * boxHeight;
-    return Math.hypot(x2 - x1, y2 - y1);
-  }
+  // Scale the photo so its marked span exactly matches the model's current
+  // foil-tip span, then reposition it so the marked midpoint lands exactly
+  // on the model's foil-tip midpoint -- a similarity fit (uniform scale +
+  // translate) through those two reference points, the same idea as
+  // anchoring a photo overlay to two known points.
+  const oldScale = state.photoScale;
+  const newScale = Math.min(4, Math.max(0.4, oldScale * (modelSpan / photoSpan)));
 
-  // Span-vs-position isn't guaranteed monotonic across the whole slider
-  // range (perspective can do odd things if the camera passes close to a
-  // foil), so scan coarsely for the closest match first, then refine
-  // around it with a ternary-style narrowing rather than assuming a
-  // single clean crossing to bisect.
-  const lo = -3, hi = 3, steps = 240;
-  let bestAlong = state.camAlong;
-  let bestDiff = Infinity;
-  for (let i = 0; i <= steps; i++) {
-    const along = lo + (hi - lo) * (i / steps);
-    const diff = Math.abs(spanForAlong(along) - targetSpan);
-    if (diff < bestDiff) { bestDiff = diff; bestAlong = along; }
-  }
+  // fx/fy fractions are invariant under the photo's own uniform scale +
+  // translate transform, so this recovers the marked midpoint's position in
+  // the photo's untransformed local box -- i.e. viewport-box coordinates
+  // before any pan/zoom is applied. The transform is
+  // translate(ox, oy) scale(s) about the box's own centre (transform-origin
+  // 50% 50%), which places a local point p at
+  // s * (p - centre) + (ox, oy) + centre -- solved below for (ox, oy) so
+  // that point lands on the model's foil-tip midpoint.
+  const localMidX = ((state.calibPortPx.fx + state.calibStbdPx.fx) / 2) * boxWidth;
+  const localMidY = ((state.calibPortPx.fy + state.calibStbdPx.fy) / 2) * boxHeight;
 
-  let a = Math.max(lo, bestAlong - (hi - lo) / steps);
-  let b = Math.min(hi, bestAlong + (hi - lo) / steps);
-  for (let i = 0; i < 40; i++) {
-    const m1 = a + (b - a) / 3;
-    const m2 = b - (b - a) / 3;
-    const d1 = Math.abs(spanForAlong(m1) - targetSpan);
-    const d2 = Math.abs(spanForAlong(m2) - targetSpan);
-    if (d1 < d2) b = m2; else a = m1;
-  }
-  const solved = Math.min(hi, Math.max(lo, (a + b) / 2));
+  state.photoScale = newScale;
+  state.photoOffsetX = modelMid.x - newScale * (localMidX - boxWidth / 2) - boxWidth / 2;
+  state.photoOffsetY = modelMid.y - newScale * (localMidY - boxHeight / 2) - boxHeight / 2;
+  applyPhotoTransform();
 
-  state.camAlong = Number(solved.toFixed(3));
-  ui.camAlong.value = state.camAlong;
-  ui.camAlongValue.textContent = `${signed(state.camAlong, 2)} m`;
-  updateGeometry();
-
-  const finalSpan = spanForAlong(state.camAlong);
-  ui.calibHint.textContent =
-    `Solved fore-aft position: ${signed(state.camAlong, 2)} m ` +
-    `(photo span ${targetSpan.toFixed(0)}px, model span now ${finalSpan.toFixed(0)}px).`;
+  const finalSpan = photoSpan * (newScale / oldScale);
+  const clamped = Math.abs(finalSpan - modelSpan) > 1;
+  ui.calibHint.textContent = clamped
+    ? `Scaled photo to ${newScale.toFixed(2)}× (hit the zoom limit -- span now ${finalSpan.toFixed(0)}px vs model's ${modelSpan.toFixed(0)}px). Adjust cant/heel/trim or camera and solve again.`
+    : `Scaled photo to ${newScale.toFixed(2)}× and anchored it to the model's foil tips (span ${finalSpan.toFixed(0)}px).`;
 }
 
 function applyOnboardPreset(name) {
