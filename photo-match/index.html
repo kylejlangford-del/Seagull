@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#07111d" />
   <title>Photo Match · Seagull Data</title>
-  <link rel="stylesheet" href="./styles.css?v=20260930" />
+  <link rel="stylesheet" href="./styles.css?v=20260931" />
   <script type="importmap">
   {
     "imports": {
@@ -132,15 +132,25 @@
               <div class="calib-block">
                 <div class="calib-block__heading">
                   <span>Foil-span calibration</span>
-                  <small>Mark both foil tips on the photo to scale and anchor it to the model</small>
+                  <small id="calibBlockHint">Mark both foil tips on the photo to scale and anchor it to the model</small>
+                </div>
+
+                <div class="calib-pin-row">
+                  <button class="mini-button mini-button--toggle active" id="calibModeSpan" type="button">Both foils visible</button>
+                  <button class="mini-button mini-button--toggle" id="calibModeSingle" type="button">Single foil</button>
+                </div>
+
+                <div class="calib-pin-row is-hidden" id="calibSideRow">
+                  <button class="mini-button mini-button--toggle active" id="calibSidePort" type="button">Port foil</button>
+                  <button class="mini-button mini-button--toggle" id="calibSideStbd" type="button">Starboard foil</button>
                 </div>
 
                 <div class="calib-pin-row">
                   <button class="mini-button mini-button--pin" id="calibMarkPort" type="button">
-                    <span class="pin-dot pin-dot--port"></span>Mark port tip
+                    <span class="pin-dot pin-dot--port"></span><span id="calibMarkPortLabel">Mark port tip</span>
                   </button>
                   <button class="mini-button mini-button--pin" id="calibMarkStbd" type="button">
-                    <span class="pin-dot pin-dot--stbd"></span>Mark stbd tip
+                    <span class="pin-dot pin-dot--stbd"></span><span id="calibMarkStbdLabel">Mark stbd tip</span>
                   </button>
                 </div>
 
@@ -284,6 +294,6 @@
     </div>
   </div>
 
-  <script type="module" src="./app.js?v=20260930"></script>
+  <script type="module" src="./app.js?v=20260931"></script>
 </body>
 </html>
