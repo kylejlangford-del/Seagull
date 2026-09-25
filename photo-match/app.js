@@ -243,7 +243,6 @@ let modelMeshes = [];
 let photoLoaded = false;
 
 const tempV = new THREE.Vector3();
-const tempV2 = new THREE.Vector3();
 
 initScene();
 bindUI();
@@ -450,21 +449,18 @@ function setupCantAssemblies() {
 }
 
 // A canted foil below 90 degrees rakes outward toward (or through) the
-// water in a way that's easy to misjudge in perspective. Two different
-// reference lines matter here, so each guide draws both:
-//  - the TIP line: the real foil rake, followed from the knuckle straight
-//    through the outer tip and on to the water plane -- i.e. where the
-//    physical foil itself actually meets the surface. Drawn in accent cyan.
-//  - the VERTICAL line: a true plumb line dropped straight down from the
-//    tip to the water plane. Because the raked foil line doesn't read as
-//    "vertical" to the eye in perspective, this gives an unambiguous
-//    vertical reference alongside it. Drawn in violet.
-// Both end in a ring marking exactly where they cross the water, and both
-// render on top of the hull (depthTest off) so they're never hidden behind
-// the model.
-const WATER_GUIDE_COLOR_TIP = 0x47e7db;
-const WATER_GUIDE_COLOR_TIP_NEAR = 0xffcb6b;
-const WATER_GUIDE_COLOR_VERTICAL = 0xb98dfb;
+// water in a way that's easy to misjudge in perspective -- the raked foil
+// line itself doesn't read as "vertical" to the eye, and a tip only a few
+// centimetres from the surface can look the same as one a metre clear. For
+// whichever foil is currently below 90 degrees, this draws a true plumb
+// line straight down from the tip to the water plane, with a marker dot at
+// each end: one right on the tip itself, one on the ring where that
+// vertical line reaches the surface -- so both "where the tip actually is"
+// and "where it projects onto the water" are unambiguous at a glance. All
+// of it renders on top of the hull (depthTest off) so it's never hidden
+// behind the model.
+const WATER_GUIDE_COLOR = 0x47e7db;
+const WATER_GUIDE_COLOR_NEAR = 0xffcb6b;
 
 function buildWaterGuideLine(color) {
   const geom = new THREE.BufferGeometry();
@@ -497,17 +493,24 @@ function buildWaterGuideRing(color) {
   return ring;
 }
 
+function buildWaterGuideDot(color) {
+  const geom = new THREE.SphereGeometry(0.05, 16, 12);
+  const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.95, depthTest: false });
+  const dot = new THREE.Mesh(geom, mat);
+  dot.renderOrder = 999;
+  return dot;
+}
+
 function buildFoilWaterGuide() {
   const group = new THREE.Group();
   group.visible = false;
 
-  const tipLine = buildWaterGuideLine(WATER_GUIDE_COLOR_TIP);
-  const tipRing = buildWaterGuideRing(WATER_GUIDE_COLOR_TIP);
-  const verticalLine = buildWaterGuideLine(WATER_GUIDE_COLOR_VERTICAL);
-  const verticalRing = buildWaterGuideRing(WATER_GUIDE_COLOR_VERTICAL);
-  group.add(tipLine, tipRing, verticalLine, verticalRing);
+  const line = buildWaterGuideLine(WATER_GUIDE_COLOR);
+  const tipDot = buildWaterGuideDot(WATER_GUIDE_COLOR);
+  const waterRing = buildWaterGuideRing(WATER_GUIDE_COLOR);
+  group.add(line, tipDot, waterRing);
 
-  return { group, tipLine, tipRing, verticalLine, verticalRing };
+  return { group, line, tipDot, waterRing };
 }
 
 function createFoilWaterGuides() {
@@ -525,72 +528,36 @@ function setWaterGuideLine(line, from, to) {
   line.computeLineDistances();
 }
 
-// Beyond this, a genuine knuckle->tip crossing point is too far an
-// extrapolation from the tip to be a useful "where it meets the water"
-// marker (a near-horizontal rake can otherwise send it shooting off to an
-// unhelpful, offscreen point) -- in that case the rake-line marker is
-// simply skipped and only the always-present vertical reference is shown.
-const WATER_GUIDE_RAKE_CAP = 3.0;
-
-function updateSideWaterGuide(cantDeg, knuckleObj, tipObj, guide) {
-  if (!guide || !tipObj || !knuckleObj) return;
+function updateSideWaterGuide(cantDeg, tipObj, guide) {
+  if (!guide || !tipObj) return;
   if (cantDeg >= 90 || !ui.waterlineToggle.checked) {
     guide.group.visible = false;
     return;
   }
 
   tipObj.getWorldPosition(tempV);
-  knuckleObj.getWorldPosition(tempV2);
   const tip = tempV.clone();
-  const knuckle = tempV2.clone();
-
   const nearSurface = Math.abs(tip.y) < 0.08;
-  const tipColor = nearSurface ? WATER_GUIDE_COLOR_TIP_NEAR : WATER_GUIDE_COLOR_TIP;
+  const color = nearSurface ? WATER_GUIDE_COLOR_NEAR : WATER_GUIDE_COLOR;
 
   guide.group.visible = true;
 
-  // Rake line: the real foil member, from the knuckle through the outer
-  // tip, solved for where that true (possibly extended) line crosses the
-  // water plane -- i.e. where the physical foil itself meets the surface,
-  // not a synthetic straight-down guess.
-  const dy = knuckle.y - tip.y;
-  let rakeShown = false;
-  if (Math.abs(dy) > 1e-6) {
-    const t = knuckle.y / dy;
-    const rakeCross = knuckle.clone().lerp(tip, t);
-    rakeCross.y = 0;
-    const rakeDist = rakeCross.distanceTo(tip);
-    window.__waterGuideDebug = window.__waterGuideDebug || {};
-    window.__waterGuideDebug[guide === portWaterGuide ? 'port' : 'stbd'] = {
-      knuckleY: knuckle.y, tipY: tip.y, dy, t, rakeDist,
-      knuckle: knuckle.toArray(), tip: tip.toArray(), rakeCross: rakeCross.toArray()
-    };
-    if (rakeDist <= WATER_GUIDE_RAKE_CAP) {
-      setWaterGuideLine(guide.tipLine, tip, rakeCross);
-      guide.tipLine.material.color.setHex(tipColor);
-      guide.tipRing.position.set(rakeCross.x, 0.004, rakeCross.z);
-      guide.tipRing.material.color.setHex(tipColor);
-      guide.tipRing.material.opacity = nearSurface ? 0.95 : 0.75;
-      rakeShown = true;
-    }
-  }
-  guide.tipLine.visible = rakeShown;
-  guide.tipRing.visible = rakeShown;
+  const cross = new THREE.Vector3(tip.x, 0, tip.z);
+  setWaterGuideLine(guide.line, tip, cross);
+  guide.line.material.color.setHex(color);
 
-  // Vertical line: a true plumb line straight down from the tip -- an
-  // unambiguous "vertical" reference alongside the rake line above, always
-  // shown whenever this foil is below 90 degrees.
-  const vertCross = new THREE.Vector3(tip.x, 0, tip.z);
-  setWaterGuideLine(guide.verticalLine, tip, vertCross);
-  guide.verticalRing.position.set(vertCross.x, 0.004, vertCross.z);
-  guide.verticalLine.visible = true;
-  guide.verticalRing.visible = true;
+  guide.tipDot.position.copy(tip);
+  guide.tipDot.material.color.setHex(color);
+
+  guide.waterRing.position.set(cross.x, 0.004, cross.z);
+  guide.waterRing.material.color.setHex(color);
+  guide.waterRing.material.opacity = nearSurface ? 0.95 : 0.75;
 }
 
 function updateFoilWaterGuides() {
   if (!modelReady) return;
-  updateSideWaterGuide(state.cantPort, portFoilMarker, portFoilTrueTip, portWaterGuide);
-  updateSideWaterGuide(state.cantStbd, stbdFoilMarker, stbdFoilTrueTip, stbdWaterGuide);
+  updateSideWaterGuide(state.cantPort, portFoilTrueTip, portWaterGuide);
+  updateSideWaterGuide(state.cantStbd, stbdFoilTrueTip, stbdWaterGuide);
 }
 
 function bindUI() {
