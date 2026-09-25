@@ -16,6 +16,8 @@ const ui = {
   photoInput: $('photoInput'),
   photoFileName: $('photoFileName'),
   resetPhotoBtn: $('resetPhotoBtn'),
+  movePhotoToggle: $('movePhotoToggle'),
+  photoDragHint: $('photoDragHint'),
   loading: $('loadingOverlay'),
   fatal: $('fatalError'),
   resetBtn: $('resetBtn'),
@@ -133,12 +135,20 @@ const state = {
   camFov: defaults.camFov,
 
   // Reference-photo pan/zoom, set by dragging/scrolling the photo directly
-  // in the viewer (onboard mode only). Independent of the Reset button —
-  // resetting the boat/camera calibration shouldn't throw away photo
-  // alignment work.
+  // in the viewer. Independent of the Reset button — resetting the
+  // boat/camera calibration shouldn't throw away photo alignment work.
   photoOffsetX: 0,
   photoOffsetY: 0,
   photoScale: 1,
+
+  // In onboard mode, dragging/scrolling the viewport always moves the
+  // photo (OrbitControls is off there, so there's no gesture conflict). In
+  // external mode the same drag/scroll normally orbits/zooms the free
+  // camera instead -- this flag is the "Move photo" toggle that switches
+  // the viewport over to photo pan/zoom instead, so a photo can still be
+  // aligned to the boat from an external/chase-boat view. Always reset to
+  // false on a camera-mode switch (see setCameraMode()).
+  photoMoveMode: false,
 
   // Foil-span calibration: two click-placed pins on the reference photo,
   // each stored as a fraction of the photo image's own displayed rect (so
@@ -577,16 +587,18 @@ function resetPhotoTransform() {
 }
 
 // Drag directly on the viewer to reposition the reference photo, scroll to
-// zoom it. Only active in onboard mode (external mode's OrbitControls owns
-// drag/scroll there instead) and only once a photo is loaded. Listening on
-// viewportBox rather than the photo layer itself means this still works
-// even though the WebGL canvas sits on top and receives the raw event
-// first — mousedown/wheel bubble up to this ancestor either way.
+// zoom it -- gated by isPhotoDragEnabled() (always on in onboard mode;
+// external mode only while the "Move photo" toggle is on, since that same
+// drag/scroll otherwise drives OrbitControls instead) and only once a
+// photo is loaded. Listening on viewportBox rather than the photo layer
+// itself means this still works even though the WebGL canvas sits on top
+// and receives the raw event first — mousedown/wheel bubble up to this
+// ancestor either way.
 let photoDrag = null;
 
 function bindPhotoInteraction() {
   ui.viewportBox.addEventListener('mousedown', (e) => {
-    if (state.cameraMode !== 'onboard' || !photoLoaded) return;
+    if (!isPhotoDragEnabled() || !photoLoaded) return;
 
     if (state.calibPicking || state.calibFullPicking) {
       const photoRect = ui.photoImg.getBoundingClientRect();
@@ -622,7 +634,7 @@ function bindPhotoInteraction() {
   });
 
   ui.viewportBox.addEventListener('wheel', (e) => {
-    if (state.cameraMode !== 'onboard' || !photoLoaded) return;
+    if (!isPhotoDragEnabled() || !photoLoaded) return;
     e.preventDefault();
     const factor = e.deltaY > 0 ? 0.92 : 1.08;
     state.photoScale = Math.min(4, Math.max(0.4, state.photoScale * factor));
@@ -642,6 +654,14 @@ function bindPhotoInteraction() {
   });
 
   ui.resetPhotoBtn.addEventListener('click', resetPhotoTransform);
+
+  if (ui.movePhotoToggle) {
+    ui.movePhotoToggle.addEventListener('click', () => {
+      state.photoMoveMode = !state.photoMoveMode;
+      controls.enabled = state.cameraMode === 'external' && !state.photoMoveMode;
+      updatePhotoDragUI();
+    });
+  }
 }
 
 // ---------------------------------------------------------------------
@@ -1232,15 +1252,43 @@ function applyExternalPreset(view) {
 // Switches between onboard (rigidly hull-mounted) and external (free)
 // camera modes -- pulled out of its own click handler so resetAll() can
 // force the page back to onboard mode too, not just reset the sliders.
+// True whenever a drag/scroll on the viewport should move/zoom the photo
+// rather than do whatever else that gesture normally does (nothing extra
+// in onboard mode; orbit/zoom the free camera in external mode). Onboard
+// mode has no gesture conflict (OrbitControls is off there) so photo drag
+// is always on; external mode only hands the gesture to the photo while
+// the "Move photo" toggle is on, since the same drag also drives the
+// camera there.
+function isPhotoDragEnabled() {
+  return state.cameraMode === 'onboard' || (state.cameraMode === 'external' && state.photoMoveMode);
+}
+
+function updatePhotoDragUI() {
+  const enabled = isPhotoDragEnabled();
+  ui.viewportBox.classList.toggle('photo-draggable', enabled);
+  if (ui.movePhotoToggle) {
+    ui.movePhotoToggle.hidden = state.cameraMode !== 'external';
+    ui.movePhotoToggle.classList.toggle('active', state.photoMoveMode);
+  }
+  if (ui.photoDragHint) {
+    ui.photoDragHint.textContent = state.cameraMode === 'external'
+      ? (state.photoMoveMode
+        ? 'Move photo is on — drag the photo in the viewer to reposition it, scroll to zoom. Turn it off to orbit the camera again.'
+        : 'Turn on "Move photo" below to drag/scroll the photo into alignment — otherwise dragging orbits the camera.')
+      : 'Drag the photo in the viewer to reposition it, scroll to zoom.';
+  }
+}
+
 function setCameraMode(mode) {
   document.querySelectorAll('#cameraMode button').forEach((b) => b.classList.toggle('active', b.dataset.mode === mode));
   state.cameraMode = mode;
+  state.photoMoveMode = false;
   ui.onboardPresets.hidden = state.cameraMode !== 'onboard';
   ui.externalPresets.hidden = state.cameraMode === 'onboard';
   ui.onboardControls.hidden = state.cameraMode !== 'onboard';
   if (state.cameraMode !== 'onboard') cancelCalibPicking();
   controls.enabled = state.cameraMode === 'external';
-  ui.viewportBox.classList.toggle('photo-draggable', state.cameraMode === 'onboard');
+  updatePhotoDragUI();
   ui.cameraHint.textContent = state.cameraMode === 'onboard'
     ? 'Onboard mode keeps the camera bolted to the hull — it follows heel, trim and ride height automatically. Use the sliders to nudge the mount position and aim.'
     : 'Drag to orbit, scroll to zoom. External mode is a free camera in space — for a chase-boat, drone or TV shot rather than a boat-mounted one.';
