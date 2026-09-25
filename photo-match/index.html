@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#07111d" />
   <title>Photo Match · Seagull Lab</title>
-  <link rel="stylesheet" href="./styles.css?v=20260928" />
+  <link rel="stylesheet" href="./styles.css?v=20260929" />
   <script type="importmap">
   {
     "imports": {
@@ -132,7 +132,7 @@
               <div class="calib-block">
                 <div class="calib-block__heading">
                   <span>Foil-span calibration</span>
-                  <small>Mark both foil tips on the photo to solve fore &ndash; aft position</small>
+                  <small>Mark both foil tips on the photo to scale and anchor it to the model</small>
                 </div>
 
                 <div class="calib-pin-row">
@@ -145,11 +145,11 @@
                 </div>
 
                 <div class="calib-pin-row">
-                  <button class="mini-button mini-button--primary" id="calibSolveBtn" type="button" disabled>Match camera position</button>
+                  <button class="mini-button mini-button--primary" id="calibSolveBtn" type="button" disabled>Scale photo to match</button>
                   <button class="mini-button" id="calibClearBtn" type="button" disabled>Clear pins</button>
                 </div>
 
-                <p class="control-hint" id="calibHint">Click a &ldquo;Mark&rdquo; button, then click that foil tip on the photo. With both pins placed, solving moves the Fore &ndash; aft slider above to match the model&rsquo;s foil span to your marks.</p>
+                <p class="control-hint" id="calibHint">Click a &ldquo;Mark&rdquo; button, then click that foil tip on the photo. With both pins placed, this scales and repositions the photo so its marked span lands exactly on the model&rsquo;s current foil tips &mdash; leaving the camera untouched.</p>
               </div>
             </div>
 
@@ -284,6 +284,6 @@
     </div>
   </div>
 
-  <script type="module" src="./app.js?v=20260928"></script>
+  <script type="module" src="./app.js?v=20260929"></script>
 </body>
 </html>
