@@ -101,23 +101,17 @@ a { color: inherit; }
 
 .workspace {
   min-height: calc(100vh - 134px);
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(340px, .55fr);
-  gap: clamp(46px, 7vw, 120px);
-  align-items: start;
   padding: 84px 0 64px;
 }
 
 .workspace__empty {
-  min-height: 560px;
+  display: none;
 }
 
 .tools-column {
   width: 100%;
-  max-width: 520px;
-  justify-self: end;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 18px;
 }
 
