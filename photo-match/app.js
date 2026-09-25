@@ -1099,12 +1099,23 @@ function solveCameraFromMarks() {
   const paramNames = ['camAlong', 'camHeight', 'camAthwart', 'camPan', 'camTilt', 'camFov'];
   const x0 = paramNames.map((p) => state[p]);
 
+  // Same physical envelope as the sliders themselves (see index.html's
+  // min/max on each control). Clamping every parameter to this range on
+  // every residual evaluation -- not just after the fact -- keeps a
+  // genuinely underdetermined 2-point solve from "perfectly" fitting by
+  // wandering off to a nonsense pose (camera facing backwards through the
+  // hull, 130 degrees of tilt) that happens to zero out the two residuals;
+  // it's forced to find its zero-or-near-zero error within the same
+  // physically plausible envelope a person dragging the sliders would.
+  const PARAM_BOUNDS = [[-3, 3], [-0.5, 2], [-1.5, 1.5], [-90, 90], [-60, 60], [20, 140]];
+  const clampParams = (p) => p.map((v, i) => Math.min(PARAM_BOUNDS[i][1], Math.max(PARAM_BOUNDS[i][0], v)));
+
   // Forward model: place the real onboard camera exactly as
-  // updateOnboardCamera() would for these 6 parameters, then project each
-  // landmark -- reuses the same rig/projection the sliders already drive,
-  // so the solved values slot straight back into them afterwards.
-  const applyParams = (p) => {
-    const [along, height, athwart, pan, tilt, fov] = p;
+  // updateOnboardCamera() would for these 6 (clamped) parameters, then
+  // project each landmark -- reuses the same rig/projection the sliders
+  // already drive, so the solved values slot straight back into them.
+  const applyParams = (pRaw) => {
+    const [along, height, athwart, pan, tilt, fov] = clampParams(pRaw);
     const pos = ONBOARD_BASE.clone();
     pos.x += along; pos.y += height; pos.z += athwart;
     camera.position.copy(pos);
@@ -1114,7 +1125,7 @@ function solveCameraFromMarks() {
       THREE.MathUtils.degToRad(90 + pan),
       0
     );
-    camera.fov = Math.min(140, Math.max(20, fov));
+    camera.fov = fov;
     camera.updateProjectionMatrix();
     camera.updateMatrixWorld(true);
   };
@@ -1148,7 +1159,7 @@ function solveCameraFromMarks() {
   };
 
   const result = levenbergMarquardt(residualFn, x0, { maxIter: 150 });
-  const solved = result.x;
+  const solved = clampParams(result.x);
 
   applyParams(solved);
   state.camAlong = solved[0];
@@ -1156,7 +1167,7 @@ function solveCameraFromMarks() {
   state.camAthwart = solved[2];
   state.camPan = solved[3];
   state.camTilt = solved[4];
-  state.camFov = Math.min(140, Math.max(20, solved[5]));
+  state.camFov = solved[5];
 
   ui.camAlong.value = state.camAlong; ui.camAlongValue.textContent = `${signed(state.camAlong, 2)} m`;
   ui.camHeight.value = state.camHeight; ui.camHeightValue.textContent = `${signed(state.camHeight, 2)} m`;
