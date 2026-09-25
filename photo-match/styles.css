@@ -310,6 +310,22 @@ input[type="range"]::-moz-range-thumb { width: 15px; height: 15px; border: 2px s
 /* Foil-span calibration: pin overlay + control block */
 .calib-pin-layer { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
 
+/* Magnifying loupe shown while placing a foil-tip pin, for pixel-accurate
+   placement -- same pattern as the mast-calibration loupe on the RC44 site. */
+.calib-loupe {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  pointer-events: none;
+  z-index: 6;
+  box-shadow: 0 6px 20px rgba(0,0,0,.55);
+  background: #000;
+  display: none;
+}
+.calib-loupe.is-visible { display: block; }
+
 .calib-pin {
   position: absolute;
   width: 14px;
