@@ -559,7 +559,13 @@ function updateSideWaterGuide(cantDeg, knuckleObj, tipObj, guide) {
     const t = knuckle.y / dy;
     const rakeCross = knuckle.clone().lerp(tip, t);
     rakeCross.y = 0;
-    if (rakeCross.distanceTo(tip) <= WATER_GUIDE_RAKE_CAP) {
+    const rakeDist = rakeCross.distanceTo(tip);
+    window.__waterGuideDebug = window.__waterGuideDebug || {};
+    window.__waterGuideDebug[guide === portWaterGuide ? 'port' : 'stbd'] = {
+      knuckleY: knuckle.y, tipY: tip.y, dy, t, rakeDist,
+      knuckle: knuckle.toArray(), tip: tip.toArray(), rakeCross: rakeCross.toArray()
+    };
+    if (rakeDist <= WATER_GUIDE_RAKE_CAP) {
       setWaterGuideLine(guide.tipLine, tip, rakeCross);
       guide.tipLine.material.color.setHex(tipColor);
       guide.tipRing.position.set(rakeCross.x, 0.004, rakeCross.z);
